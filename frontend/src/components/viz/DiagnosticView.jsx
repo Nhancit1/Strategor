@@ -11,12 +11,33 @@ const SEVERITY_COLOR = {
   LOW: 'bg-paper2 text-ink3',
 };
 
+/** Normalize a value that may be an array, a comma-string, or undefined → always an array */
+function toArray(val) {
+  if (!val) return [];
+  if (Array.isArray(val)) return val;
+  if (typeof val === 'string') return val.split(/[,\n]+/).map((s) => s.trim()).filter(Boolean);
+  return [];
+}
+
+/** Normalize a value that may be an array of objects or a plain string → always an array of objects */
+function toObjectArray(val) {
+  if (!val) return [];
+  if (Array.isArray(val)) return val;
+  if (typeof val === 'string') return val.split(/\n+/).filter(Boolean).map((s) => ({ title: s, description: '' }));
+  return [];
+}
+
 export default function DiagnosticView({ output }) {
   if (!output) return null;
+
+  const coreStrengths = toArray(output.core_strengths);
+  const faultLines = toObjectArray(output.fault_lines);
+  const opportunityWindows = toObjectArray(output.opportunity_windows);
+
   return (
     <div className="space-y-6">
       {output.urgency_level && (
-        <div className={`card p-4 border-2 ${URGENCY_BG[output.urgency_level]}`}>
+        <div className={`card p-4 border-2 ${URGENCY_BG[output.urgency_level] || ''}`}>
           <div className="flex items-center gap-3">
             <span className="text-3xl">
               {output.urgency_level === 'GREEN' ? '✅' : output.urgency_level === 'AMBER' ? '⚠️' : '🚨'}
@@ -38,47 +59,47 @@ export default function DiagnosticView({ output }) {
         </div>
       )}
 
-      {output.core_strengths?.length > 0 && (
+      {coreStrengths.length > 0 && (
         <div className="card p-4">
           <h4 className="font-title font-semibold mb-2 text-green">💪 Triangle des forces</h4>
           <ul className="list-disc list-inside text-sm space-y-1">
-            {output.core_strengths.map((s, i) => <li key={i}>{s}</li>)}
+            {coreStrengths.map((s, i) => <li key={i}>{typeof s === 'string' ? s : JSON.stringify(s)}</li>)}
           </ul>
         </div>
       )}
 
-      {output.fault_lines?.length > 0 && (
+      {faultLines.length > 0 && (
         <div className="card p-4">
           <h4 className="font-title font-semibold mb-2 text-red-700">⚠️ Lignes de faille</h4>
           <div className="space-y-2">
-            {output.fault_lines.map((f, i) => (
+            {faultLines.map((f, i) => (
               <div key={i} className="border border-paper3 p-3 rounded-lg">
                 <div className="flex items-start justify-between gap-2">
-                  <strong className="text-sm">{f.title}</strong>
+                  <strong className="text-sm">{f.title || f}</strong>
                   {f.severity && (
-                    <span className={`badge ${SEVERITY_COLOR[f.severity]}`}>{f.severity}</span>
+                    <span className={`badge ${SEVERITY_COLOR[f.severity] || 'bg-paper2 text-ink2'}`}>{f.severity}</span>
                   )}
                 </div>
-                <p className="text-xs text-ink3 mt-1">{f.description}</p>
+                {f.description && <p className="text-xs text-ink3 mt-1">{f.description}</p>}
               </div>
             ))}
           </div>
         </div>
       )}
 
-      {output.opportunity_windows?.length > 0 && (
+      {opportunityWindows.length > 0 && (
         <div className="card p-4">
           <h4 className="font-title font-semibold mb-2 text-blue">🌟 Fenêtres d'opportunité</h4>
           <div className="space-y-2">
-            {output.opportunity_windows.map((o, i) => (
+            {opportunityWindows.map((o, i) => (
               <div key={i} className="border border-paper3 p-3 rounded-lg">
                 <div className="flex items-start justify-between gap-2">
-                  <strong className="text-sm">{o.title}</strong>
+                  <strong className="text-sm">{o.title || o}</strong>
                   {o.deadline_months && (
                     <span className="badge bg-blue/10 text-blue">⏱ {o.deadline_months}m</span>
                   )}
                 </div>
-                <p className="text-xs text-ink3 mt-1">{o.rationale}</p>
+                {o.rationale && <p className="text-xs text-ink3 mt-1">{o.rationale}</p>}
               </div>
             ))}
           </div>
