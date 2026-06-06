@@ -37,6 +37,7 @@ export default function ValidationPage() {
   const { t } = useTranslation();
   const { agents, fetchAgents } = useProjectStore();
   const [activeTab, setActiveTab] = useState(tab || TABS[0].id);
+  const [regenerating, setRegenerating] = useState(false);
 
   useEffect(() => { fetchAgents(id); }, [id, fetchAgents]);
   useEffect(() => { if (tab) setActiveTab(tab); }, [tab]);
@@ -57,9 +58,22 @@ export default function ValidationPage() {
   };
 
   const handleRegenerate = async () => {
-    if (!currentAgent) return;
-    await agentApi.regenerate(id, tabConfig.agentId);
-    fetchAgents(id);
+    if (!currentAgent || regenerating) return;
+    setRegenerating(true);
+    try {
+      await agentApi.regenerate(id, tabConfig.agentId);
+      // Poll until the agent finishes (status changes from PENDING/RUNNING)
+      const poll = setInterval(async () => {
+        await fetchAgents(id);
+        const updated = useProjectStore.getState().agents.find((a) => a.agentId === tabConfig.agentId);
+        if (updated && updated.status !== 'PENDING' && updated.status !== 'RUNNING') {
+          clearInterval(poll);
+          setRegenerating(false);
+        }
+      }, 3000);
+    } catch {
+      setRegenerating(false);
+    }
   };
 
   const allValidated = useMemo(
@@ -123,9 +137,9 @@ export default function ValidationPage() {
         ) : (
           <>
             <div className="flex justify-end gap-2 mb-4">
-              <button onClick={handleRegenerate} className="btn-secondary text-sm">
-                <RefreshCw size={14} className="inline mr-1.5" />
-                {t('validation.regenerate')}
+              <button onClick={handleRegenerate} disabled={regenerating} className="btn-secondary text-sm">
+                <RefreshCw size={14} className={`inline mr-1.5 ${regenerating ? 'animate-spin' : ''}`} />
+                {regenerating ? 'Régénération…' : t('validation.regenerate')}
               </button>
               <button onClick={handleValidate} className="btn-primary text-sm">
                 <CheckCircle2 size={14} className="inline mr-1.5" />

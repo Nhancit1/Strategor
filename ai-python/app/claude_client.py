@@ -158,7 +158,13 @@ async def generate_structured(
                   "(intègre-les et appuie ton analyse dessus) ===\n" + findings + "\n"
             )
 
-    tool_name = "submit_" + re.sub(r"\s+", "_", agent_name.lower())
+    # Anthropic requires tool names to match ^[a-zA-Z0-9_-]{1,128}$
+    # → normalize unicode accents, then strip anything that's not a-z/0-9/underscore.
+    import unicodedata
+    _raw = unicodedata.normalize("NFD", agent_name.lower())
+    _ascii = _raw.encode("ascii", "ignore").decode("ascii")  # drop accents
+    tool_name = "submit_" + re.sub(r"[^a-z0-9]+", "_", _ascii).strip("_")[:100]
+
     resp = await _client.messages.create(
         model=model,
         max_tokens=max_tokens,

@@ -33,10 +33,16 @@ async def run_analysis(req: AnalyzeRequest) -> None:
         # ── Two-phase flow (Agent 1 hypotheses review) ──
         # phase "profile": run only Agent 1.  phase "full": skip Agent 1 (it is
         # seeded from the reviewed output so its dependents can use it).
+        # ── Phase routing ──
+        # "profile": only Agent 1
+        # "full": skip Agent 1 (seeded)
+        # "single": only the targetAgentId agent
         if req.phase == "profile":
             levels = [[a for a in lvl if a.agent_id == 1] for lvl in levels]
         elif req.phase == "full":
             levels = [[a for a in lvl if a.agent_id != 1] for lvl in levels]
+        elif req.phase == "single" and req.targetAgentId:
+            levels = [[a for a in lvl if a.agent_id == req.targetAgentId] for lvl in levels]
         levels = [lvl for lvl in levels if lvl]
 
         log.info("Orchestration project=%s mode=%s phase=%s levels=%d",

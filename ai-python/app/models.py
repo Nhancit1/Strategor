@@ -10,8 +10,10 @@ class AnalyzeRequest(BaseModel):
     financeLite: Optional[dict[str, Any]] = None  # FinanceLite JSON
     documentsContext: Optional[str] = None        # pre-assembled doc text
     # ── Two-phase flow (Agent 1 hypotheses review) ──
-    phase: str = "full"               # "profile" = run only Agent 1; "full" = run the rest
+    phase: str = "full"               # "profile" | "full" | "single" | "all"
     seedOutputs: Optional[dict[str, Any]] = None  # precomputed agent outputs, e.g. {"1": {...}}
+    targetAgentId: Optional[int] = None           # for phase="single": which agent to (re)run
+
 
 # ── /parse request ──────────────────────────────────────────────────
 class ParseRequest(BaseModel):

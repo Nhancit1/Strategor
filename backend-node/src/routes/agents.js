@@ -41,7 +41,8 @@ router.put('/:agentId/output', asyncHandler(async (req, res) => {
 
 async function relaunch(req, res) {
   const project = await loadOwnedProject(req.params.projectId, req.user.id);
-  const exec = await getExec(req.params.projectId, Number(req.params.agentId));
+  const agentId = Number(req.params.agentId);
+  const exec = await getExec(req.params.projectId, agentId);
   exec.status = 'PENDING';
   exec.retryCount += 1;
   exec.errorMessage = null;
@@ -52,12 +53,13 @@ async function relaunch(req, res) {
   project.status = 'ANALYZING';
   await project.save();
 
-  // Like the Java version: re-run the full pipeline (v2.1 can re-run only the
-  // target agent + its dependents).
+  // Re-run only the target agent (+ its deps from existing outputs).
   startAnalysis({
     projectId: project.id.toString(),
     mode: project.analysisMode || 'standard',
     language: 'fr',
+    phase: 'single',
+    targetAgentId: agentId,
     profile: profile ? profile.toJSON() : null,
     financeLite: finance ? finance.toJSON() : null,
     documentsContext: null,
