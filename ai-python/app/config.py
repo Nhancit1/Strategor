@@ -8,11 +8,11 @@ load_dotenv(dotenv_path=_env_path, override=True)
 
 
 class Settings:
-    # DeepSeek
-    deepseek_api_key: str = os.getenv("DEEPSEEK_API_KEY", "")
-    model_haiku: str = os.getenv("MODEL_HAIKU", "deepseek-chat")
-    model_sonnet: str = os.getenv("MODEL_SONNET", "deepseek-chat")
-    model_opus: str = os.getenv("MODEL_OPUS", "deepseek-reasoner")
+    # Anthropic
+    anthropic_api_key: str = os.getenv("ANTHROPIC_API_KEY", "")
+    model_haiku: str = os.getenv("MODEL_HAIKU", "claude-3-haiku-20240307")
+    model_sonnet: str = os.getenv("MODEL_SONNET", "claude-3-5-sonnet-20241022")
+    model_opus: str = os.getenv("MODEL_OPUS", "claude-3-opus-20240229")
 
     # Node backend callbacks
     node_url: str = os.getenv("NODE_URL", "http://localhost:4000")

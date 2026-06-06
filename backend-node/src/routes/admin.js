@@ -138,7 +138,7 @@ router.get('/projects/:id', asyncHandler(async (req, res) => {
 
 // ── Create a user (admin-provisioned; trusted, so email is pre-verified) ──────
 router.post('/users', asyncHandler(async (req, res) => {
-  const { email, firstName, lastName, password, role, lang } = req.body || {};
+  const { email, username, firstName, lastName, password, role, lang } = req.body || {};
   if (!email || typeof email !== 'string') throw new ApiError(400, 'Email requis');
   if (!password || typeof password !== 'string' || password.length < 8) {
     throw new ApiError(400, 'Mot de passe initial requis (8 caractères minimum)');
@@ -149,6 +149,8 @@ router.post('/users', asyncHandler(async (req, res) => {
   }
   const user = await User.create({
     email: normalized,
+    // Use provided username or derive one from the email local part
+    username: (username && username.trim()) ? username.trim() : (normalized.split('@')[0] + '_' + Date.now()),
     passwordHash: await hashPassword(password),
     firstName: typeof firstName === 'string' ? firstName : null,
     lastName: typeof lastName === 'string' ? lastName : null,

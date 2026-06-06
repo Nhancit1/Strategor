@@ -14,7 +14,7 @@ from typing import Optional
 
 from .agents.base import Agent, DOCUMENTS_KEY
 from .agents.registry import active_for_mode, build_execution_levels
-from .deepseek_client import generate_structured
+from .claude_client import generate_structured
 from . import callbacks
 from .config import settings
 from .models import AnalyzeRequest

@@ -37,7 +37,7 @@ function Modal({ title, onClose, children }) {
 }
 
 function CreateUserForm({ onClose, onDone }) {
-  const [form, setForm] = useState({ email: '', firstName: '', lastName: '', password: '', role: 'USER' });
+  const [form, setForm] = useState({ email: '', username: '', firstName: '', lastName: '', password: '', role: 'USER' });
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
   const set = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }));
@@ -59,9 +59,15 @@ function CreateUserForm({ onClose, onDone }) {
 
   return (
     <form onSubmit={submit} className="space-y-3">
-      <div>
-        <label className="form-label">Email</label>
-        <input type="email" required className="form-input" value={form.email} onChange={set('email')} />
+      <div className="grid grid-cols-2 gap-3">
+        <div>
+          <label className="form-label">Email</label>
+          <input type="email" required className="form-input" value={form.email} onChange={set('email')} />
+        </div>
+        <div>
+          <label className="form-label">Username (optionnel)</label>
+          <input type="text" className="form-input" value={form.username} onChange={set('username')} placeholder="Généré automatiquement" />
+        </div>
       </div>
       <div className="grid grid-cols-2 gap-3">
         <div>

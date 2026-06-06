@@ -4,6 +4,8 @@ import { baseToJSON } from './_transform.js';
 const userSchema = new mongoose.Schema(
   {
     email: { type: String, required: true, lowercase: true, trim: true, index: true },
+    // username is required by the shared games.users collection's unique index
+    username: { type: String, default: null, sparse: true },
     passwordHash: { type: String, required: true },
     firstName: { type: String, default: null },
     lastName: { type: String, default: null },
