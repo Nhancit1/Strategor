@@ -1,0 +1,84 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html { font-family: 'DM Sans', system-ui, sans-serif; }
+  body {
+    @apply bg-paper text-ink antialiased;
+    font-feature-settings: 'kern', 'liga';
+  }
+  h1, h2, h3, h4 { @apply font-title; }
+}
+
+@layer components {
+  /* Boutons */
+  .btn-primary {
+    @apply font-title font-semibold px-5 py-2.5 rounded-lg bg-orange text-white
+           hover:bg-orangeDark active:bg-orangeDark
+           transition-colors duration-150
+           disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+  .btn-secondary {
+    @apply font-title font-semibold px-5 py-2.5 rounded-lg
+           bg-paper2 text-ink border border-paper3
+           hover:bg-paper3 transition-colors duration-150;
+  }
+  .btn-ghost {
+    @apply font-title font-semibold px-4 py-2 rounded-lg
+           text-ink3 hover:text-ink hover:bg-paper2 transition-colors;
+  }
+  .btn-danger {
+    @apply font-title font-semibold px-5 py-2.5 rounded-lg
+           bg-red-600 text-white hover:bg-red-700 transition-colors;
+  }
+
+  /* Forms */
+  .form-label {
+    @apply block text-sm font-medium text-ink2 mb-1.5;
+  }
+  .form-input {
+    @apply w-full px-3.5 py-2.5 rounded-lg border border-paper3 bg-white
+           text-ink placeholder:text-ink3
+           focus:outline-none focus:ring-2 focus:ring-orange/30 focus:border-orange
+           transition-colors;
+  }
+  .form-textarea {
+    @apply form-input min-h-[100px] resize-y;
+  }
+  .form-help {
+    @apply text-xs text-ink3 mt-1;
+  }
+  .form-error {
+    @apply text-xs text-red-600 mt-1;
+  }
+
+  /* Cards */
+  .card {
+    @apply bg-white rounded-xl border border-paper3 shadow-card;
+  }
+  .card-hover {
+    @apply card hover:shadow-cardHover transition-shadow cursor-pointer;
+  }
+
+  /* Badges */
+  .badge { @apply inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium; }
+  .badge-pending  { @apply badge bg-paper2 text-ink3; }
+  .badge-running  { @apply badge bg-orange/10 text-orangeDark; }
+  .badge-done     { @apply badge bg-green/10 text-green; }
+  .badge-error    { @apply badge bg-red-100 text-red-700; }
+  .badge-skipped  { @apply badge bg-paper3 text-ink3; }
+  .badge-validated{ @apply badge bg-blue/10 text-blue; }
+  .badge-free     { @apply badge bg-paper3 text-ink2; }
+  .badge-pro      { @apply badge bg-orange text-white; }
+
+  /* Layout helpers */
+  .container-narrow { @apply max-w-4xl mx-auto px-4; }
+  .container-wide   { @apply max-w-6xl mx-auto px-4; }
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: theme('colors.paper'); }
+::-webkit-scrollbar-thumb { background: theme('colors.paper3'); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: theme('colors.ink3'); }

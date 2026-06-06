@@ -1,0 +1,107 @@
+services:
+  # ── MongoDB ─────────────────────────────────────────────────────
+  mongo:
+    image: mongo:7
+    container_name: strategor-mongo
+    volumes:
+      - mongodata:/data/db
+    ports:
+      - "127.0.0.1:27017:27017"
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  # ── Python AI / export microservice ─────────────────────────────
+  ai:
+    build:
+      context: ./ai-python
+      dockerfile: Dockerfile
+    container_name: strategor-ai
+    environment:
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:?ANTHROPIC_API_KEY required}
+      MODEL_HAIKU: ${MODEL_HAIKU:-claude-haiku-4-5-20251001}
+      MODEL_SONNET: ${MODEL_SONNET:-claude-sonnet-4-6}
+      MODEL_OPUS: ${MODEL_OPUS:-claude-opus-4-7}
+      NODE_URL: http://node:4000
+      INTERNAL_TOKEN: ${INTERNAL_TOKEN:-dev-internal-token-change-me}
+      MAX_PARALLEL_AGENTS: ${MAX_PARALLEL_AGENTS:-5}
+      PDF_ENGINE: ${PDF_ENGINE:-weasyprint}
+      GROUNDING_ENABLED: ${GROUNDING_ENABLED:-true}
+      WEB_SEARCH_MAX_USES: ${WEB_SEARCH_MAX_USES:-5}
+      WEB_SEARCH_COST_CENTS: ${WEB_SEARCH_COST_CENTS:-1}
+      MODEL_RESEARCH: ${MODEL_RESEARCH:-claude-sonnet-4-6}
+    volumes:
+      - uploads:/data/uploads   # shared with node (read parsed files by path)
+    expose:
+      - "8000"
+    restart: unless-stopped
+
+  # ── Node / Express backend ──────────────────────────────────────
+  node:
+    build:
+      context: ./backend-node
+      dockerfile: Dockerfile
+    container_name: strategor-node
+    depends_on:
+      mongo:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      PORT: 4000
+      SELF_URL: http://node:4000
+      MONGO_URI: mongodb://mongo:27017/${MONGO_DB:-strategor}
+      JWT_SECRET: ${JWT_SECRET:?JWT_SECRET required (openssl rand -hex 32)}
+      JWT_EXPIRY: ${JWT_EXPIRY:-900}
+      JWT_REFRESH_EXPIRY: ${JWT_REFRESH_EXPIRY:-2592000}
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost}
+      AI_SERVICE_URL: http://ai:8000
+      INTERNAL_TOKEN: ${INTERNAL_TOKEN:-dev-internal-token-change-me}
+      UPLOAD_PATH: /data/uploads
+      UPLOAD_MAX_BYTES: ${UPLOAD_MAX_BYTES:-26214400}
+      UPLOAD_MAX_PER_PROJECT: ${UPLOAD_MAX_PER_PROJECT:-5}
+      EMAIL_ENABLED: ${EMAIL_ENABLED:-false}
+      EMAIL_FROM: ${EMAIL_FROM:-noreply@strategor.local}
+      SMTP_HOST: ${SMTP_HOST:-}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASSWORD: ${SMTP_PASSWORD:-}
+      COST_ALERT_THRESHOLD_CENTS: ${COST_ALERT_THRESHOLD_CENTS:-200}
+      APP_URL: ${APP_URL:-http://localhost}
+      FRONTEND_URL: ${FRONTEND_URL:-http://localhost}
+    volumes:
+      - uploads:/data/uploads
+    expose:
+      - "4000"
+    restart: unless-stopped
+
+  # ── Frontend (static SPA via internal nginx) ────────────────────
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: strategor-frontend
+    depends_on:
+      - node
+    expose:
+      - "80"
+    restart: unless-stopped
+
+  # ── Reverse proxy ───────────────────────────────────────────────
+  nginx:
+    image: nginx:1.27-alpine
+    container_name: strategor-nginx
+    depends_on:
+      - frontend
+      - node
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    restart: unless-stopped
+
+volumes:
+  mongodata:
+  uploads:

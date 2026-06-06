@@ -1,0 +1,79 @@
+{
+  "common": {
+    "loading": "Chargement…",
+    "error": "Une erreur est survenue",
+    "save": "Enregistrer",
+    "cancel": "Annuler",
+    "delete": "Supprimer",
+    "edit": "Modifier",
+    "back": "Retour",
+    "next": "Suivant",
+    "previous": "Précédent",
+    "launch": "Lancer",
+    "retry": "Réessayer",
+    "free": "Gratuit",
+    "pro": "Pro"
+  },
+  "nav": {
+    "dashboard": "Tableau de bord",
+    "settings": "Paramètres",
+    "logout": "Déconnexion"
+  },
+  "auth": {
+    "login": "Connexion",
+    "register": "Créer un compte",
+    "email": "Email",
+    "password": "Mot de passe",
+    "firstName": "Prénom",
+    "lastName": "Nom",
+    "forgotPassword": "Mot de passe oublié ?",
+    "noAccount": "Pas encore de compte ?",
+    "hasAccount": "Déjà un compte ?",
+    "loginCta": "Se connecter",
+    "registerCta": "Créer mon compte",
+    "tagline": "Construisez votre stratégie d'entreprise avec 12 agents IA spécialisés."
+  },
+  "dashboard": {
+    "title": "Mes projets",
+    "newProject": "Nouveau projet",
+    "noProjects": "Vous n'avez pas encore créé de projet.",
+    "createFirst": "Créer mon premier projet",
+    "limitFree": "Plan Gratuit : 1 projet maximum. Passez en Pro pour plus."
+  },
+  "onboarding": {
+    "title": "Profil de votre entreprise",
+    "step": "Étape {{current}}/{{total}}",
+    "launchAnalysis": "Lancer l'analyse",
+    "saving": "Enregistrement…",
+    "saved": "Enregistré"
+  },
+  "agents": {
+    "title": "Analyse en cours",
+    "subtitle": "Les agents IA collaborent pour générer votre stratégie.",
+    "pending": "En attente",
+    "running": "En cours",
+    "done": "Terminé",
+    "error": "Erreur",
+    "skipped": "Non applicable",
+    "validated": "Validé"
+  },
+  "validation": {
+    "title": "Validation des analyses",
+    "subtitle": "Vérifiez et éditez chaque livrable avant la production finale.",
+    "validate": "Valider cette section",
+    "regenerate": "Régénérer"
+  },
+  "deliverables": {
+    "title": "Livrables finaux",
+    "subtitle": "Votre stratégie est prête. Exportez et partagez.",
+    "exportPdf": "Exporter PDF",
+    "exportDocx": "Exporter Word",
+    "exportPptx": "Exporter PowerPoint",
+    "exportXlsx": "Exporter Excel"
+  },
+  "errors": {
+    "network": "Erreur de connexion au serveur",
+    "unauthorized": "Session expirée, veuillez vous reconnecter",
+    "validation": "Veuillez vérifier les champs du formulaire"
+  }
+}

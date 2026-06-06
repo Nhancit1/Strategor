@@ -1,0 +1,79 @@
+{
+  "common": {
+    "loading": "Loading…",
+    "error": "Something went wrong",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "back": "Back",
+    "next": "Next",
+    "previous": "Previous",
+    "launch": "Launch",
+    "retry": "Retry",
+    "free": "Free",
+    "pro": "Pro"
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "settings": "Settings",
+    "logout": "Sign out"
+  },
+  "auth": {
+    "login": "Sign in",
+    "register": "Create account",
+    "email": "Email",
+    "password": "Password",
+    "firstName": "First name",
+    "lastName": "Last name",
+    "forgotPassword": "Forgot password?",
+    "noAccount": "No account yet?",
+    "hasAccount": "Already have an account?",
+    "loginCta": "Sign in",
+    "registerCta": "Create my account",
+    "tagline": "Build your business strategy with 12 specialized AI agents."
+  },
+  "dashboard": {
+    "title": "My projects",
+    "newProject": "New project",
+    "noProjects": "You haven't created any project yet.",
+    "createFirst": "Create my first project",
+    "limitFree": "Free plan: 1 project max. Upgrade to Pro for more."
+  },
+  "onboarding": {
+    "title": "Your company profile",
+    "step": "Step {{current}}/{{total}}",
+    "launchAnalysis": "Launch analysis",
+    "saving": "Saving…",
+    "saved": "Saved"
+  },
+  "agents": {
+    "title": "Analysis in progress",
+    "subtitle": "AI agents are collaborating to generate your strategy.",
+    "pending": "Pending",
+    "running": "Running",
+    "done": "Done",
+    "error": "Error",
+    "skipped": "N/A",
+    "validated": "Validated"
+  },
+  "validation": {
+    "title": "Validate analyses",
+    "subtitle": "Review and edit each deliverable before final production.",
+    "validate": "Validate this section",
+    "regenerate": "Regenerate"
+  },
+  "deliverables": {
+    "title": "Final deliverables",
+    "subtitle": "Your strategy is ready. Export and share.",
+    "exportPdf": "Export PDF",
+    "exportDocx": "Export Word",
+    "exportPptx": "Export PowerPoint",
+    "exportXlsx": "Export Excel"
+  },
+  "errors": {
+    "network": "Server connection error",
+    "unauthorized": "Session expired, please sign in again",
+    "validation": "Please check the form fields"
+  }
+}
