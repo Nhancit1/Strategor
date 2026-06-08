@@ -1,0 +1,125 @@
+diff --git a/ai-python/app/agents/prompts.py b/ai-python/app/agents/prompts.py
+index 968752d..a7e8c38 100644
+--- a/ai-python/app/agents/prompts.py
++++ b/ai-python/app/agents/prompts.py
+@@ -49,7 +49,11 @@ Place-les sur 2 axes différenciants (prix vs. valeur, généraliste vs. spécia
+ 
+ Termine par :
+   - 3 axes de différenciation possibles pour l'entreprise
+-  - Recommandation de positionnement''',
++  - Recommandation de positionnement
++
++Positionne AUSSI l'entreprise étudiée :
++  - place-la sur les MÊMES 2 axes (subject_position : x_axis, y_axis, même échelle que les concurrents) avec un résumé de sa position relative
++  - fournis une COMPARAISON tête-à-tête (comparison) : pour chaque concurrent clé, les avantages de l'entreprise (our_advantages), ses écarts (our_gaps) et un verdict d'une phrase''',
+     5: '''Mission : SYNTHÈSE EXÉCUTIVE consolidant PESTEL + SWOT + Concurrence + Porter + Chaîne de valeur.
+ 
+ Tu fais un DIAGNOSTIC dirigeant, en 5 sections :
+@@ -459,11 +463,33 @@ _SCHEMAS_JSON: dict[int, str] = {
+             },
+             "positioning_recommendation": {
+                 "type": "string"
++            },
++            "subject_position": {
++                "type": "object",
++                "properties": {
++                    "x_axis": { "type": "number" },
++                    "y_axis": { "type": "number" },
++                    "summary": { "type": "string" }
++                }
++            },
++            "comparison": {
++                "type": "array",
++                "items": {
++                    "type": "object",
++                    "properties": {
++                        "competitor": { "type": "string" },
++                        "our_advantages": { "type": "array", "items": { "type": "string" } },
++                        "our_gaps": { "type": "array", "items": { "type": "string" } },
++                        "verdict": { "type": "string" }
++                    }
++                }
+             }
+         },
+         "required": [
+             "competitors",
+-            "positioning_recommendation"
++            "positioning_recommendation",
++            "subject_position",
++            "comparison"
+         ]
+     }
+     ''',
+diff --git a/frontend/src/components/viz/CompetitiveMap.jsx b/frontend/src/components/viz/CompetitiveMap.jsx
+index f43bc3b..963f14a 100644
+--- a/frontend/src/components/viz/CompetitiveMap.jsx
++++ b/frontend/src/components/viz/CompetitiveMap.jsx
+@@ -43,7 +43,31 @@ export default function CompetitiveMap({ output }) {
+               </div>
+             );
+           })}
++
++          {/* Position de l'entreprise étudiée */}
++          {output.subject_position && (
++            <div
++              className="absolute z-20 group"
++              style={{
++                left: `${Math.max(5, Math.min(95, output.subject_position.x_axis ?? 50))}%`,
++                top: `${Math.max(5, Math.min(95, 100 - (output.subject_position.y_axis ?? 50)))}%`,
++                transform: 'translate(-50%, -50%)',
++              }}
++            >
++              <div className="px-2.5 py-1 rounded-full text-xs font-bold shadow-cardHover bg-orange text-white ring-2 ring-orange/40 flex items-center gap-1 whitespace-nowrap">
++                <span>★</span> Votre entreprise
++              </div>
++              {output.subject_position.summary && (
++                <div className="hidden group-hover:block absolute top-full left-1/2 -translate-x-1/2 mt-1 bg-ink text-white text-xs p-2 rounded shadow-cardHover z-30 w-52">
++                  {output.subject_position.summary}
++                </div>
++              )}
++            </div>
++          )}
+         </div>
++        {output.subject_position?.summary && (
++          <p className="text-sm mt-3"><strong>Votre position :</strong> {output.subject_position.summary}</p>
++        )}
+       </div>
+ 
+       {/* Liste détaillée */}
+@@ -82,6 +106,36 @@ export default function CompetitiveMap({ output }) {
+         ))}
+       </div>
+ 
++      {output.comparison?.length > 0 && (
++        <div className="space-y-2">
++          <h3 className="font-title font-semibold text-lg">Comparaison face aux concurrents</h3>
++          {output.comparison.map((c, i) => (
++            <div key={i} className="card p-3">
++              <div className="font-title font-semibold mb-2">Vous vs {c.competitor}</div>
++              <div className="grid grid-cols-2 gap-3 text-xs">
++                {c.our_advantages?.length > 0 && (
++                  <div>
++                    <strong className="text-green">Vos avantages :</strong>
++                    <ul className="list-disc list-inside mt-1">
++                      {c.our_advantages.map((a, j) => <li key={j}>{a}</li>)}
++                    </ul>
++                  </div>
++                )}
++                {c.our_gaps?.length > 0 && (
++                  <div>
++                    <strong className="text-red-600">Vos écarts :</strong>
++                    <ul className="list-disc list-inside mt-1">
++                      {c.our_gaps.map((g, j) => <li key={j}>{g}</li>)}
++                    </ul>
++                  </div>
++                )}
++              </div>
++              {c.verdict && <p className="text-sm mt-2"><strong>Verdict :</strong> {c.verdict}</p>}
++            </div>
++          ))}
++        </div>
++      )}
++
+       {output.positioning_recommendation && (
+         <div className="card p-4 bg-orange/5 border-orange/30">
+           <h4 className="font-title font-semibold mb-1">🎯 Recommandation</h4>

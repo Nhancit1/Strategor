@@ -49,7 +49,11 @@ Place-les sur 2 axes différenciants (prix vs. valeur, généraliste vs. spécia
 
 Termine par :
   - 3 axes de différenciation possibles pour l'entreprise
-  - Recommandation de positionnement''',
+  - Recommandation de positionnement
+
+Positionne AUSSI l'entreprise étudiée :
+  - place-la sur les MÊMES 2 axes (subject_position : x_axis, y_axis, même échelle que les concurrents) avec un résumé de sa position relative
+  - fournis une COMPARAISON tête-à-tête (comparison) : pour chaque concurrent clé, les avantages de l'entreprise (our_advantages), ses écarts (our_gaps) et un verdict d'une phrase''',
     5: '''Mission : SYNTHÈSE EXÉCUTIVE consolidant PESTEL + SWOT + Concurrence + Porter + Chaîne de valeur.
 
 Tu fais un DIAGNOSTIC dirigeant, en 5 sections :
@@ -459,11 +463,33 @@ _SCHEMAS_JSON: dict[int, str] = {
             },
             "positioning_recommendation": {
                 "type": "string"
+            },
+            "subject_position": {
+                "type": "object",
+                "properties": {
+                    "x_axis": { "type": "number" },
+                    "y_axis": { "type": "number" },
+                    "summary": { "type": "string" }
+                }
+            },
+            "comparison": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "competitor": { "type": "string" },
+                        "our_advantages": { "type": "array", "items": { "type": "string" } },
+                        "our_gaps": { "type": "array", "items": { "type": "string" } },
+                        "verdict": { "type": "string" }
+                    }
+                }
             }
         },
         "required": [
             "competitors",
-            "positioning_recommendation"
+            "positioning_recommendation",
+            "subject_position",
+            "comparison"
         ]
     }
     ''',
