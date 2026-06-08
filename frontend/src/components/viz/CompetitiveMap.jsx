@@ -44,12 +44,12 @@ export default function CompetitiveMap({ output }) {
       fontFamily: 'Inter, sans-serif',
       color: '#374151',
     },
-    emphasis: { scale: 1.5 },
+    // emphasis: { scale: 1.5 },
     data,
     tooltip: {
       formatter: (p) =>
-        `<div style="font-weight:600;margin-bottom:4px">${p.data.name}</div>
-         <div style="color:#6B7280;font-size:12px">${p.data.positioning}</div>`,
+        `<div style="font-weight:600;margin-bottom:4px;white-space:normal">${p.data.name}</div>
+         <div style="color:#9CA3AF;font-size:11px;white-space:normal;line-height:1.5">${p.data.positioning}</div>`,
     },
   }));
 
@@ -80,8 +80,8 @@ export default function CompetitiveMap({ output }) {
         }],
         tooltip: {
           formatter: (p) =>
-            `<div style="font-weight:600;margin-bottom:4px">★ Your Company</div>
-             <div style="color:#6B7280;font-size:12px">${p.data.positioning}</div>`,
+            `<div style="font-weight:600;margin-bottom:4px;white-space:normal">★ Your Company</div>
+             <div style="color:#9CA3AF;font-size:11px;white-space:normal;line-height:1.5">${p.data.positioning}</div>`,
         },
         z: 20,
       }]
@@ -97,7 +97,7 @@ export default function CompetitiveMap({ output }) {
       borderRadius: 10,
       padding: [10, 14],
       textStyle: { color: '#F9FAFB', fontSize: 12 },
-      extraCssText: 'box-shadow: 0 10px 25px rgba(0,0,0,0.25);',
+      extraCssText: 'box-shadow: 0 10px 25px rgba(0,0,0,0.25); max-width: 220px; white-space: normal; word-break: break-word;',
     },
     legend: {
       top: 8,
@@ -113,6 +113,8 @@ export default function CompetitiveMap({ output }) {
     },
     grid: { left: 56, right: 32, top: 48, bottom: 56, containLabel: false },
     xAxis: {
+      min: 0,
+      max: 10,
       name: axes.x_label,
       nameLocation: 'middle',
       nameGap: 32,
@@ -123,6 +125,8 @@ export default function CompetitiveMap({ output }) {
       axisLabel: { color: '#D1D5DB', fontSize: 10 },
     },
     yAxis: {
+      min: 0,
+      max: 10,
       name: axes.y_label,
       nameLocation: 'middle',
       nameGap: 42,
