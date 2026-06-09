@@ -18,7 +18,7 @@ export function errorHandler(err, req, res, next) {
   const leakServerError = status >= 500 && isProd;
   res.status(status).json({
     error: leakServerError ? 'InternalError' : err.name || 'Error',
-    message: leakServerError ? 'Erreur interne du serveur' : err.message || 'Erreur interne',
+    message: err.message || 'Erreur interne',
     status,
   });
 }
