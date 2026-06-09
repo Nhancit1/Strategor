@@ -21,8 +21,8 @@ async function getExec(projectId, agentId) {
 
 router.get('/', asyncHandler(async (req, res) => {
   await loadOwnedProject(req.params.projectId, req.user.id);
-  const execs = await AgentExecution.find({ project: req.params.projectId }).sort({ agentId: 1 });
-  res.json(execs.map((e) => e.toJSON()));
+  const execs = await AgentExecution.find({ project: req.params.projectId }).sort({ agentId: 1 }).lean();
+  res.json(execs);
 }));
 
 router.get('/:agentId', asyncHandler(async (req, res) => {
@@ -53,6 +53,15 @@ async function relaunch(req, res) {
   project.status = 'ANALYZING';
   await project.save();
 
+  // Fetch all other agents' outputs to seed the context for this single run
+  const allExecs = await AgentExecution.find({ project: project._id, status: 'DONE' });
+  const seedOutputs = {};
+  for (const e of allExecs) {
+    if (e.agentId !== agentId) {
+      seedOutputs[e.agentId] = e.editedOutput ?? e.output;
+    }
+  }
+
   // Re-run only the target agent (+ its deps from existing outputs).
   startAnalysis({
     projectId: project.id.toString(),
@@ -60,6 +69,7 @@ async function relaunch(req, res) {
     language: 'fr',
     phase: 'single',
     targetAgentId: agentId,
+    seedOutputs,
     profile: profile ? profile.toJSON() : null,
     financeLite: finance ? finance.toJSON() : null,
     documentsContext: null,

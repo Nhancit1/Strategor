@@ -146,7 +146,7 @@ export const agentApi = {
 
 export const exportApi = {
   download: (projectId, type) =>
-    api.post(`/api/projects/${projectId}/export/${type}`, null, { responseType: 'blob' }),
+    api.post(`/api/projects/${projectId}/export/${type}`, {}, { responseType: 'blob' }),
 };
 
 export const financeApi = {
