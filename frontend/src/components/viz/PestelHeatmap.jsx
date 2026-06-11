@@ -30,9 +30,7 @@ export default function PestelHeatmap({ output, editing, onOutputChange }) {
     onOutputChange?.(clone);
   };
 
-  const E = ({ value, onChange, multiline }) => (
-    <EditableText value={value} onChange={editing ? onChange : undefined} multiline={multiline} />
-  );
+
 
   return (
     <div className="space-y-6">
@@ -49,7 +47,7 @@ export default function PestelHeatmap({ output, editing, onOutputChange }) {
                 <div key={idx} className={`border rounded-lg p-3 ${IMPACT_COLORS[f.impact] || ''}`}>
                   <div className="flex items-start justify-between gap-2 mb-1">
                     <div className="font-semibold text-sm">
-                      <E value={f.title} onChange={(v) => updateFactor(key, idx, 'title', v)} />
+                      <EditableText value={f.title} onChange={editing ? (v) => updateFactor(key, idx, 'title', v) : undefined} />
                     </div>
                     <div className="text-xs whitespace-nowrap">
                       {'●'.repeat(f.intensity || 1)}
@@ -57,11 +55,11 @@ export default function PestelHeatmap({ output, editing, onOutputChange }) {
                     </div>
                   </div>
                   <p className="text-xs mt-1">
-                    <E value={f.description} onChange={(v) => updateFactor(key, idx, 'description', v)} multiline />
+                    <EditableText value={f.description} onChange={editing ? (v) => updateFactor(key, idx, 'description', v) : undefined} multiline />
                   </p>
                   {f.horizon && (
                     <p className="text-xs mt-2 opacity-75">
-                      Horizon : <E value={f.horizon} onChange={(v) => updateFactor(key, idx, 'horizon', v)} />
+                      Horizon : <EditableText value={f.horizon} onChange={editing ? (v) => updateFactor(key, idx, 'horizon', v) : undefined} />
                     </p>
                   )}
                 </div>
@@ -76,7 +74,7 @@ export default function PestelHeatmap({ output, editing, onOutputChange }) {
           <ul className="list-disc list-inside text-sm space-y-1">
             {output.key_insights.map((insight, i) => (
               <li key={i}>
-                <E value={insight} onChange={(v) => updateInsight(i, v)} />
+                <EditableText value={insight} onChange={editing ? (v) => updateInsight(i, v) : undefined} />
               </li>
             ))}
           </ul>

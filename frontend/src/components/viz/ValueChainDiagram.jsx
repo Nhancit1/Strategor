@@ -12,15 +12,13 @@ const IMP_BADGE = {
 };
 
 function ActivityCard({ activity, editing, onChange }) {
-  const E = ({ value, onUpdate, multiline }) => (
-    <EditableText value={value} onChange={editing ? onUpdate : undefined} multiline={multiline} />
-  );
+
 
   return (
     <div className="card p-3 hover:shadow-cardHover transition-shadow">
       <div className="flex items-start justify-between gap-2 mb-1">
         <span className="font-title font-semibold text-sm">
-          <E value={activity.name} onUpdate={(v) => onChange('name', v)} />
+          <EditableText value={activity.name} onChange={editing ? (v) => onChange('name', v) : undefined} />
         </span>
         <span className="text-xs">{IMP_BADGE[activity.importance] || ''}</span>
       </div>
@@ -35,13 +33,13 @@ function ActivityCard({ activity, editing, onChange }) {
           <ul className="list-disc list-inside text-ink3 mt-1">
             {activity.improvements.map((imp, i) => (
               <li key={i}>
-                <E
+                <EditableText
                   value={imp}
-                  onUpdate={(v) => {
+                  onChange={editing ? (v) => {
                     const arr = [...activity.improvements];
                     arr[i] = v;
                     onChange('improvements', arr);
-                  }}
+                  } : undefined}
                 />
               </li>
             ))}

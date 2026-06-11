@@ -40,9 +40,7 @@ export default function BcgMatrix({ output, editing, onOutputChange }) {
   const lineIndexMap = new Map();
   lines.forEach((line, idx) => lineIndexMap.set(line, idx));
 
-  const E = ({ value, onChange, multiline }) => (
-    <EditableText value={value} onChange={editing ? onChange : undefined} multiline={multiline} />
-  );
+
 
   return (
     <div className="space-y-6">
@@ -57,7 +55,7 @@ export default function BcgMatrix({ output, editing, onOutputChange }) {
                   <div key={i} className="bg-white p-3 rounded-lg border border-paper3">
                     <div className="flex items-start justify-between gap-2 mb-1">
                       <strong className="text-sm">
-                        <E value={line.name} onChange={(v) => updateLine(origIdx, 'name', v)} />
+                        <EditableText value={line.name} onChange={editing ? (v) => updateLine(origIdx, 'name', v) : undefined} />
                       </strong>
                       {line.recommendation && (
                         <span className={`badge text-xs ${RECO_BADGE[line.recommendation]}`}>
@@ -70,7 +68,7 @@ export default function BcgMatrix({ output, editing, onOutputChange }) {
                     )}
                     {line.rationale && (
                       <p className="text-xs mt-1 text-ink3">
-                        <E value={line.rationale} onChange={(v) => updateLine(origIdx, 'rationale', v)} multiline />
+                        <EditableText value={line.rationale} onChange={editing ? (v) => updateLine(origIdx, 'rationale', v) : undefined} multiline />
                       </p>
                     )}
                   </div>
@@ -88,9 +86,9 @@ export default function BcgMatrix({ output, editing, onOutputChange }) {
         <div className="card p-4">
           <h4 className="font-title font-semibold mb-2">⚖️ Équilibre du portefeuille</h4>
           <p className="text-sm">
-            <E
+            <EditableText
               value={output.portfolio_balance}
-              onChange={(v) => onOutputChange?.({ ...output, portfolio_balance: v })}
+              onChange={editing ? (v) => onOutputChange?.({ ...output, portfolio_balance: v }) : undefined}
               multiline
             />
           </p>
@@ -103,7 +101,7 @@ export default function BcgMatrix({ output, editing, onOutputChange }) {
           <ul className="list-disc list-inside text-sm space-y-1">
             {output.key_decisions.map((d, i) => (
               <li key={i}>
-                <E value={d} onChange={(v) => updateDecision(i, v)} />
+                <EditableText value={d} onChange={editing ? (v) => updateDecision(i, v) : undefined} />
               </li>
             ))}
           </ul>

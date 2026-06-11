@@ -46,9 +46,7 @@ export default function CompetitiveMap({ output, editing, onOutputChange }) {
     onOutputChange?.(clone);
   };
 
-  const E = ({ value, onChange, multiline }) => (
-    <EditableText value={value} onChange={editing ? onChange : undefined} multiline={multiline} />
-  );
+
 
   // Group competitors by type
   const typeGroups = {};
@@ -190,13 +188,13 @@ export default function CompetitiveMap({ output, editing, onOutputChange }) {
           <div>
             <p className="font-semibold text-orange-700 text-sm mb-1">Your Positioning</p>
             <p className="text-sm text-slate-600 leading-relaxed">
-              <E
+              <EditableText
                 value={sub.summary}
-                onChange={(v) => {
+                onChange={editing ? (v) => {
                   const clone = structuredClone(output);
                   clone.subject_position.summary = v;
                   onOutputChange?.(clone);
-                }}
+                } : undefined}
                 multiline
               />
             </p>
@@ -214,12 +212,12 @@ export default function CompetitiveMap({ output, editing, onOutputChange }) {
               <div key={i} className="bg-white rounded-xl border border-slate-100 shadow-sm p-4 hover:shadow-md transition-shadow">
                 <div className="flex items-center justify-between mb-2">
                   <span className="font-semibold" style={{ color: t.color }}>
-                    <E value={c.name} onChange={(v) => updateCompetitor(i, 'name', v)} />
+                    <EditableText value={c.name} onChange={editing ? (v) => updateCompetitor(i, 'name', v) : undefined} />
                   </span>
                   <span className={`text-[10px] font-bold uppercase tracking-wide px-2.5 py-1 rounded-full ${t.bg}`}>{c.type}</span>
                 </div>
                 <p className="text-xs text-slate-500 mb-3 leading-relaxed">
-                  <E value={c.positioning} onChange={(v) => updateCompetitor(i, 'positioning', v)} multiline />
+                  <EditableText value={c.positioning} onChange={editing ? (v) => updateCompetitor(i, 'positioning', v) : undefined} multiline />
                 </p>
                 <div className="grid grid-cols-2 gap-3">
                   {c.strengths?.length > 0 && (
@@ -229,7 +227,7 @@ export default function CompetitiveMap({ output, editing, onOutputChange }) {
                         {c.strengths.map((s, j) => (
                           <li key={j} className="text-xs text-slate-600 flex gap-1.5">
                             <span className="text-emerald-400 mt-0.5">•</span>
-                            <E value={s} onChange={(v) => updateCompetitorArrayItem(i, 'strengths', j, v)} />
+                            <EditableText value={s} onChange={editing ? (v) => updateCompetitorArrayItem(i, 'strengths', j, v) : undefined} />
                           </li>
                         ))}
                       </ul>
@@ -242,7 +240,7 @@ export default function CompetitiveMap({ output, editing, onOutputChange }) {
                         {c.weaknesses.map((w, j) => (
                           <li key={j} className="text-xs text-slate-600 flex gap-1.5">
                             <span className="text-red-300 mt-0.5">•</span>
-                            <E value={w} onChange={(v) => updateCompetitorArrayItem(i, 'weaknesses', j, v)} />
+                            <EditableText value={w} onChange={editing ? (v) => updateCompetitorArrayItem(i, 'weaknesses', j, v) : undefined} />
                           </li>
                         ))}
                       </ul>
@@ -252,7 +250,7 @@ export default function CompetitiveMap({ output, editing, onOutputChange }) {
                 {c.recent_signals && (
                   <p className="text-[11px] text-slate-400 mt-3 pt-3 border-t border-slate-50">
                     <span className="font-medium text-slate-500">Signal: </span>
-                    <E value={c.recent_signals} onChange={(v) => updateCompetitor(i, 'recent_signals', v)} />
+                    <EditableText value={c.recent_signals} onChange={editing ? (v) => updateCompetitor(i, 'recent_signals', v) : undefined} />
                   </p>
                 )}
               </div>
@@ -279,7 +277,7 @@ export default function CompetitiveMap({ output, editing, onOutputChange }) {
                         {c.our_advantages.map((a, j) => (
                           <li key={j} className="text-xs text-slate-700 flex gap-1.5">
                             <span className="text-emerald-500">✓</span>
-                            <E value={a} onChange={(v) => updateComparisonArrayItem(i, 'our_advantages', j, v)} />
+                            <EditableText value={a} onChange={editing ? (v) => updateComparisonArrayItem(i, 'our_advantages', j, v) : undefined} />
                           </li>
                         ))}
                       </ul>
@@ -292,7 +290,7 @@ export default function CompetitiveMap({ output, editing, onOutputChange }) {
                         {c.our_gaps.map((g, j) => (
                           <li key={j} className="text-xs text-slate-700 flex gap-1.5">
                             <span className="text-red-400">✗</span>
-                            <E value={g} onChange={(v) => updateComparisonArrayItem(i, 'our_gaps', j, v)} />
+                            <EditableText value={g} onChange={editing ? (v) => updateComparisonArrayItem(i, 'our_gaps', j, v) : undefined} />
                           </li>
                         ))}
                       </ul>
@@ -302,7 +300,7 @@ export default function CompetitiveMap({ output, editing, onOutputChange }) {
                 {c.verdict && (
                   <p className="mt-3 pt-3 border-t border-slate-50 text-xs text-slate-600">
                     <span className="font-semibold text-slate-700">Verdict: </span>
-                    <E value={c.verdict} onChange={(v) => updateComparison(i, 'verdict', v)} />
+                    <EditableText value={c.verdict} onChange={editing ? (v) => updateComparison(i, 'verdict', v) : undefined} />
                   </p>
                 )}
               </div>
@@ -318,7 +316,7 @@ export default function CompetitiveMap({ output, editing, onOutputChange }) {
           <div className="flex flex-wrap gap-2">
             {output.differentiation_angles.map((a, i) => (
               <span key={i} className="bg-indigo-50 text-indigo-700 text-xs font-medium px-3 py-1.5 rounded-full border border-indigo-100">
-                <E value={a} onChange={(v) => updateDiffAngle(i, v)} />
+                <EditableText value={a} onChange={editing ? (v) => updateDiffAngle(i, v) : undefined} />
               </span>
             ))}
           </div>
@@ -333,9 +331,9 @@ export default function CompetitiveMap({ output, editing, onOutputChange }) {
             <div>
               <p className="font-semibold text-orange-700 mb-1">Strategic Recommendation</p>
               <p className="text-sm text-slate-700 leading-relaxed">
-                <E
+                <EditableText
                   value={output.positioning_recommendation}
-                  onChange={(v) => onOutputChange?.({ ...output, positioning_recommendation: v })}
+                  onChange={editing ? (v) => onOutputChange?.({ ...output, positioning_recommendation: v }) : undefined}
                   multiline
                 />
               </p>

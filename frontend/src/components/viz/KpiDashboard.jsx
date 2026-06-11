@@ -20,9 +20,7 @@ export default function KpiDashboard({ output, editing, onOutputChange }) {
     onOutputChange?.(clone);
   };
 
-  const E = ({ value, onChange, multiline }) => (
-    <EditableText value={value} onChange={editing ? onChange : undefined} multiline={multiline} />
-  );
+
 
   return (
     <div className="space-y-6">
@@ -30,7 +28,7 @@ export default function KpiDashboard({ output, editing, onOutputChange }) {
         <div className="card p-4 bg-orange/5 border-orange/30 text-center">
           <div className="text-xs text-orangeDark uppercase tracking-wide">⭐ North Star Metric</div>
           <div className="font-title text-xl font-bold mt-1">
-            <E value={output.north_star_metric} onChange={(v) => update('north_star_metric', v)} />
+            <EditableText value={output.north_star_metric} onChange={editing ? (v) => update('north_star_metric', v) : undefined} />
           </div>
         </div>
       )}
@@ -45,17 +43,17 @@ export default function KpiDashboard({ output, editing, onOutputChange }) {
               {kpis.map((kpi, i) => (
                 <div key={i} className="card p-4">
                   <div className="font-title font-semibold text-sm mb-1">
-                    <E value={kpi.name} onChange={(v) => updateKpi(key, i, 'name', v)} />
+                    <EditableText value={kpi.name} onChange={editing ? (v) => updateKpi(key, i, 'name', v) : undefined} />
                   </div>
                   <div className="text-xs text-ink3 mb-2">
-                    <E value={kpi.definition} onChange={(v) => updateKpi(key, i, 'definition', v)} multiline />
+                    <EditableText value={kpi.definition} onChange={editing ? (v) => updateKpi(key, i, 'definition', v) : undefined} multiline />
                   </div>
                   <div className="grid grid-cols-2 gap-2 text-xs">
                     {kpi.current_value && (
                       <div>
                         <div className="text-ink3">Actuel</div>
                         <div className="font-semibold">
-                          <E value={kpi.current_value} onChange={(v) => updateKpi(key, i, 'current_value', v)} />
+                          <EditableText value={kpi.current_value} onChange={editing ? (v) => updateKpi(key, i, 'current_value', v) : undefined} />
                         </div>
                       </div>
                     )}
@@ -63,7 +61,7 @@ export default function KpiDashboard({ output, editing, onOutputChange }) {
                       <div>
                         <div className="text-ink3">Cible 12m</div>
                         <div className="font-semibold text-orange">
-                          <E value={kpi.target_12m} onChange={(v) => updateKpi(key, i, 'target_12m', v)} />
+                          <EditableText value={kpi.target_12m} onChange={editing ? (v) => updateKpi(key, i, 'target_12m', v) : undefined} />
                         </div>
                       </div>
                     )}
@@ -71,7 +69,7 @@ export default function KpiDashboard({ output, editing, onOutputChange }) {
                   {kpi.benchmark && (
                     <div className="text-xs text-ink3 mt-2">
                       <strong>Benchmark :</strong>{' '}
-                      <E value={kpi.benchmark} onChange={(v) => updateKpi(key, i, 'benchmark', v)} />
+                      <EditableText value={kpi.benchmark} onChange={editing ? (v) => updateKpi(key, i, 'benchmark', v) : undefined} />
                     </div>
                   )}
                   {kpi.frequency && (

@@ -28,9 +28,7 @@ export default function SwotMatrix({ output, editing, onOutputChange }) {
     onOutputChange?.(clone);
   };
 
-  const E = ({ value, onChange, multiline }) => (
-    <EditableText value={value} onChange={editing ? onChange : undefined} multiline={multiline} />
-  );
+
 
   return (
     <div className="space-y-6">
@@ -45,7 +43,7 @@ export default function SwotMatrix({ output, editing, onOutputChange }) {
                   <li key={i} className="bg-white p-2 rounded-lg border border-paper3">
                     <div className="flex items-start justify-between gap-2">
                       <span className="font-medium text-sm">
-                        <E value={item.title} onChange={(v) => updateItem(q.key, i, 'title', v)} />
+                        <EditableText value={item.title} onChange={editing ? (v) => updateItem(q.key, i, 'title', v) : undefined} />
                       </span>
                       {item.priority && (
                         <span className={`text-xs px-2 py-0.5 rounded-full ${PRIORITY_BADGE[item.priority]}`}>
@@ -55,7 +53,7 @@ export default function SwotMatrix({ output, editing, onOutputChange }) {
                     </div>
                     {item.description && (
                       <p className="text-xs text-ink3 mt-1">
-                        <E value={item.description} onChange={(v) => updateItem(q.key, i, 'description', v)} multiline />
+                        <EditableText value={item.description} onChange={editing ? (v) => updateItem(q.key, i, 'description', v) : undefined} multiline />
                       </p>
                     )}
                   </li>
@@ -74,11 +72,11 @@ export default function SwotMatrix({ output, editing, onOutputChange }) {
               <div key={i} className="border border-paper3 p-3 rounded-lg">
                 <span className="badge-validated mb-1">{a.type}</span>
                 <div className="font-semibold text-sm mt-1">
-                  <E value={a.action} onChange={(v) => updateTowsAction(i, 'action', v)} />
+                  <EditableText value={a.action} onChange={editing ? (v) => updateTowsAction(i, 'action', v) : undefined} />
                 </div>
                 {a.rationale && (
                   <p className="text-xs text-ink3 mt-1">
-                    <E value={a.rationale} onChange={(v) => updateTowsAction(i, 'rationale', v)} multiline />
+                    <EditableText value={a.rationale} onChange={editing ? (v) => updateTowsAction(i, 'rationale', v) : undefined} multiline />
                   </p>
                 )}
               </div>

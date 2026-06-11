@@ -41,9 +41,7 @@ export default function ChangeView({ output, editing, onOutputChange }) {
     onOutputChange?.(clone);
   };
 
-  const E = ({ value, onChange, multiline }) => (
-    <EditableText value={value} onChange={editing ? onChange : undefined} multiline={multiline} />
-  );
+
 
   return (
     <div className="space-y-6">
@@ -59,15 +57,15 @@ export default function ChangeView({ output, editing, onOutputChange }) {
                 {output.stakeholders.map((s, i) => (
                   <tr key={i} className="border-t border-paper2">
                     <td className="p-2 font-medium">
-                      <E value={s.name} onChange={(v) => updateStakeholder(i, 'name', v)} />
+                      <EditableText value={s.name} onChange={editing ? (v) => updateStakeholder(i, 'name', v) : undefined} />
                     </td>
                     <td className="p-2 text-ink3">
-                      <E value={s.role} onChange={(v) => updateStakeholder(i, 'role', v)} />
+                      <EditableText value={s.role} onChange={editing ? (v) => updateStakeholder(i, 'role', v) : undefined} />
                     </td>
                     <td className="p-2 text-center">{INFLUENCE_LABEL[s.influence]}</td>
                     <td className="p-2 text-center"><span className={`badge ${SUPPORT_BADGE[s.support]}`}>{s.support}</span></td>
                     <td className="p-2 text-xs text-ink3">
-                      <E value={s.action} onChange={(v) => updateStakeholder(i, 'action', v)} />
+                      <EditableText value={s.action} onChange={editing ? (v) => updateStakeholder(i, 'action', v) : undefined} />
                     </td>
                   </tr>
                 ))}
@@ -89,19 +87,19 @@ export default function ChangeView({ output, editing, onOutputChange }) {
                 {output.raci.map((r, i) => (
                   <tr key={i} className="border-t border-paper2">
                     <td className="p-2 font-medium">
-                      <E value={r.action} onChange={(v) => updateRaci(i, 'action', v)} />
+                      <EditableText value={r.action} onChange={editing ? (v) => updateRaci(i, 'action', v) : undefined} />
                     </td>
                     <td className="p-2 text-center text-xs">
-                      <E value={r.responsible} onChange={(v) => updateRaci(i, 'responsible', v)} />
+                      <EditableText value={r.responsible} onChange={editing ? (v) => updateRaci(i, 'responsible', v) : undefined} />
                     </td>
                     <td className="p-2 text-center text-xs">
-                      <E value={r.accountable} onChange={(v) => updateRaci(i, 'accountable', v)} />
+                      <EditableText value={r.accountable} onChange={editing ? (v) => updateRaci(i, 'accountable', v) : undefined} />
                     </td>
                     <td className="p-2 text-center text-xs">
-                      <E value={r.consulted} onChange={(v) => updateRaci(i, 'consulted', v)} />
+                      <EditableText value={r.consulted} onChange={editing ? (v) => updateRaci(i, 'consulted', v) : undefined} />
                     </td>
                     <td className="p-2 text-center text-xs">
-                      <E value={r.informed} onChange={(v) => updateRaci(i, 'informed', v)} />
+                      <EditableText value={r.informed} onChange={editing ? (v) => updateRaci(i, 'informed', v) : undefined} />
                     </td>
                   </tr>
                 ))}
@@ -118,12 +116,12 @@ export default function ChangeView({ output, editing, onOutputChange }) {
             {output.communication_plan.map((c, i) => (
               <div key={i} className="border border-paper3 p-3 rounded-lg">
                 <div className="font-medium text-sm">
-                  <E value={c.message} onChange={(v) => updateComm(i, 'message', v)} />
+                  <EditableText value={c.message} onChange={editing ? (v) => updateComm(i, 'message', v) : undefined} />
                 </div>
                 <div className="text-xs text-ink3 mt-1">
-                  → <E value={c.audience} onChange={(v) => updateComm(i, 'audience', v)} />
-                  {' '}via <E value={c.channel} onChange={(v) => updateComm(i, 'channel', v)} />
-                  {' '}· <E value={c.timing} onChange={(v) => updateComm(i, 'timing', v)} />
+                  → <EditableText value={c.audience} onChange={editing ? (v) => updateComm(i, 'audience', v) : undefined} />
+                  {' '}via <EditableText value={c.channel} onChange={editing ? (v) => updateComm(i, 'channel', v) : undefined} />
+                  {' '}· <EditableText value={c.timing} onChange={editing ? (v) => updateComm(i, 'timing', v) : undefined} />
                 </div>
               </div>
             ))}
@@ -137,7 +135,7 @@ export default function ChangeView({ output, editing, onOutputChange }) {
           <ul className="list-disc list-inside text-sm space-y-1">
             {output.month_one_quick_wins.map((w, i) => (
               <li key={i}>
-                <E value={w} onChange={(v) => updateQuickWin(i, v)} />
+                <EditableText value={w} onChange={editing ? (v) => updateQuickWin(i, v) : undefined} />
               </li>
             ))}
           </ul>

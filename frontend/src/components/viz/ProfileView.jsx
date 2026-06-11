@@ -13,23 +13,21 @@ export default function ProfileView({ output, editing, onOutputChange }) {
     onOutputChange?.({ ...output, [key]: arr });
   };
 
-  const E = ({ value, onChange, multiline }) => (
-    <EditableText value={value} onChange={editing ? onChange : undefined} multiline={multiline} />
-  );
+
 
   return (
     <div className="space-y-4">
       <div className="card p-4">
         <h4 className="font-title font-semibold mb-2">📍 Activité</h4>
         <p className="text-sm">
-          <E value={output.activity} onChange={(v) => update('activity', v)} multiline />
+          <EditableText value={output.activity} onChange={editing ? (v) => update('activity', v) : undefined} multiline />
         </p>
       </div>
       {output.clientele && (
         <div className="card p-4">
           <h4 className="font-title font-semibold mb-2">🎯 Clientèle</h4>
           <p className="text-sm">
-            <E value={output.clientele} onChange={(v) => update('clientele', v)} multiline />
+            <EditableText value={output.clientele} onChange={editing ? (v) => update('clientele', v) : undefined} multiline />
           </p>
         </div>
       )}
@@ -37,7 +35,7 @@ export default function ProfileView({ output, editing, onOutputChange }) {
         <div className="card p-4">
           <h4 className="font-title font-semibold mb-2">📌 Positionnement</h4>
           <p className="text-sm">
-            <E value={output.positioning} onChange={(v) => update('positioning', v)} multiline />
+            <EditableText value={output.positioning} onChange={editing ? (v) => update('positioning', v) : undefined} multiline />
           </p>
         </div>
       )}
@@ -47,7 +45,7 @@ export default function ProfileView({ output, editing, onOutputChange }) {
           <ul className="list-disc list-inside text-sm">
             {output.initial_strengths.map((s, i) => (
               <li key={i}>
-                <E value={s} onChange={(v) => updateArrayItem('initial_strengths', i, v)} />
+                <EditableText value={s} onChange={editing ? (v) => updateArrayItem('initial_strengths', i, v) : undefined} />
               </li>
             ))}
           </ul>
@@ -59,7 +57,7 @@ export default function ProfileView({ output, editing, onOutputChange }) {
           <ul className="list-disc list-inside text-sm">
             {output.key_challenges.map((c, i) => (
               <li key={i}>
-                <E value={c} onChange={(v) => updateArrayItem('key_challenges', i, v)} />
+                <EditableText value={c} onChange={editing ? (v) => updateArrayItem('key_challenges', i, v) : undefined} />
               </li>
             ))}
           </ul>
@@ -69,7 +67,7 @@ export default function ProfileView({ output, editing, onOutputChange }) {
         <div className="card p-4 bg-paper2">
           <h4 className="font-title font-semibold mb-2">📝 Synthèse</h4>
           <p className="text-sm whitespace-pre-line">
-            <E value={output.synthesis} onChange={(v) => update('synthesis', v)} multiline />
+            <EditableText value={output.synthesis} onChange={editing ? (v) => update('synthesis', v) : undefined} multiline />
           </p>
         </div>
       )}

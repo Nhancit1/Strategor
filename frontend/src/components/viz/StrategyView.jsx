@@ -64,9 +64,7 @@ export default function StrategyView({ output, editing, onOutputChange }) {
     onOutputChange?.(clone);
   };
 
-  const E = ({ value, onChange, multiline }) => (
-    <EditableText value={value} onChange={editing ? onChange : undefined} multiline={multiline} />
-  );
+
 
   if (axes.length === 0 && globalPrinciples.length === 0) {
     return (
@@ -87,15 +85,15 @@ export default function StrategyView({ output, editing, onOutputChange }) {
             <div className="text-2xl font-bold text-orange">{String(i + 1).padStart(2, '0')}</div>
             <div className="flex-1">
               <h3 className="font-title font-semibold text-lg">
-                <E
+                <EditableText
                   value={safeText(axis.title || axis.name || `Axe ${i + 1}`)}
-                  onChange={(v) => updateAxis(i, axis.title !== undefined ? 'title' : 'name', v)}
+                  onChange={editing ? (v) => updateAxis(i, axis.title !== undefined ? 'title' : 'name', v) : undefined}
                 />
               </h3>
               <p className="text-sm text-ink3 mt-1">
-                <E
+                <EditableText
                   value={safeText(axis.description || axis.rationale || '')}
-                  onChange={(v) => updateAxis(i, axis.description !== undefined ? 'description' : 'rationale', v)}
+                  onChange={editing ? (v) => updateAxis(i, axis.description !== undefined ? 'description' : 'rationale', v) : undefined}
                   multiline
                 />
               </p>
@@ -108,7 +106,7 @@ export default function StrategyView({ output, editing, onOutputChange }) {
               <ul className="list-disc list-inside text-xs mt-1 space-y-1">
                 {toArray(axis.quick_wins).map((q, k) => (
                   <li key={k}>
-                    <E value={safeText(q)} onChange={(v) => updateAxisArrayItem(i, 'quick_wins', k, v)} />
+                    <EditableText value={safeText(q)} onChange={editing ? (v) => updateAxisArrayItem(i, 'quick_wins', k, v) : undefined} />
                   </li>
                 ))}
               </ul>
@@ -121,7 +119,7 @@ export default function StrategyView({ output, editing, onOutputChange }) {
               <ul className="list-disc list-inside text-xs mt-1 space-y-1 text-ink2">
                 {toArray(axis.initiatives).map((init, k) => (
                   <li key={k}>
-                    <E value={safeText(init)} onChange={(v) => updateAxisArrayItem(i, 'initiatives', k, v)} />
+                    <EditableText value={safeText(init)} onChange={editing ? (v) => updateAxisArrayItem(i, 'initiatives', k, v) : undefined} />
                   </li>
                 ))}
               </ul>
@@ -138,9 +136,9 @@ export default function StrategyView({ output, editing, onOutputChange }) {
                       <>
                         <div className="font-semibold text-orange">{safeText(m.quarter || m.trimestre || m.date)}</div>
                         <div className="text-ink3">
-                          <E
+                          <EditableText
                             value={safeText(m.milestone || m.description || m.jalon)}
-                            onChange={(v) => {
+                            onChange={editing ? (v) => {
                               const clone = structuredClone(output);
                               if (!clone[axesKey]) clone[axesKey] = [...axes];
                               const ms = clone[axesKey][i].milestones[k];
@@ -148,13 +146,13 @@ export default function StrategyView({ output, editing, onOutputChange }) {
                               else if (ms.description !== undefined) ms.description = v;
                               else ms.jalon = v;
                               onOutputChange?.(clone);
-                            }}
+                            } : undefined}
                           />
                         </div>
                       </>
                     ) : (
                       <div className="text-ink3">
-                        <E value={safeText(m)} onChange={(v) => updateAxisArrayItem(i, 'milestones', k, v)} />
+                        <EditableText value={safeText(m)} onChange={editing ? (v) => updateAxisArrayItem(i, 'milestones', k, v) : undefined} />
                       </div>
                     )}
                   </div>
@@ -177,7 +175,7 @@ export default function StrategyView({ output, editing, onOutputChange }) {
           <ul className="list-disc list-inside text-sm space-y-1">
             {globalPrinciples.map((p, i) => (
               <li key={i}>
-                <E value={safeText(p)} onChange={(v) => updatePrinciple(i, v)} />
+                <EditableText value={safeText(p)} onChange={editing ? (v) => updatePrinciple(i, v) : undefined} />
               </li>
             ))}
           </ul>

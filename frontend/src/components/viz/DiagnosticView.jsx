@@ -62,9 +62,7 @@ export default function DiagnosticView({ output, editing, onOutputChange }) {
     onOutputChange?.(clone);
   };
 
-  const E = ({ value, onChange, multiline }) => (
-    <EditableText value={value} onChange={editing ? onChange : undefined} multiline={multiline} />
-  );
+
 
   return (
     <div className="space-y-6">
@@ -79,7 +77,7 @@ export default function DiagnosticView({ output, editing, onOutputChange }) {
                 Niveau {output.urgency_level}
               </div>
               <p className="text-sm mt-1">
-                <E value={output.ceo_verdict} onChange={(v) => update('ceo_verdict', v)} multiline />
+                <EditableText value={output.ceo_verdict} onChange={editing ? (v) => update('ceo_verdict', v) : undefined} multiline />
               </p>
             </div>
           </div>
@@ -90,7 +88,7 @@ export default function DiagnosticView({ output, editing, onOutputChange }) {
         <div className="card p-4">
           <h4 className="font-title font-semibold mb-2">📍 Position stratégique</h4>
           <p className="text-sm">
-            <E value={output.position} onChange={(v) => update('position', v)} multiline />
+            <EditableText value={output.position} onChange={editing ? (v) => update('position', v) : undefined} multiline />
           </p>
         </div>
       )}
@@ -101,9 +99,9 @@ export default function DiagnosticView({ output, editing, onOutputChange }) {
           <ul className="list-disc list-inside text-sm space-y-1">
             {coreStrengths.map((s, i) => (
               <li key={i}>
-                <E
+                <EditableText
                   value={typeof s === 'string' ? s : JSON.stringify(s)}
-                  onChange={(v) => updateStrength(i, v)}
+                  onChange={editing ? (v) => updateStrength(i, v) : undefined}
                 />
               </li>
             ))}
@@ -119,7 +117,7 @@ export default function DiagnosticView({ output, editing, onOutputChange }) {
               <div key={i} className="border border-paper3 p-3 rounded-lg">
                 <div className="flex items-start justify-between gap-2">
                   <strong className="text-sm">
-                    <E value={f.title || f} onChange={(v) => updateFaultLine(i, 'title', v)} />
+                    <EditableText value={f.title || f} onChange={editing ? (v) => updateFaultLine(i, 'title', v) : undefined} />
                   </strong>
                   {f.severity && (
                     <span className={`badge ${SEVERITY_COLOR[f.severity] || 'bg-paper2 text-ink2'}`}>{f.severity}</span>
@@ -127,7 +125,7 @@ export default function DiagnosticView({ output, editing, onOutputChange }) {
                 </div>
                 {f.description && (
                   <p className="text-xs text-ink3 mt-1">
-                    <E value={f.description} onChange={(v) => updateFaultLine(i, 'description', v)} multiline />
+                    <EditableText value={f.description} onChange={editing ? (v) => updateFaultLine(i, 'description', v) : undefined} multiline />
                   </p>
                 )}
               </div>
@@ -144,7 +142,7 @@ export default function DiagnosticView({ output, editing, onOutputChange }) {
               <div key={i} className="border border-paper3 p-3 rounded-lg">
                 <div className="flex items-start justify-between gap-2">
                   <strong className="text-sm">
-                    <E value={o.title || o} onChange={(v) => updateOpportunity(i, 'title', v)} />
+                    <EditableText value={o.title || o} onChange={editing ? (v) => updateOpportunity(i, 'title', v) : undefined} />
                   </strong>
                   {o.deadline_months && (
                     <span className="badge bg-blue/10 text-blue">⏱ {o.deadline_months}m</span>
@@ -152,7 +150,7 @@ export default function DiagnosticView({ output, editing, onOutputChange }) {
                 </div>
                 {o.rationale && (
                   <p className="text-xs text-ink3 mt-1">
-                    <E value={o.rationale} onChange={(v) => updateOpportunity(i, 'rationale', v)} multiline />
+                    <EditableText value={o.rationale} onChange={editing ? (v) => updateOpportunity(i, 'rationale', v) : undefined} multiline />
                   </p>
                 )}
               </div>

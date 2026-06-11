@@ -29,9 +29,7 @@ export default function PorterPentagon({ output, editing, onOutputChange }) {
     onOutputChange?.(clone);
   };
 
-  const E = ({ value, onChange, multiline }) => (
-    <EditableText value={value} onChange={editing ? onChange : undefined} multiline={multiline} />
-  );
+
 
   return (
     <div className="space-y-4">
@@ -63,7 +61,7 @@ export default function PorterPentagon({ output, editing, onOutputChange }) {
                 )}
               </div>
               <p className="text-xs">
-                <E value={force.rationale} onChange={(v) => updateForce(key, 'rationale', v)} multiline />
+                <EditableText value={force.rationale} onChange={editing ? (v) => updateForce(key, 'rationale', v) : undefined} multiline />
               </p>
             </div>
           );
@@ -76,7 +74,7 @@ export default function PorterPentagon({ output, editing, onOutputChange }) {
           <ul className="list-disc list-inside text-sm space-y-1">
             {output.key_levers.map((l, i) => (
               <li key={i}>
-                <E value={l} onChange={(v) => updateLever(i, v)} />
+                <EditableText value={l} onChange={editing ? (v) => updateLever(i, v) : undefined} />
               </li>
             ))}
           </ul>
