@@ -129,6 +129,7 @@ export const projectApi = {
   updateOnboarding: (id, patch) => api.put(`/api/projects/${id}/onboarding`, patch),
   launchAnalysis: (id, payload) => api.post(`/api/projects/${id}/analyze`, payload),
   continueAnalysis: (id) => api.post(`/api/projects/${id}/analyze/continue`),
+  continueFromDiagnostic: (id) => api.post(`/api/projects/${id}/analyze/continue-diagnostic`),
 };
 
 export const agentApi = {

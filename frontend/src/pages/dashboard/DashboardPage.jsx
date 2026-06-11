@@ -32,6 +32,7 @@ export default function DashboardPage() {
     ONBOARDING: 'Profil en cours',
     ANALYZING: 'Analyse en cours',
     PROFILE_REVIEW: 'Hypothèses à valider',
+    DIAGNOSTIC_REVIEW: 'Diagnostic à valider',
     VALIDATING: 'À valider',
     DONE: 'Terminé',
     FAILED: 'Échec',
@@ -42,6 +43,7 @@ export default function DashboardPage() {
       case 'ONBOARDING': return `/projects/${project.id}/onboarding`;
       case 'ANALYZING': return `/projects/${project.id}/agents`;
       case 'PROFILE_REVIEW': return `/projects/${project.id}/hypotheses`;
+      case 'DIAGNOSTIC_REVIEW': return `/projects/${project.id}/diagnostic-review`;
       case 'VALIDATING': return `/projects/${project.id}/validate`;
       case 'DONE': return `/projects/${project.id}/deliverables`;
       default: return `/projects/${project.id}/onboarding`;

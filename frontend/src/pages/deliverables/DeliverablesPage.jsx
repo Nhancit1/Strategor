@@ -68,13 +68,15 @@ export default function DeliverablesPage() {
       } catch {
         // ignore parse errors
       }
-      const displayMsg = serverMessage || err.message || 'Erreur inconnue';
-      const isConnectionError = displayMsg.includes('ECONNREFUSED') || displayMsg.includes('connect');
-      alert(
-        isConnectionError
-          ? 'Export impossible : le service d\'export (Python) n\'est pas démarré. Lancez-le avec :\n\ncd ai-python && uvicorn app.main:app --reload --port 8000'
-          : `Export en erreur : ${displayMsg}`
-      );
+      if (err.response?.status !== 401) {
+        const displayMsg = serverMessage || err.message || 'Erreur inconnue';
+        const isConnectionError = displayMsg.includes('ECONNREFUSED') || displayMsg.includes('connect');
+        alert(
+          isConnectionError
+            ? 'Export impossible : le service d\'export (Python) n\'est pas démarré. Lancez-le avec :\n\ncd ai-python && uvicorn app.main:app --reload --port 8000'
+            : `Export en erreur : ${displayMsg}`
+        );
+      }
     } finally {
       setExporting(null);
     }

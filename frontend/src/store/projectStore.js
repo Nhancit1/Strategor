@@ -81,6 +81,12 @@ export const useProjectStore = create((set, get) => ({
     return data;
   },
 
+  continueFromDiagnostic: async (id) => {
+    const { data } = await projectApi.continueFromDiagnostic(id);
+    set({ current: data });
+    return data;
+  },
+
   fetchAgents: async (id) => {
     const { data } = await agentApi.list(id);
     set({ agents: data });

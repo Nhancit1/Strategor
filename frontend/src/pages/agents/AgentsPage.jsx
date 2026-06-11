@@ -22,6 +22,9 @@ const AGENT_META = {
   10: { label: 'Chaîne de valeur',            icon: GitBranch,  color: 'text-teal-500',    bg: 'bg-teal-50' },
   11: { label: 'Matrice BCG',                 icon: PieChart,   color: 'text-amber-500',   bg: 'bg-amber-50' },
   12: { label: 'Conduite du changement',      icon: Repeat,     color: 'text-rose-500',    bg: 'bg-rose-50' },
+  13: { label: 'Registre de risques',         icon: AlertCircle,color: 'text-fuchsia-500', bg: 'bg-fuchsia-50' },
+  14: { label: 'Analyse financière',          icon: TrendingUp, color: 'text-emerald-500', bg: 'bg-emerald-50' },
+  15: { label: 'Contrôle de cohérence',       icon: CheckCircle2,color: 'text-sky-500',    bg: 'bg-sky-50' },
 };
 
 const STATUS_RING = {
@@ -64,7 +67,7 @@ export default function AgentsPage() {
   const sorted = [...agents].sort((a, b) => a.agentId - b.agentId);
 
   const doneCount = agents.filter((a) => a.status === 'DONE').length;
-  const totalCount = agents.length || 12;
+  const totalCount = agents.length || 15;
   const overallPct = Math.round((doneCount / totalCount) * 100);
 
   return (

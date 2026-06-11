@@ -7,7 +7,7 @@ const projectSchema = new mongoose.Schema(
     name: { type: String, required: true, default: 'Nouveau projet' },
     status: {
       type: String,
-      enum: ['ONBOARDING', 'ANALYZING', 'PROFILE_REVIEW', 'VALIDATING', 'DONE', 'FAILED'],
+      enum: ['ONBOARDING', 'ANALYZING', 'PROFILE_REVIEW', 'DIAGNOSTIC_REVIEW', 'VALIDATING', 'DONE', 'FAILED'],
       default: 'ONBOARDING',
     },
     currentStep: { type: Number, default: 1 },

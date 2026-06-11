@@ -85,8 +85,8 @@ export default function HypothesesPage() {
         synthesis: form.synthesis,
       };
       await agentApi.updateOutput(id, 1, payload); // persist reviewed hypotheses
-      await continueAnalysis(id); // launch the remaining agents
-      navigate(`/projects/${id}/agents`);
+      await continueAnalysis(id); // launch agents up to the diagnostic
+      navigate(`/projects/${id}/diagnostic-review`);
     } catch (err) {
       setError(err.response?.data?.message || 'Le lancement a échoué.');
       setLaunching(false);

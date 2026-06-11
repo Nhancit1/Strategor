@@ -10,6 +10,7 @@ import ChangePasswordPage from './pages/auth/ChangePasswordPage';
 import DashboardPage from './pages/dashboard/DashboardPage';
 import OnboardingPage from './pages/onboarding/OnboardingPage';
 import HypothesesPage from './pages/hypotheses/HypothesesPage';
+import DiagnosticReviewPage from './pages/diagnostic/DiagnosticReviewPage';
 import FinanceLitePage from './pages/finance/FinanceLitePage';
 import AgentsPage from './pages/agents/AgentsPage';
 import ValidationPage from './pages/validation/ValidationPage';
@@ -57,6 +58,7 @@ export default function App() {
         <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="/projects/:id/onboarding" element={<OnboardingPage />} />
         <Route path="/projects/:id/hypotheses" element={<HypothesesPage />} />
+        <Route path="/projects/:id/diagnostic-review" element={<DiagnosticReviewPage />} />
         <Route path="/projects/:id/finance" element={<FinanceLitePage />} />
         <Route path="/projects/:id/agents" element={<AgentsPage />} />
         <Route path="/projects/:id/validate" element={<ValidationPage />} />

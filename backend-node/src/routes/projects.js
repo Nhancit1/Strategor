@@ -147,19 +147,65 @@ router.post('/:id/analyze/continue', requireAuth, analyzeLimiter, asyncHandler(a
   project.status = 'ANALYZING';
   await project.save();
 
-  // Phase 2 — run the remaining agents, seeding the reviewed Agent 1 output so
-  // its dependents (PESTEL, SWOT, Concurrence, Chaîne de valeur…) build on it.
+  // Phase 2 — run up to AND INCLUDING the Diagnostic (Agent 5), then pause for the
+  // diagnostic review. Seeds the reviewed Agent 1 output for its dependents.
   startAnalysis({
     projectId: project.id.toString(),
     mode: project.analysisMode || 'standard',
     language: lang,
-    phase: 'full',
+    phase: 'diagnostic',
     seedOutputs: { 1: agent1Output },
     profile: profile ? profile.toJSON() : null,
     financeLite: finance ? finance.toJSON() : null,
     documentsContext: documentsContext || null,
   }).catch(async (err) => {
     console.error('[analyze/continue] Python handoff failed:', err.message);
+    project.status = 'FAILED';
+    await project.save();
+  });
+
+  res.status(202).json(projectDto(project));
+}));
+
+// Phase 3 — after the diagnostic review, run the remaining agents (Axes, KPIs,
+// Risques, Finance, Changement, Livrables, Cohérence…), seeding every output
+// produced so far (Agents 1..5, with the reviewed Diagnostic winning).
+router.post('/:id/analyze/continue-diagnostic', requireAuth, analyzeLimiter, asyncHandler(async (req, res) => {
+  const project = await loadOwnedProject(req.params.id, req.user.id);
+  if (project.status !== 'DIAGNOSTIC_REVIEW') {
+    throw new ApiError(409, 'Aucune revue de diagnostic en attente pour ce projet');
+  }
+  const user = await User.findById(req.user.id).select('lang');
+  const lang = user?.lang || 'fr';
+
+  // Seed every completed output so far (edited output wins over the raw output).
+  const execs = await AgentExecution.find({ project: project._id });
+  const seedOutputs = {};
+  for (const e of execs) {
+    if (e.status === 'DONE') seedOutputs[e.agentId] = e.editedOutput ?? e.output;
+  }
+  if (!seedOutputs[5]) {
+    throw new ApiError(409, "Le diagnostic (Agent 5) n'est pas disponible");
+  }
+
+  const profile = await OnboardingProfile.findOne({ project: project._id });
+  const finance = await FinanceLite.findOne({ project: project._id });
+  const documentsContext = await buildDocumentsContext(project._id);
+
+  project.status = 'ANALYZING';
+  await project.save();
+
+  startAnalysis({
+    projectId: project.id.toString(),
+    mode: project.analysisMode || 'standard',
+    language: lang,
+    phase: 'post_diagnostic',
+    seedOutputs,
+    profile: profile ? profile.toJSON() : null,
+    financeLite: finance ? finance.toJSON() : null,
+    documentsContext: documentsContext || null,
+  }).catch(async (err) => {
+    console.error('[analyze/continue-diagnostic] Python handoff failed:', err.message);
     project.status = 'FAILED';
     await project.save();
   });

@@ -103,6 +103,7 @@ router.post('/projects/:projectId/analysis-complete', asyncHandler(async (req, r
   let status;
   if (b.failed) status = 'FAILED';
   else if (b.phase === 'profile') status = 'PROFILE_REVIEW'; // Agent 1 done -> awaiting review
+  else if (b.phase === 'diagnostic') status = 'DIAGNOSTIC_REVIEW'; // Diagnostic done -> awaiting review
   else status = 'VALIDATING';
   await Project.findByIdAndUpdate(req.params.projectId, { $set: { status } });
   res.status(204).end();

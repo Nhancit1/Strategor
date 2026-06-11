@@ -127,6 +127,15 @@ class Agent:
             parts.append(self.finance_context(finance))
         parts.append(self.dependency_context(deps))
         parts.append(self.mission)
+        parts.append(
+            "\n\n=== Règles de rigueur (à respecter dans TOUTE ta réponse) ===\n"
+            "- Distingue explicitement les FAITS vérifiés, les HYPOTHÈSES et les INFÉRENCES ; "
+            "préfixe toute supposition par « [Hypothèse] ».\n"
+            "- Ne donne JAMAIS un chiffre ou une statistique précis que tu ne peux pas étayer : "
+            "donne plutôt une fourchette qualitative, ou marque-le explicitement comme hypothèse.\n"
+            "- Quand une affirmation s'appuie sur une source issue de la recherche web, "
+            "cite-la entre parenthèses (nom de la source, et URL si disponible).\n"
+        )
         if language and language.lower().startswith("en"):
             parts.append("\n\nIMPORTANT: Write your entire response (all field values) in English.\n")
         return "".join(parts)

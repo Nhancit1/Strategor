@@ -39,6 +39,17 @@ async def run_analysis(req: AnalyzeRequest) -> None:
         # "single": only the targetAgentId agent
         if req.phase == "profile":
             levels = [[a for a in lvl if a.agent_id == 1] for lvl in levels]
+        elif req.phase == "diagnostic":
+            # Run from after Agent 1 up to AND INCLUDING the Diagnostic (Agent 5),
+            # then pause for human review of the diagnostic.
+            diag_idx = next((i for i, lvl in enumerate(levels)
+                             if any(a.agent_id == 5 for a in lvl)), len(levels) - 1)
+            levels = [[a for a in lvl if a.agent_id != 1] for lvl in levels[:diag_idx + 1]]
+        elif req.phase == "post_diagnostic":
+            # Run everything after the Diagnostic level (Agents 1..5 are seeded).
+            diag_idx = next((i for i, lvl in enumerate(levels)
+                             if any(a.agent_id == 5 for a in lvl)), -1)
+            levels = levels[diag_idx + 1:]
         elif req.phase == "full":
             levels = [[a for a in lvl if a.agent_id != 1] for lvl in levels]
         elif req.phase == "single" and req.targetAgentId:

@@ -176,6 +176,38 @@ Tu produis :
   4. Risques de résistance et mitigations
 
   5. 3 quick wins pour créer l'élan dès le mois 1''',
+    13: '''Mission : REGISTRE DES RISQUES actionnable, à partir du diagnostic et des axes stratégiques.
+
+Identifie 6 à 10 risques majeurs (stratégiques, opérationnels, financiers, marché, réglementaires).
+Pour CHAQUE risque :
+  - intitulé clair
+  - catégorie
+  - probabilité notée de 1 (rare) à 5 (quasi certain)
+  - impact noté de 1 (mineur) à 5 (critique)
+  - plan de mitigation concret
+  - fonction/responsable pressenti
+  - horizon (court / moyen / long terme)
+
+Termine par une synthèse : les 3 risques prioritaires (probabilité × impact les plus élevés).''',
+    14: '''Mission : ANALYSE FINANCIÈRE & SCÉNARIOS, à partir des données financières, du diagnostic et des axes.
+
+1. SENSIBILITÉ : identifie la ou les variables financières critiques (ex. coût d'une matière première dominante, volume, prix de vente) et chiffre l'effet d'une variation de ±10 % et ±20 % sur la marge. Si tu ne disposes pas du chiffre exact, raisonne en pourcentage et marque l'hypothèse.
+
+2. SCÉNARIOS : construis 3 scénarios (pessimiste / central / optimiste) avec leurs hypothèses et leur effet indicatif sur le chiffre d'affaires et la marge.
+
+3. CHIFFRAGE DES AXES : pour chaque axe stratégique majeur, donne un ordre de grandeur d'investissement, le gain attendu et un délai de retour (payback) indicatif.
+
+Respecte strictement les règles de rigueur : aucun chiffre précis non étayé ; utilise des fourchettes et marque les hypothèses.''',
+    15: '''Mission : CONTRÔLE DE COHÉRENCE de l'ensemble de l'analyse (rôle de relecteur).
+
+Relis les sorties des autres agents (diagnostic, axes, KPIs, livrables, conduite du changement) et détecte les INCOHÉRENCES et CONTRADICTIONS :
+  - chiffres ou hypothèses incompatibles entre agents
+  - axe stratégique qui contredit le diagnostic
+  - KPI sans lien avec un axe
+  - recommandation non soutenable au vu des données
+
+Pour CHAQUE incohérence : description, agents concernés, sévérité (LOW/MEDIUM/HIGH) et correction suggérée.
+Termine par une appréciation globale de la cohérence de l'analyse.''',
 }
 
 _SCHEMAS_JSON: dict[int, str] = {
@@ -718,7 +750,13 @@ _SCHEMAS_JSON: dict[int, str] = {
                     "action_plan_18m": {
                         "type": "string"
                     }
-                }
+                },
+                "required": [
+                    "executive_summary",
+                    "strategic_analysis",
+                    "recommendations",
+                    "action_plan_18m"
+                ]
             },
             "board_deck": {
                 "type": "array",
@@ -737,7 +775,12 @@ _SCHEMAS_JSON: dict[int, str] = {
                         "viz_suggestion": {
                             "type": "string"
                         }
-                    }
+                    },
+                    "required": [
+                        "slide_number",
+                        "title",
+                        "content"
+                    ]
                 }
             },
             "team_plan": {
@@ -757,12 +800,19 @@ _SCHEMAS_JSON: dict[int, str] = {
                         "deadline": {
                             "type": "string"
                         }
-                    }
+                    },
+                    "required": [
+                        "function",
+                        "actions",
+                        "deadline"
+                    ]
                 }
             }
         },
         "required": [
-            "executive_report"
+            "executive_report",
+            "board_deck",
+            "team_plan"
         ]
     }
     ''',
@@ -1078,6 +1128,106 @@ _SCHEMAS_JSON: dict[int, str] = {
         },
         "required": [
             "stakeholders"
+        ]
+    }
+    ''',
+    13: r'''
+    {
+        "type": "object",
+        "properties": {
+            "risks": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "name": { "type": "string" },
+                        "category": { "type": "string" },
+                        "probability": { "type": "integer" },
+                        "impact": { "type": "integer" },
+                        "mitigation": { "type": "string" },
+                        "owner": { "type": "string" },
+                        "horizon": { "type": "string" }
+                    }
+                }
+            },
+            "synthesis": { "type": "string" }
+        },
+        "required": [
+            "risks",
+            "synthesis"
+        ]
+    }
+    ''',
+    14: r'''
+    {
+        "type": "object",
+        "properties": {
+            "sensitivity": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "variable": { "type": "string" },
+                        "change": { "type": "string" },
+                        "impact_on_margin": { "type": "string" },
+                        "comment": { "type": "string" }
+                    }
+                }
+            },
+            "scenarios": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "name": { "type": "string" },
+                        "assumptions": { "type": "array", "items": { "type": "string" } },
+                        "revenue_effect": { "type": "string" },
+                        "margin_effect": { "type": "string" },
+                        "comment": { "type": "string" }
+                    }
+                }
+            },
+            "axis_costing": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "axis": { "type": "string" },
+                        "investment": { "type": "string" },
+                        "expected_gain": { "type": "string" },
+                        "payback": { "type": "string" }
+                    }
+                }
+            },
+            "synthesis": { "type": "string" }
+        },
+        "required": [
+            "scenarios",
+            "synthesis"
+        ]
+    }
+    ''',
+    15: r'''
+    {
+        "type": "object",
+        "properties": {
+            "inconsistencies": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "description": { "type": "string" },
+                        "agents_involved": { "type": "array", "items": { "type": "string" } },
+                        "severity": { "type": "string", "enum": ["LOW", "MEDIUM", "HIGH"] },
+                        "suggested_fix": { "type": "string" }
+                    }
+                }
+            },
+            "overall_consistency": { "type": "string" }
+        },
+        "required": [
+            "inconsistencies",
+            "overall_consistency"
         ]
     }
     ''',

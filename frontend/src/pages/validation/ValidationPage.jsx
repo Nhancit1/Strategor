@@ -16,6 +16,9 @@ import StrategyView from '../../components/viz/StrategyView';
 import KpiDashboard from '../../components/viz/KpiDashboard';
 import BcgMatrix from '../../components/viz/BcgMatrix';
 import ChangeView from '../../components/viz/ChangeView';
+import RiskMatrix from '../../components/viz/RiskMatrix';
+import FinanceScenarios from '../../components/viz/FinanceScenarios';
+import ConsistencyView from '../../components/viz/ConsistencyView';
 
 const TABS = [
   { id: 'profile', agentId: 1, label: 'Profil', Component: ProfileView },
@@ -29,6 +32,9 @@ const TABS = [
   { id: 'kpis', agentId: 7, label: 'KPIs', Component: KpiDashboard },
   { id: 'bcg', agentId: 11, label: 'BCG', Component: BcgMatrix },
   { id: 'change', agentId: 12, label: 'Change', Component: ChangeView },
+  { id: 'risks', agentId: 13, label: 'Risques', Component: RiskMatrix },
+  { id: 'finance', agentId: 14, label: 'Finance', Component: FinanceScenarios },
+  { id: 'review', agentId: 15, label: 'Cohérence', Component: ConsistencyView },
 ];
 
 export default function ValidationPage() {

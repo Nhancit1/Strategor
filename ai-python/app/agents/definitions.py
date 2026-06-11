@@ -108,7 +108,7 @@ class Agent8Deliverables(Agent):
     agent_id = 8
     agent_name = "Livrables finaux"
     category = "DELIVERABLES"
-    tier = ModelTier.OPUS
+    tier = ModelTier.SONNET
     depends_on = [5, 6, 7, 12]
     active_in_modes = ["standard", "comprehensive"]
     uses_finance = False
@@ -176,8 +176,45 @@ class Agent12Change(Agent):
     output_schema = SCHEMAS[12]
 
 
+
+class Agent13RiskRegister(Agent):
+    agent_id = 13
+    agent_name = "Registre de risques"
+    category = "RISK"
+    tier = ModelTier.SONNET
+    depends_on = [5, 6]
+    active_in_modes = ["standard", "comprehensive"]
+    uses_finance = False
+    mission = MISSIONS[13]
+    output_schema = SCHEMAS[13]
+
+class Agent14Finance(Agent):
+    agent_id = 14
+    agent_name = "Analyse financière & scénarios"
+    category = "FINANCE"
+    tier = ModelTier.SONNET
+    depends_on = [5, 6]
+    active_in_modes = ["standard", "comprehensive"]
+    uses_finance = True
+    mission = MISSIONS[14]
+    output_schema = SCHEMAS[14]
+
+class Agent15Consistency(Agent):
+    agent_id = 15
+    agent_name = "Contrôle de cohérence"
+    category = "REVIEW"
+    tier = ModelTier.SONNET
+    depends_on = [5, 6, 7, 8, 12]
+    active_in_modes = ["standard", "comprehensive"]
+    uses_finance = False
+    mission = MISSIONS[15]
+    output_schema = SCHEMAS[15]
+
 ALL_AGENTS = [
     Agent1Profile(), Agent2Pestel(), Agent3Swot(), Agent4Competition(),
     Agent5Diagnostic(), Agent6Strategy(), Agent7Kpis(), Agent8Deliverables(),
     Agent9Porter(), Agent10ValueChain(), Agent11Bcg(), Agent12Change(),
+    Agent13RiskRegister(),
+    Agent14Finance(),
+    Agent15Consistency(),
 ]
