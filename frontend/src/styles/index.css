@@ -75,6 +75,40 @@
   /* Layout helpers */
   .container-narrow { @apply max-w-4xl mx-auto px-4; }
   .container-wide   { @apply max-w-6xl mx-auto px-4; }
+
+  /* ── Inline editable fields ──────────────────── */
+  .editable-field {
+    font: inherit;
+    color: inherit;
+    letter-spacing: inherit;
+    background: transparent;
+    border: none;
+    border-bottom: 1.5px dashed currentColor;
+    border-radius: 0;
+    padding: 0 2px;
+    margin: 0;
+    width: 100%;
+    outline: none;
+    transition: border-color 0.15s, background 0.15s;
+  }
+  .editable-field:hover {
+    background: rgba(249, 115, 22, 0.04);
+  }
+  .editable-field:focus {
+    border-bottom-style: solid;
+    border-bottom-color: #f97316;
+    background: rgba(249, 115, 22, 0.06);
+  }
+  .editable-field--multi {
+    resize: none;
+    overflow: hidden;
+    display: block;
+    line-height: inherit;
+  }
+  .editable-field::placeholder {
+    color: #d1d5db;
+    font-style: italic;
+  }
 }
 
 /* Scrollbar */
@@ -82,3 +116,4 @@
 ::-webkit-scrollbar-track { background: theme('colors.paper'); }
 ::-webkit-scrollbar-thumb { background: theme('colors.paper3'); border-radius: 4px; }
 ::-webkit-scrollbar-thumb:hover { background: theme('colors.ink3'); }
+

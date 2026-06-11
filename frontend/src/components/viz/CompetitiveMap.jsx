@@ -1,4 +1,5 @@
 import ReactECharts from 'echarts-for-react';
+import EditableText from './EditableText';
 
 const TYPES = {
   LEADER:     { color: '#6366F1', bg: 'bg-indigo-100 text-indigo-700' },
@@ -8,12 +9,46 @@ const TYPES = {
 };
 const SUBJECT_COLOR = '#F97316';
 
-export default function CompetitiveMap({ output }) {
+export default function CompetitiveMap({ output, editing, onOutputChange }) {
   if (!output) return null;
 
   const competitors = output.competitors || [];
   const axes = output.axes || { x_label: 'Price', y_label: 'Perceived Value' };
   const sub = output.subject_position;
+
+  const updateCompetitor = (index, field, value) => {
+    const clone = structuredClone(output);
+    clone.competitors[index][field] = value;
+    onOutputChange?.(clone);
+  };
+
+  const updateCompetitorArrayItem = (compIndex, field, itemIndex, value) => {
+    const clone = structuredClone(output);
+    clone.competitors[compIndex][field][itemIndex] = value;
+    onOutputChange?.(clone);
+  };
+
+  const updateComparison = (index, field, value) => {
+    const clone = structuredClone(output);
+    clone.comparison[index][field] = value;
+    onOutputChange?.(clone);
+  };
+
+  const updateComparisonArrayItem = (compIndex, field, itemIndex, value) => {
+    const clone = structuredClone(output);
+    clone.comparison[compIndex][field][itemIndex] = value;
+    onOutputChange?.(clone);
+  };
+
+  const updateDiffAngle = (index, value) => {
+    const clone = structuredClone(output);
+    clone.differentiation_angles[index] = value;
+    onOutputChange?.(clone);
+  };
+
+  const E = ({ value, onChange, multiline }) => (
+    <EditableText value={value} onChange={editing ? onChange : undefined} multiline={multiline} />
+  );
 
   // Group competitors by type
   const typeGroups = {};
@@ -44,7 +79,6 @@ export default function CompetitiveMap({ output }) {
       fontFamily: 'Inter, sans-serif',
       color: '#374151',
     },
-    // emphasis: { scale: 1.5 },
     data,
     tooltip: {
       formatter: (p) =>
@@ -155,7 +189,17 @@ export default function CompetitiveMap({ output }) {
           <div className="w-9 h-9 rounded-full bg-orange-500 text-white flex items-center justify-center text-lg flex-shrink-0">★</div>
           <div>
             <p className="font-semibold text-orange-700 text-sm mb-1">Your Positioning</p>
-            <p className="text-sm text-slate-600 leading-relaxed">{sub.summary}</p>
+            <p className="text-sm text-slate-600 leading-relaxed">
+              <E
+                value={sub.summary}
+                onChange={(v) => {
+                  const clone = structuredClone(output);
+                  clone.subject_position.summary = v;
+                  onOutputChange?.(clone);
+                }}
+                multiline
+              />
+            </p>
           </div>
         </div>
       )}
@@ -169,10 +213,14 @@ export default function CompetitiveMap({ output }) {
             return (
               <div key={i} className="bg-white rounded-xl border border-slate-100 shadow-sm p-4 hover:shadow-md transition-shadow">
                 <div className="flex items-center justify-between mb-2">
-                  <span className="font-semibold" style={{ color: t.color }}>{c.name}</span>
+                  <span className="font-semibold" style={{ color: t.color }}>
+                    <E value={c.name} onChange={(v) => updateCompetitor(i, 'name', v)} />
+                  </span>
                   <span className={`text-[10px] font-bold uppercase tracking-wide px-2.5 py-1 rounded-full ${t.bg}`}>{c.type}</span>
                 </div>
-                <p className="text-xs text-slate-500 mb-3 leading-relaxed">{c.positioning}</p>
+                <p className="text-xs text-slate-500 mb-3 leading-relaxed">
+                  <E value={c.positioning} onChange={(v) => updateCompetitor(i, 'positioning', v)} multiline />
+                </p>
                 <div className="grid grid-cols-2 gap-3">
                   {c.strengths?.length > 0 && (
                     <div>
@@ -180,7 +228,8 @@ export default function CompetitiveMap({ output }) {
                       <ul className="space-y-0.5">
                         {c.strengths.map((s, j) => (
                           <li key={j} className="text-xs text-slate-600 flex gap-1.5">
-                            <span className="text-emerald-400 mt-0.5">•</span>{s}
+                            <span className="text-emerald-400 mt-0.5">•</span>
+                            <E value={s} onChange={(v) => updateCompetitorArrayItem(i, 'strengths', j, v)} />
                           </li>
                         ))}
                       </ul>
@@ -192,7 +241,8 @@ export default function CompetitiveMap({ output }) {
                       <ul className="space-y-0.5">
                         {c.weaknesses.map((w, j) => (
                           <li key={j} className="text-xs text-slate-600 flex gap-1.5">
-                            <span className="text-red-300 mt-0.5">•</span>{w}
+                            <span className="text-red-300 mt-0.5">•</span>
+                            <E value={w} onChange={(v) => updateCompetitorArrayItem(i, 'weaknesses', j, v)} />
                           </li>
                         ))}
                       </ul>
@@ -201,7 +251,8 @@ export default function CompetitiveMap({ output }) {
                 </div>
                 {c.recent_signals && (
                   <p className="text-[11px] text-slate-400 mt-3 pt-3 border-t border-slate-50">
-                    <span className="font-medium text-slate-500">Signal: </span>{c.recent_signals}
+                    <span className="font-medium text-slate-500">Signal: </span>
+                    <E value={c.recent_signals} onChange={(v) => updateCompetitor(i, 'recent_signals', v)} />
                   </p>
                 )}
               </div>
@@ -227,7 +278,8 @@ export default function CompetitiveMap({ output }) {
                       <ul className="space-y-1">
                         {c.our_advantages.map((a, j) => (
                           <li key={j} className="text-xs text-slate-700 flex gap-1.5">
-                            <span className="text-emerald-500">✓</span>{a}
+                            <span className="text-emerald-500">✓</span>
+                            <E value={a} onChange={(v) => updateComparisonArrayItem(i, 'our_advantages', j, v)} />
                           </li>
                         ))}
                       </ul>
@@ -239,7 +291,8 @@ export default function CompetitiveMap({ output }) {
                       <ul className="space-y-1">
                         {c.our_gaps.map((g, j) => (
                           <li key={j} className="text-xs text-slate-700 flex gap-1.5">
-                            <span className="text-red-400">✗</span>{g}
+                            <span className="text-red-400">✗</span>
+                            <E value={g} onChange={(v) => updateComparisonArrayItem(i, 'our_gaps', j, v)} />
                           </li>
                         ))}
                       </ul>
@@ -248,7 +301,8 @@ export default function CompetitiveMap({ output }) {
                 </div>
                 {c.verdict && (
                   <p className="mt-3 pt-3 border-t border-slate-50 text-xs text-slate-600">
-                    <span className="font-semibold text-slate-700">Verdict: </span>{c.verdict}
+                    <span className="font-semibold text-slate-700">Verdict: </span>
+                    <E value={c.verdict} onChange={(v) => updateComparison(i, 'verdict', v)} />
                   </p>
                 )}
               </div>
@@ -264,7 +318,7 @@ export default function CompetitiveMap({ output }) {
           <div className="flex flex-wrap gap-2">
             {output.differentiation_angles.map((a, i) => (
               <span key={i} className="bg-indigo-50 text-indigo-700 text-xs font-medium px-3 py-1.5 rounded-full border border-indigo-100">
-                {a}
+                <E value={a} onChange={(v) => updateDiffAngle(i, v)} />
               </span>
             ))}
           </div>
@@ -278,7 +332,13 @@ export default function CompetitiveMap({ output }) {
             <span className="text-2xl">🎯</span>
             <div>
               <p className="font-semibold text-orange-700 mb-1">Strategic Recommendation</p>
-              <p className="text-sm text-slate-700 leading-relaxed">{output.positioning_recommendation}</p>
+              <p className="text-sm text-slate-700 leading-relaxed">
+                <E
+                  value={output.positioning_recommendation}
+                  onChange={(v) => onOutputChange?.({ ...output, positioning_recommendation: v })}
+                  multiline
+                />
+              </p>
             </div>
           </div>
         </div>

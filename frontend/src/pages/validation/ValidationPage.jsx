@@ -1,7 +1,7 @@
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo, useCallback } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { CheckCircle2, RefreshCw } from 'lucide-react';
+import { CheckCircle2, RefreshCw, Pencil, X, Save } from 'lucide-react';
 import { useProjectStore } from '../../store/projectStore';
 import { agentApi } from '../../api';
 
@@ -39,8 +39,19 @@ export default function ValidationPage() {
   const [activeTab, setActiveTab] = useState(tab || TABS[0].id);
   const [regenerating, setRegenerating] = useState(false);
 
+  // ── Editing state ──────────────────────────────────
+  const [editing, setEditing] = useState(false);
+  const [editedOutput, setEditedOutput] = useState(null);
+  const [saving, setSaving] = useState(false);
+
   useEffect(() => { fetchAgents(id); }, [id, fetchAgents]);
   useEffect(() => { if (tab) setActiveTab(tab); }, [tab]);
+
+  // Reset editing state when switching tabs
+  useEffect(() => {
+    setEditing(false);
+    setEditedOutput(null);
+  }, [activeTab]);
 
   const tabConfig = TABS.find((tt) => tt.id === activeTab) || TABS[0];
   const currentAgent = agents.find((a) => a.agentId === tabConfig.agentId);
@@ -49,6 +60,37 @@ export default function ValidationPage() {
   const onSelectTab = (tabId) => {
     setActiveTab(tabId);
     navigate(`/projects/${id}/validate/${tabId}`);
+  };
+
+  // ── Edit handlers ──────────────────────────────────
+  const handleStartEdit = useCallback(() => {
+    const output = currentAgent?.editedOutput || currentAgent?.output;
+    setEditedOutput(structuredClone(output));
+    setEditing(true);
+  }, [currentAgent]);
+
+  const handleCancelEdit = useCallback(() => {
+    setEditing(false);
+    setEditedOutput(null);
+  }, []);
+
+  const handleOutputChange = useCallback((newOutput) => {
+    setEditedOutput(newOutput);
+  }, []);
+
+  const handleSaveAndValidate = async () => {
+    if (!editedOutput) return;
+    setSaving(true);
+    try {
+      await agentApi.updateOutput(id, tabConfig.agentId, editedOutput);
+      await fetchAgents(id);
+      setEditing(false);
+      setEditedOutput(null);
+    } catch (err) {
+      console.error('Save failed:', err);
+    } finally {
+      setSaving(false);
+    }
   };
 
   const handleValidate = async () => {
@@ -60,6 +102,9 @@ export default function ValidationPage() {
   const handleRegenerate = async () => {
     if (!currentAgent || regenerating) return;
     setRegenerating(true);
+    // Exit edit mode when regenerating
+    setEditing(false);
+    setEditedOutput(null);
     try {
       await agentApi.regenerate(id, tabConfig.agentId);
       // Poll until the agent finishes (status changes from PENDING/RUNNING)
@@ -84,7 +129,8 @@ export default function ValidationPage() {
     [agents]
   );
 
-  const output = currentAgent?.editedOutput || currentAgent?.output;
+  // When editing, show the live edited copy; otherwise show the persisted version
+  const displayOutput = editing ? editedOutput : (currentAgent?.editedOutput || currentAgent?.output);
 
   return (
     <div className="container-wide py-8">
@@ -136,21 +182,65 @@ export default function ValidationPage() {
           </p>
         ) : (
           <>
+            {/* ── Action buttons ──────────────────────── */}
             <div className="flex justify-end gap-2 mb-4">
-              <button onClick={handleRegenerate} disabled={regenerating} className="btn-secondary text-sm">
-                <RefreshCw size={14} className={`inline mr-1.5 ${regenerating ? 'animate-spin' : ''}`} />
-                {regenerating ? 'Régénération…' : t('validation.regenerate')}
-              </button>
-              <button onClick={handleValidate} className="btn-primary text-sm">
-                <CheckCircle2 size={14} className="inline mr-1.5" />
-                {t('validation.validate')}
-              </button>
+              {editing ? (
+                <>
+                  <button
+                    onClick={handleCancelEdit}
+                    className="btn-secondary text-sm flex items-center gap-1.5"
+                  >
+                    <X size={14} />
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleSaveAndValidate}
+                    disabled={saving}
+                    className="btn-primary text-sm flex items-center gap-1.5"
+                  >
+                    <Save size={14} className={saving ? 'animate-spin' : ''} />
+                    {saving ? 'Saving…' : 'Save & Validate'}
+                  </button>
+                </>
+              ) : (
+                <>
+                  <button
+                    onClick={handleStartEdit}
+                    className="btn-secondary text-sm flex items-center gap-1.5"
+                  >
+                    <Pencil size={14} />
+                    Edit
+                  </button>
+                  <button onClick={handleRegenerate} disabled={regenerating} className="btn-secondary text-sm">
+                    <RefreshCw size={14} className={`inline mr-1.5 ${regenerating ? 'animate-spin' : ''}`} />
+                    {regenerating ? 'Régénération…' : t('validation.regenerate')}
+                  </button>
+                  <button onClick={handleValidate} className="btn-primary text-sm">
+                    <CheckCircle2 size={14} className="inline mr-1.5" />
+                    {t('validation.validate')}
+                  </button>
+                </>
+              )}
             </div>
-            {Visualization && output ? (
-              <Visualization output={output} />
+
+            {/* ── Editing indicator ───────────────────── */}
+            {editing && (
+              <div className="mb-4 px-4 py-2.5 rounded-lg bg-orange/5 border border-orange/20 text-sm text-orangeDark flex items-center gap-2">
+                <Pencil size={14} />
+                <span><strong>Edit mode</strong> — Click on any text below to modify it. Click <strong>Save & Validate</strong> when done.</span>
+              </div>
+            )}
+
+            {/* ── Content area ────────────────────────── */}
+            {Visualization && displayOutput ? (
+              <Visualization
+                output={displayOutput}
+                editing={editing}
+                onOutputChange={handleOutputChange}
+              />
             ) : (
               <pre className="bg-paper2 p-4 rounded-lg text-xs overflow-auto max-h-[60vh]">
-                {JSON.stringify(output, null, 2)}
+                {JSON.stringify(displayOutput, null, 2)}
               </pre>
             )}
           </>

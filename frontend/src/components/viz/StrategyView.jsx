@@ -1,3 +1,5 @@
+import EditableText from './EditableText';
+
 /** Normalize AI output that may be an array, comma-string, or undefined → always array */
 function toArray(val) {
   if (!val) return [];
@@ -13,7 +15,7 @@ function safeText(val) {
   return JSON.stringify(val);
 }
 
-export default function StrategyView({ output }) {
+export default function StrategyView({ output, editing, onOutputChange }) {
   if (!output) return null;
 
   // Try to find the axes array. Sometimes the AI returns { axes: [...] } or just an array directly.
@@ -30,6 +32,41 @@ export default function StrategyView({ output }) {
   }
 
   const globalPrinciples = toArray(output.global_principles);
+
+  // Determine the key name used for axes in the original output
+  const axesKey = Array.isArray(output.strategic_axes)
+    ? 'strategic_axes'
+    : Array.isArray(output.axes)
+      ? 'axes'
+      : 'strategic_axes';
+
+  const updateAxis = (index, field, value) => {
+    const clone = structuredClone(output);
+    if (!clone[axesKey]) clone[axesKey] = [...axes];
+    clone[axesKey][index][field] = value;
+    onOutputChange?.(clone);
+  };
+
+  const updateAxisArrayItem = (index, field, itemIndex, value) => {
+    const clone = structuredClone(output);
+    if (!clone[axesKey]) clone[axesKey] = [...axes];
+    const arr = toArray(clone[axesKey][index][field]);
+    arr[itemIndex] = value;
+    clone[axesKey][index][field] = arr;
+    onOutputChange?.(clone);
+  };
+
+  const updatePrinciple = (index, value) => {
+    const clone = structuredClone(output);
+    const arr = toArray(clone.global_principles);
+    arr[index] = value;
+    clone.global_principles = arr;
+    onOutputChange?.(clone);
+  };
+
+  const E = ({ value, onChange, multiline }) => (
+    <EditableText value={value} onChange={editing ? onChange : undefined} multiline={multiline} />
+  );
 
   if (axes.length === 0 && globalPrinciples.length === 0) {
     return (
@@ -49,8 +86,19 @@ export default function StrategyView({ output }) {
           <div className="flex items-start gap-3 mb-3">
             <div className="text-2xl font-bold text-orange">{String(i + 1).padStart(2, '0')}</div>
             <div className="flex-1">
-              <h3 className="font-title font-semibold text-lg">{safeText(axis.title || axis.name || `Axe ${i + 1}`)}</h3>
-              <p className="text-sm text-ink3 mt-1">{safeText(axis.description || axis.rationale || '')}</p>
+              <h3 className="font-title font-semibold text-lg">
+                <E
+                  value={safeText(axis.title || axis.name || `Axe ${i + 1}`)}
+                  onChange={(v) => updateAxis(i, axis.title !== undefined ? 'title' : 'name', v)}
+                />
+              </h3>
+              <p className="text-sm text-ink3 mt-1">
+                <E
+                  value={safeText(axis.description || axis.rationale || '')}
+                  onChange={(v) => updateAxis(i, axis.description !== undefined ? 'description' : 'rationale', v)}
+                  multiline
+                />
+              </p>
             </div>
           </div>
 
@@ -58,7 +106,11 @@ export default function StrategyView({ output }) {
             <div className="mb-3 p-3 bg-green/5 border border-green/30 rounded-lg">
               <strong className="text-sm text-green">⚡ Quick wins</strong>
               <ul className="list-disc list-inside text-xs mt-1 space-y-1">
-                {toArray(axis.quick_wins).map((q, k) => <li key={k}>{safeText(q)}</li>)}
+                {toArray(axis.quick_wins).map((q, k) => (
+                  <li key={k}>
+                    <E value={safeText(q)} onChange={(v) => updateAxisArrayItem(i, 'quick_wins', k, v)} />
+                  </li>
+                ))}
               </ul>
             </div>
           )}
@@ -67,7 +119,11 @@ export default function StrategyView({ output }) {
             <div className="mb-3">
               <strong className="text-sm">Initiatives :</strong>
               <ul className="list-disc list-inside text-xs mt-1 space-y-1 text-ink2">
-                {toArray(axis.initiatives).map((init, k) => <li key={k}>{safeText(init)}</li>)}
+                {toArray(axis.initiatives).map((init, k) => (
+                  <li key={k}>
+                    <E value={safeText(init)} onChange={(v) => updateAxisArrayItem(i, 'initiatives', k, v)} />
+                  </li>
+                ))}
               </ul>
             </div>
           )}
@@ -81,10 +137,25 @@ export default function StrategyView({ output }) {
                     {typeof m === 'object' && m !== null ? (
                       <>
                         <div className="font-semibold text-orange">{safeText(m.quarter || m.trimestre || m.date)}</div>
-                        <div className="text-ink3">{safeText(m.milestone || m.description || m.jalon)}</div>
+                        <div className="text-ink3">
+                          <E
+                            value={safeText(m.milestone || m.description || m.jalon)}
+                            onChange={(v) => {
+                              const clone = structuredClone(output);
+                              if (!clone[axesKey]) clone[axesKey] = [...axes];
+                              const ms = clone[axesKey][i].milestones[k];
+                              if (ms.milestone !== undefined) ms.milestone = v;
+                              else if (ms.description !== undefined) ms.description = v;
+                              else ms.jalon = v;
+                              onOutputChange?.(clone);
+                            }}
+                          />
+                        </div>
                       </>
                     ) : (
-                      <div className="text-ink3">{safeText(m)}</div>
+                      <div className="text-ink3">
+                        <E value={safeText(m)} onChange={(v) => updateAxisArrayItem(i, 'milestones', k, v)} />
+                      </div>
                     )}
                   </div>
                 ))}
@@ -104,7 +175,11 @@ export default function StrategyView({ output }) {
         <div className="card p-4 bg-paper2">
           <h4 className="font-title font-semibold mb-2">📐 Principes directeurs</h4>
           <ul className="list-disc list-inside text-sm space-y-1">
-            {globalPrinciples.map((p, i) => <li key={i}>{safeText(p)}</li>)}
+            {globalPrinciples.map((p, i) => (
+              <li key={i}>
+                <E value={safeText(p)} onChange={(v) => updatePrinciple(i, v)} />
+              </li>
+            ))}
           </ul>
         </div>
       )}

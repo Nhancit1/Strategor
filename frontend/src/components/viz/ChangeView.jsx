@@ -1,3 +1,5 @@
+import EditableText from './EditableText';
+
 const SUPPORT_BADGE = {
   CHAMPION: 'bg-green text-white',
   SUPPORTER: 'bg-green/20 text-green',
@@ -12,8 +14,37 @@ const INFLUENCE_LABEL = {
   LOW: '↑',
 };
 
-export default function ChangeView({ output }) {
+export default function ChangeView({ output, editing, onOutputChange }) {
   if (!output) return null;
+
+  const updateStakeholder = (index, field, value) => {
+    const clone = structuredClone(output);
+    clone.stakeholders[index][field] = value;
+    onOutputChange?.(clone);
+  };
+
+  const updateRaci = (index, field, value) => {
+    const clone = structuredClone(output);
+    clone.raci[index][field] = value;
+    onOutputChange?.(clone);
+  };
+
+  const updateComm = (index, field, value) => {
+    const clone = structuredClone(output);
+    clone.communication_plan[index][field] = value;
+    onOutputChange?.(clone);
+  };
+
+  const updateQuickWin = (index, value) => {
+    const clone = structuredClone(output);
+    clone.month_one_quick_wins[index] = value;
+    onOutputChange?.(clone);
+  };
+
+  const E = ({ value, onChange, multiline }) => (
+    <EditableText value={value} onChange={editing ? onChange : undefined} multiline={multiline} />
+  );
+
   return (
     <div className="space-y-6">
       {output.stakeholders?.length > 0 && (
@@ -27,11 +58,17 @@ export default function ChangeView({ output }) {
               <tbody>
                 {output.stakeholders.map((s, i) => (
                   <tr key={i} className="border-t border-paper2">
-                    <td className="p-2 font-medium">{s.name}</td>
-                    <td className="p-2 text-ink3">{s.role}</td>
+                    <td className="p-2 font-medium">
+                      <E value={s.name} onChange={(v) => updateStakeholder(i, 'name', v)} />
+                    </td>
+                    <td className="p-2 text-ink3">
+                      <E value={s.role} onChange={(v) => updateStakeholder(i, 'role', v)} />
+                    </td>
                     <td className="p-2 text-center">{INFLUENCE_LABEL[s.influence]}</td>
                     <td className="p-2 text-center"><span className={`badge ${SUPPORT_BADGE[s.support]}`}>{s.support}</span></td>
-                    <td className="p-2 text-xs text-ink3">{s.action}</td>
+                    <td className="p-2 text-xs text-ink3">
+                      <E value={s.action} onChange={(v) => updateStakeholder(i, 'action', v)} />
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -51,11 +88,21 @@ export default function ChangeView({ output }) {
               <tbody>
                 {output.raci.map((r, i) => (
                   <tr key={i} className="border-t border-paper2">
-                    <td className="p-2 font-medium">{r.action}</td>
-                    <td className="p-2 text-center text-xs">{r.responsible}</td>
-                    <td className="p-2 text-center text-xs">{r.accountable}</td>
-                    <td className="p-2 text-center text-xs">{r.consulted}</td>
-                    <td className="p-2 text-center text-xs">{r.informed}</td>
+                    <td className="p-2 font-medium">
+                      <E value={r.action} onChange={(v) => updateRaci(i, 'action', v)} />
+                    </td>
+                    <td className="p-2 text-center text-xs">
+                      <E value={r.responsible} onChange={(v) => updateRaci(i, 'responsible', v)} />
+                    </td>
+                    <td className="p-2 text-center text-xs">
+                      <E value={r.accountable} onChange={(v) => updateRaci(i, 'accountable', v)} />
+                    </td>
+                    <td className="p-2 text-center text-xs">
+                      <E value={r.consulted} onChange={(v) => updateRaci(i, 'consulted', v)} />
+                    </td>
+                    <td className="p-2 text-center text-xs">
+                      <E value={r.informed} onChange={(v) => updateRaci(i, 'informed', v)} />
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -70,9 +117,13 @@ export default function ChangeView({ output }) {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {output.communication_plan.map((c, i) => (
               <div key={i} className="border border-paper3 p-3 rounded-lg">
-                <div className="font-medium text-sm">{c.message}</div>
+                <div className="font-medium text-sm">
+                  <E value={c.message} onChange={(v) => updateComm(i, 'message', v)} />
+                </div>
                 <div className="text-xs text-ink3 mt-1">
-                  → {c.audience} via {c.channel} · {c.timing}
+                  → <E value={c.audience} onChange={(v) => updateComm(i, 'audience', v)} />
+                  {' '}via <E value={c.channel} onChange={(v) => updateComm(i, 'channel', v)} />
+                  {' '}· <E value={c.timing} onChange={(v) => updateComm(i, 'timing', v)} />
                 </div>
               </div>
             ))}
@@ -84,7 +135,11 @@ export default function ChangeView({ output }) {
         <div className="card p-4 bg-green/5 border-green/30">
           <h4 className="font-title font-semibold mb-2 text-green">⚡ Quick wins mois 1</h4>
           <ul className="list-disc list-inside text-sm space-y-1">
-            {output.month_one_quick_wins.map((w, i) => <li key={i}>{w}</li>)}
+            {output.month_one_quick_wins.map((w, i) => (
+              <li key={i}>
+                <E value={w} onChange={(v) => updateQuickWin(i, v)} />
+              </li>
+            ))}
           </ul>
         </div>
       )}

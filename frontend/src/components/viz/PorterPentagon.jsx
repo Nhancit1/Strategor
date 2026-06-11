@@ -1,3 +1,5 @@
+import EditableText from './EditableText';
+
 const FORCES = [
   { key: 'rivalry', label: 'Rivalité', emoji: '⚔️' },
   { key: 'new_entrants', label: 'Nouveaux entrants', emoji: '🚪' },
@@ -12,8 +14,25 @@ const INTENSITY_COLOR = {
   HIGH: 'bg-red-50 text-red-700 border-red-200',
 };
 
-export default function PorterPentagon({ output }) {
+export default function PorterPentagon({ output, editing, onOutputChange }) {
   if (!output) return null;
+
+  const updateForce = (forceKey, field, value) => {
+    const clone = structuredClone(output);
+    clone[forceKey][field] = value;
+    onOutputChange?.(clone);
+  };
+
+  const updateLever = (index, value) => {
+    const clone = structuredClone(output);
+    clone.key_levers[index] = value;
+    onOutputChange?.(clone);
+  };
+
+  const E = ({ value, onChange, multiline }) => (
+    <EditableText value={value} onChange={editing ? onChange : undefined} multiline={multiline} />
+  );
+
   return (
     <div className="space-y-4">
       <div className="text-center mb-4">
@@ -43,7 +62,9 @@ export default function PorterPentagon({ output }) {
                   </span>
                 )}
               </div>
-              <p className="text-xs">{force.rationale}</p>
+              <p className="text-xs">
+                <E value={force.rationale} onChange={(v) => updateForce(key, 'rationale', v)} multiline />
+              </p>
             </div>
           );
         })}
@@ -53,7 +74,11 @@ export default function PorterPentagon({ output }) {
         <div className="card p-4 mt-4">
           <h4 className="font-title font-semibold mb-2">🛠️ Leviers prioritaires</h4>
           <ul className="list-disc list-inside text-sm space-y-1">
-            {output.key_levers.map((l, i) => <li key={i}>{l}</li>)}
+            {output.key_levers.map((l, i) => (
+              <li key={i}>
+                <E value={l} onChange={(v) => updateLever(i, v)} />
+              </li>
+            ))}
           </ul>
         </div>
       )}

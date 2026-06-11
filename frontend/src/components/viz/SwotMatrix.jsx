@@ -1,3 +1,5 @@
+import EditableText from './EditableText';
+
 const QUADRANTS = [
   { key: 'strengths', label: '💪 Forces', color: 'bg-green/5 border-green/30', textColor: 'text-green' },
   { key: 'weaknesses', label: '🔍 Faiblesses', color: 'bg-red-50 border-red-200', textColor: 'text-red-700' },
@@ -11,8 +13,25 @@ const PRIORITY_BADGE = {
   LOW: 'bg-paper2 text-ink3',
 };
 
-export default function SwotMatrix({ output }) {
+export default function SwotMatrix({ output, editing, onOutputChange }) {
   if (!output) return null;
+
+  const updateItem = (quadrant, index, field, value) => {
+    const clone = structuredClone(output);
+    clone[quadrant][index][field] = value;
+    onOutputChange?.(clone);
+  };
+
+  const updateTowsAction = (index, field, value) => {
+    const clone = structuredClone(output);
+    clone.tows_actions[index][field] = value;
+    onOutputChange?.(clone);
+  };
+
+  const E = ({ value, onChange, multiline }) => (
+    <EditableText value={value} onChange={editing ? onChange : undefined} multiline={multiline} />
+  );
+
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -25,14 +44,20 @@ export default function SwotMatrix({ output }) {
                 {items.map((item, i) => (
                   <li key={i} className="bg-white p-2 rounded-lg border border-paper3">
                     <div className="flex items-start justify-between gap-2">
-                      <span className="font-medium text-sm">{item.title}</span>
+                      <span className="font-medium text-sm">
+                        <E value={item.title} onChange={(v) => updateItem(q.key, i, 'title', v)} />
+                      </span>
                       {item.priority && (
                         <span className={`text-xs px-2 py-0.5 rounded-full ${PRIORITY_BADGE[item.priority]}`}>
                           {item.priority}
                         </span>
                       )}
                     </div>
-                    {item.description && <p className="text-xs text-ink3 mt-1">{item.description}</p>}
+                    {item.description && (
+                      <p className="text-xs text-ink3 mt-1">
+                        <E value={item.description} onChange={(v) => updateItem(q.key, i, 'description', v)} multiline />
+                      </p>
+                    )}
                   </li>
                 ))}
               </ul>
@@ -48,8 +73,14 @@ export default function SwotMatrix({ output }) {
             {output.tows_actions.map((a, i) => (
               <div key={i} className="border border-paper3 p-3 rounded-lg">
                 <span className="badge-validated mb-1">{a.type}</span>
-                <div className="font-semibold text-sm mt-1">{a.action}</div>
-                {a.rationale && <p className="text-xs text-ink3 mt-1">{a.rationale}</p>}
+                <div className="font-semibold text-sm mt-1">
+                  <E value={a.action} onChange={(v) => updateTowsAction(i, 'action', v)} />
+                </div>
+                {a.rationale && (
+                  <p className="text-xs text-ink3 mt-1">
+                    <E value={a.rationale} onChange={(v) => updateTowsAction(i, 'rationale', v)} multiline />
+                  </p>
+                )}
               </div>
             ))}
           </div>
