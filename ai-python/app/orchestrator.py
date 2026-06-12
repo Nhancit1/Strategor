@@ -127,6 +127,11 @@ async def _run_one_agent(req: AnalyzeRequest, agent: Agent,
                 deps[dep_id] = outputs[dep_id]
 
         prompt = agent.build_system_prompt(profile, finance, deps, req.language)
+        
+        with open("debug_agent_6.log", "w") as f:
+            f.write(f"DEPS KEYS: {list(deps.keys())}\n")
+            f.write("PROMPT:\n")
+            f.write(prompt)
 
         await callbacks.post_agent_event(project_id, {
             "agentId": agent.agent_id,

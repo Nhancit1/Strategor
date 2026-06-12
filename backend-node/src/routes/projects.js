@@ -67,6 +67,18 @@ router.get('/:id', requireAuth, asyncHandler(async (req, res) => {
   res.json(projectDto(project));
 }));
 
+router.patch('/:id', requireAuth, asyncHandler(async (req, res) => {
+  const project = await loadOwnedProject(req.params.id, req.user.id);
+  if (req.body?.name) {
+    project.name = req.body.name.trim() || 'Projet sans nom';
+  }
+  if (req.body?.analysisMode) {
+    project.analysisMode = req.body.analysisMode;
+  }
+  await project.save();
+  res.json(projectDto(project));
+}));
+
 router.delete('/:id', requireAuth, asyncHandler(async (req, res) => {
   const project = await loadOwnedProject(req.params.id, req.user.id);
   project.deletedAt = new Date();

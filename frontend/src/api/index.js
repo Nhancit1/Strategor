@@ -124,6 +124,7 @@ export const projectApi = {
   list: () => api.get('/api/projects'),
   create: (body) => api.post('/api/projects', body),
   get: (id) => api.get(`/api/projects/${id}`),
+  update: (id, body) => api.patch(`/api/projects/${id}`, body),
   remove: (id) => api.delete(`/api/projects/${id}`),
   getOnboarding: (id) => api.get(`/api/projects/${id}/onboarding`),
   updateOnboarding: (id, patch) => api.put(`/api/projects/${id}/onboarding`, patch),

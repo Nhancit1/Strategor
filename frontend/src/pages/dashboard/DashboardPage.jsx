@@ -1,14 +1,96 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Plus, Trash2 } from 'lucide-react';
+import { Plus, Trash2, Pencil } from 'lucide-react';
 import { useProjectStore } from '../../store/projectStore';
 import { useAuthStore } from '../../store/authStore';
+
+function ProjectCard({ p, statusRoute, statusLabel, deleteProject, updateProject }) {
+  const [isEditing, setIsEditing] = useState(false);
+  const [editName, setEditName] = useState('');
+  const inputRef = useRef(null);
+
+  useEffect(() => {
+    if (isEditing && inputRef.current) {
+      inputRef.current.focus();
+    }
+  }, [isEditing]);
+
+  const handleStartEdit = (e) => {
+    e.preventDefault();
+    setEditName(p.name);
+    setIsEditing(true);
+  };
+
+  const handleSave = async () => {
+    if (editName.trim() && editName !== p.name) {
+      try {
+        await updateProject(p.id, { name: editName.trim() });
+      } catch (err) {
+        console.error('Failed to update', err);
+      }
+    }
+    setIsEditing(false);
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter') handleSave();
+    if (e.key === 'Escape') setIsEditing(false);
+  };
+
+  return (
+    <div className="card p-5 flex flex-col group">
+      <Link to={statusRoute(p)} className="flex-1">
+        <div className="flex items-center gap-2 mb-2">
+          {isEditing ? (
+            <input
+              ref={inputRef}
+              type="text"
+              value={editName}
+              onChange={(e) => setEditName(e.target.value)}
+              onKeyDown={handleKeyDown}
+              onBlur={handleSave}
+              onClick={(e) => e.preventDefault()}
+              className="font-title font-semibold text-lg bg-white border border-orange-300 text-ink rounded-md focus:outline-none focus:ring-2 focus:ring-orange/50 w-full px-1 py-0.5"
+            />
+          ) : (
+            <>
+              <h3 className="font-title font-semibold text-lg truncate flex-1">{p.name}</h3>
+              <button 
+                onClick={handleStartEdit}
+                className="opacity-0 group-hover:opacity-100 p-1 text-ink3 hover:text-orange transition-all flex-shrink-0"
+                title="Renommer le projet"
+              >
+                <Pencil size={14} />
+              </button>
+            </>
+          )}
+        </div>
+        <p className="text-sm text-ink3 mb-3">{statusLabel(p.status)}</p>
+        <p className="text-xs text-ink3">
+          Mode : <span className="font-medium">{p.analysisMode || 'standard'}</span>
+        </p>
+      </Link>
+      <div className="mt-4 pt-4 border-t border-paper3 flex justify-between items-center">
+        <Link to={statusRoute(p)} className="text-sm text-orange hover:underline">
+          Continuer →
+        </Link>
+        <button
+          onClick={() => { if (confirm(`Supprimer "${p.name}" ?`)) deleteProject(p.id); }}
+          className="text-ink3 hover:text-red-600 transition-colors"
+          title="Supprimer"
+        >
+          <Trash2 size={16} />
+        </button>
+      </div>
+    </div>
+  );
+}
 
 export default function DashboardPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { projects, loading, fetchProjects, createProject, deleteProject } = useProjectStore();
+  const { projects, loading, fetchProjects, createProject, deleteProject, updateProject } = useProjectStore();
   const user = useAuthStore((s) => s.user);
   const [creating, setCreating] = useState(false);
   const [error, setError] = useState(null);
@@ -78,27 +160,14 @@ export default function DashboardPage() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {projects.map((p) => (
-            <div key={p.id} className="card p-5 flex flex-col">
-              <Link to={statusRoute(p)} className="flex-1">
-                <h3 className="font-title font-semibold text-lg mb-2">{p.name}</h3>
-                <p className="text-sm text-ink3 mb-3">{statusLabel(p.status)}</p>
-                <p className="text-xs text-ink3">
-                  Mode : <span className="font-medium">{p.analysisMode || 'standard'}</span>
-                </p>
-              </Link>
-              <div className="mt-4 pt-4 border-t border-paper3 flex justify-between items-center">
-                <Link to={statusRoute(p)} className="text-sm text-orange hover:underline">
-                  Continuer →
-                </Link>
-                <button
-                  onClick={() => { if (confirm(`Supprimer "${p.name}" ?`)) deleteProject(p.id); }}
-                  className="text-ink3 hover:text-red-600 transition-colors"
-                  title="Supprimer"
-                >
-                  <Trash2 size={16} />
-                </button>
-              </div>
-            </div>
+            <ProjectCard 
+              key={p.id} 
+              p={p} 
+              statusRoute={statusRoute} 
+              statusLabel={statusLabel} 
+              deleteProject={deleteProject} 
+              updateProject={updateProject} 
+            />
           ))}
         </div>
       )}

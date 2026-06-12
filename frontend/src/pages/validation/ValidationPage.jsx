@@ -183,9 +183,15 @@ export default function ValidationPage() {
         ) : currentAgent.status === 'SKIPPED' ? (
           <p className="text-ink3">Cet agent n'est pas applicable à votre profil.</p>
         ) : currentAgent.status !== 'DONE' ? (
-          <p className="text-ink3">
-            Statut : <strong>{currentAgent.status}</strong>. {currentAgent.errorMessage}
-          </p>
+          <div className="text-ink3">
+            <p>Statut : <strong>{currentAgent.status}</strong>. {currentAgent.errorMessage}</p>
+            {currentAgent.status === 'ERROR' && (
+              <button onClick={handleRegenerate} disabled={regenerating} className="btn-secondary text-sm mt-4 flex items-center gap-1.5">
+                <RefreshCw size={14} className={regenerating ? 'animate-spin' : ''} />
+                Régénérer
+              </button>
+            )}
+          </div>
         ) : (
           <>
             {/* ── Action buttons ──────────────────────── */}
@@ -217,8 +223,8 @@ export default function ValidationPage() {
                     <Pencil size={14} />
                     Edit
                   </button>
-                  <button onClick={handleRegenerate} disabled={regenerating} className="btn-secondary text-sm">
-                    <RefreshCw size={14} className={`inline mr-1.5 ${regenerating ? 'animate-spin' : ''}`} />
+                  <button onClick={handleRegenerate} disabled={regenerating} className="btn-secondary text-sm flex items-center gap-1.5">
+                    <RefreshCw size={14} className={regenerating ? 'animate-spin' : ''} />
                     {regenerating ? 'Régénération…' : t('validation.regenerate')}
                   </button>
                   <button onClick={handleValidate} className="btn-primary text-sm">

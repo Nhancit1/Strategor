@@ -95,22 +95,22 @@ Pour chaque KPI :
 Privilégie des KPIs qui se mesurent VRAIMENT (pas de vanity metrics).''',
     8: '''Mission : Produire 3 LIVRABLES FINAUX consolidés à partir de l'ensemble des analyses.
 
-1) RAPPORT DIRIGEANT (1500-2500 mots) : narratif complet pour le PDG
-   - Synthèse exécutive (1 page)
-   - Analyse stratégique
-   - Recommandations prioritaires
-   - Plan d'action 18 mois
+1) RAPPORT DIRIGEANT (300-500 mots) : narratif concis pour le PDG
+   - Synthèse exécutive (très courte)
+   - Analyse stratégique (l'essentiel)
+   - Recommandations prioritaires (bullet points)
+   - Plan d'action 18 mois (grandes lignes)
 
-2) DECK BOARD (10-12 slides) : pitch pour comité de direction
+2) DECK BOARD (4-5 slides) : pitch pour comité de direction
    - Une slide = un point clé
-   - Titre, contenu condensé, visualisation suggérée
+   - Titre, contenu très condensé, visualisation suggérée
 
 3) PLAN ÉQUIPES (concret et opérationnel) :
-   - Découpage par fonction/département
-   - Actions attribuées
+   - Découpage par fonction (maximum 3 fonctions clés)
+   - Actions attribuées (très courtes)
    - Échéances
 
-Style : impeccable, structuré, prêt à être présenté SANS retouche.''',
+Style : très synthétique, sous forme de bullet points. NE FAIS PAS DE PHRASES LONGUES. L'objectif est la concision extrême.''',
     9: '''Mission : Analyse des 5 FORCES DE PORTER pour évaluer l'attractivité structurelle du marché.
 
 Pour chaque force (Rivalité, Nouveaux entrants, Substituts, Fournisseurs, Clients) :
@@ -635,7 +635,8 @@ _SCHEMAS_JSON: dict[int, str] = {
                                     "milestone": {
                                         "type": "string"
                                     }
-                                }
+                                },
+                                "required": ["quarter", "milestone"]
                             }
                         },
                         "resources": {
@@ -644,7 +645,8 @@ _SCHEMAS_JSON: dict[int, str] = {
                                 "type": "string"
                             }
                         }
-                    }
+                    },
+                    "required": ["title", "description", "initiatives", "quick_wins", "milestones", "resources"]
                 }
             },
             "global_principles": {

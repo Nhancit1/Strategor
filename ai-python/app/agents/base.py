@@ -138,4 +138,13 @@ class Agent:
         )
         if language and language.lower().startswith("en"):
             parts.append("\n\nIMPORTANT: Write your entire response (all field values) in English.\n")
+
+        parts.append(
+            "\n\n=== RÈGLE CRITIQUE (GÉNÉRATION JSON) ===\n"
+            "Tu es un agent automatisé. Tu DOIS IMPÉRATIVEMENT utiliser l'outil fourni pour structurer ta réponse.\n"
+            "1. Utilise EXACTEMENT les clés en anglais définies dans le schéma de l'outil (ex: 'strategic_axes', 'initiatives', etc.). Ne traduis pas les clés JSON en français.\n"
+            "2. Même si tu manques de données, tu NE DOIS SOUS AUCUN PRÉTEXTE renvoyer un objet vide {}.\n"
+            "3. Invente des valeurs par défaut pertinentes (ex: 'À définir', 'Axe 1') pour satisfaire le schéma JSON si nécessaire, mais garantis que la structure finale respecte parfaitement le schéma attendu et contienne toutes les clés obligatoires.\n"
+            "4. NE PLACE JAMAIS tes réponses principales (comme les axes ou les listes) au format markdown dans un champ texte libre. Tu dois impérativement utiliser les tableaux et objets JSON prévus à cet effet."
+        )
         return "".join(parts)

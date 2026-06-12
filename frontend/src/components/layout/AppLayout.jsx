@@ -1,6 +1,7 @@
 import { Outlet, Link, NavLink, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '../../store/authStore';
+import { useProjectStore } from '../../store/projectStore';
 import { LogOut, Settings, LayoutDashboard, ShieldCheck } from 'lucide-react';
 
 export default function AppLayout() {
@@ -8,6 +9,7 @@ export default function AppLayout() {
   const user = useAuthStore((s) => s.user);
   const isAdmin = useAuthStore((s) => s.user?.role === 'ADMIN');
   const logout = useAuthStore((s) => s.logout);
+  const currentProject = useProjectStore((s) => s.current);
   const navigate = useNavigate();
 
   const handleLogout = async () => {
@@ -19,9 +21,11 @@ export default function AppLayout() {
     <div className="min-h-screen flex flex-col bg-paper">
       <header className="bg-white border-b border-paper3 sticky top-0 z-30">
         <div className="container-wide flex items-center justify-between h-16">
-          <Link to="/dashboard" className="font-title text-xl font-bold text-orange">
-            Stratège IA
-          </Link>
+          <div className="flex items-center gap-4">
+            <Link to="/dashboard" className="font-title text-xl font-bold text-orange">
+              Stratège IA
+            </Link>
+          </div>
 
           <nav className="hidden md:flex items-center gap-1">
             <NavLink

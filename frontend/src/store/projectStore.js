@@ -34,6 +34,15 @@ export const useProjectStore = create((set, get) => ({
     return data;
   },
 
+  updateProject: async (id, body) => {
+    const { data } = await projectApi.update(id, body);
+    set((state) => ({
+      projects: state.projects.map((p) => p.id === id ? data : p),
+      current: state.current?.id === id ? data : state.current,
+    }));
+    return data;
+  },
+
   deleteProject: async (id) => {
     await projectApi.remove(id);
     set({ projects: get().projects.filter((p) => p.id !== id) });

@@ -8,6 +8,7 @@ Anthropic client.
   which are injected into the agent's prompt. Grounding NEVER blocks generation:
   any failure falls back to ungrounded output.
 """
+import json
 import re
 import logging
 from enum import Enum
@@ -165,26 +166,58 @@ async def generate_structured(
     _ascii = _raw.encode("ascii", "ignore").decode("ascii")  # drop accents
     tool_name = "submit_" + re.sub(r"[^a-z0-9]+", "_", _ascii).strip("_")[:100]
 
-    resp = await _client.messages.create(
-        model=model,
-        max_tokens=max_tokens,
-        system=system_prompt,
-        messages=[{"role": "user", "content": user_prompt}],
-        tools=[{
-            "name": tool_name,
-            "description": "Soumets le résultat de l'analyse au format structuré.",
-            "input_schema": output_schema,
-        }],
-        tool_choice={"type": "tool", "name": tool_name},
+    # Append schema instruction to the prompt
+    system_prompt += (
+        "\n\nTu DOIS répondre UNIQUEMENT en générant un bloc de code JSON valide (entouré de ```json et ```). "
+        "Le JSON doit STRICTEMENT respecter le schéma suivant :\n"
+        f"{output_schema}\n"
+        "RÈGLE ABSOLUE : SOIS EXTRÊMEMENT CONCIS. Résume tes idées en phrases courtes ou mots-clés. "
+        "Ton JSON risque d'être coupé si tu génères trop de texte, ce qui fera échouer le système. Rédige l'essentiel uniquement !"
     )
 
-    payload = None
+    resp = await _client.messages.create(
+        model=model,
+        max_tokens=8192,
+        system=system_prompt,
+        messages=[{"role": "user", "content": user_prompt}],
+        extra_headers={"anthropic-beta": "max-tokens-3-5-sonnet-2024-07-15"}
+    )
+
+    # Extract JSON from the markdown response
+    text = ""
     for block in resp.content:
-        if getattr(block, "type", None) == "tool_use" and block.name == tool_name:
-            payload = block.input
-            break
-    if payload is None:
-        raise RuntimeError(f"Réponse Claude sans tool_use attendu : {tool_name}")
+        if getattr(block, "type", None) == "text":
+            text += block.text
+
+    # Find the JSON block using regex
+    match = re.search(r'```(?:json)?\s*([\s\S]*?)\s*```', text)
+    if match:
+        json_str = match.group(1)
+    else:
+        # Fallback if no markdown block is used
+        json_str = text.strip()
+        # Find first { and last }
+        start = json_str.find('{')
+        end = json_str.rfind('}')
+        if start != -1 and end != -1:
+            json_str = json_str[start:end+1]
+
+    try:
+        payload = json.loads(json_str)
+    except Exception as e:
+        with open(f"debug_resp_{agent_name}.log", "w") as f:
+            f.write(text)
+        raise RuntimeError(f"Claude n'a pas renvoyé un JSON valide pour l'agent {agent_name}. Erreur: {e}")
+
+    if not payload:
+        raise RuntimeError(f"Claude a renvoyé un objet vide {{}} pour l'agent {agent_name}. Rejet de la réponse.")
+
+    # Validate that required keys from the schema are present
+    required_keys = output_schema.get("required", [])
+    if isinstance(payload, dict) and required_keys:
+        missing_keys = [k for k in required_keys if k not in payload]
+        if missing_keys:
+            raise RuntimeError(f"Claude a omis des champs obligatoires ({', '.join(missing_keys)}) pour l'agent {agent_name}.")
 
     # Attach gathered sources (post-hoc; not constrained by the agent's schema).
     # The exporters' Sources section reads output.sources / output.citations.

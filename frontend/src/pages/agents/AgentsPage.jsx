@@ -5,9 +5,11 @@ import {
   CheckCircle2, AlertCircle, Loader2, Circle, SkipForward,
   Brain, TrendingUp, BarChart2, Users, Target, Layers,
   Activity, FileText, Shield, GitBranch, PieChart, Repeat,
+  RefreshCw
 } from 'lucide-react';
 import { useProjectStore } from '../../store/projectStore';
 import { useAgentWebSocket } from '../../hooks/useWebSocket';
+import { agentApi } from '../../api';
 
 const AGENT_META = {
   1:  { label: 'Profil & Contexte',          icon: Brain,      color: 'text-violet-500',  bg: 'bg-violet-50' },
@@ -190,8 +192,24 @@ export default function AgentsPage() {
                   )}
 
                   {/* Error message */}
-                  {isError && agent.errorMessage && (
-                    <p className="text-xs text-red-500 mt-1 line-clamp-2">{agent.errorMessage}</p>
+                  {isError && (
+                    <div className="mt-2">
+                      <p className="text-xs text-red-500 line-clamp-2 mb-2">{agent.errorMessage}</p>
+                      <button
+                        onClick={async () => {
+                          try {
+                            await agentApi.regenerate(projectId, agentId);
+                            fetchAgents();
+                          } catch (err) {
+                            console.error('Failed to regenerate', err);
+                          }
+                        }}
+                        className="btn-secondary text-xs px-2 py-1 flex items-center gap-1.5"
+                      >
+                        <RefreshCw size={12} />
+                        Régénérer cet agent
+                      </button>
+                    </div>
                   )}
                 </div>
               </div>
