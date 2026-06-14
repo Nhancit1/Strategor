@@ -143,13 +143,16 @@ async def _run_one_agent(req: AnalyzeRequest, agent: Agent,
         })
 
         async with sem:
+            is_en = req.language.lower().startswith("en")
             result = await generate_structured(
                 agent_name=agent.agent_name,
                 system_prompt=prompt,
                 output_schema=agent.output_schema,
                 tier=agent.tier,
-                user_prompt="Lance ton analyse maintenant.",
+                user_prompt="Launch your analysis now." if is_en else "Lance ton analyse maintenant.",
                 max_tokens=4096,
+                use_web_search=agent.uses_web_search,
+                language=req.language,
             )
 
         outputs[agent.agent_id] = result.payload
@@ -168,6 +171,7 @@ async def _run_one_agent(req: AnalyzeRequest, agent: Agent,
             "tokensOutput": result.tokens_output,
             "costEstimateCents": result.cost_estimate_cents,
             "groundingCostCents": result.grounding_cost_cents,
+            "language": req.language,
         })
 
     except Exception as e:

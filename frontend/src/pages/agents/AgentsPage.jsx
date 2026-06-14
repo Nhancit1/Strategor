@@ -8,6 +8,7 @@ import {
   RefreshCw
 } from 'lucide-react';
 import { useProjectStore } from '../../store/projectStore';
+import { useAuthStore } from '../../store/authStore';
 import { useAgentWebSocket } from '../../hooks/useWebSocket';
 import { agentApi } from '../../api';
 
@@ -42,8 +43,10 @@ export default function AgentsPage() {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const { agents, fetchAgents, updateAgentFromWs, fetchProject, current } = useProjectStore();
+  const user = useAuthStore((s) => s.user);
+  const userLang = user?.lang;
 
-  useEffect(() => { fetchAgents(id); fetchProject(id); }, [id, fetchAgents, fetchProject]);
+  useEffect(() => { fetchAgents(id); fetchProject(id); }, [id, fetchAgents, fetchProject, userLang]);
 
   // Re-poll all 5s as a fallback
   useEffect(() => {

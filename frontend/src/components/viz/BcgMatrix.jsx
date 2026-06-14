@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import EditableText from './EditableText';
 
 const QUADRANTS = {
@@ -15,6 +16,7 @@ const RECO_BADGE = {
 };
 
 export default function BcgMatrix({ output, editing, onOutputChange }) {
+  const { t } = useTranslation();
   if (!output) return null;
   const lines = output.lines || [];
 
@@ -64,7 +66,7 @@ export default function BcgMatrix({ output, editing, onOutputChange }) {
                       )}
                     </div>
                     {line.revenue_share_percent != null && (
-                      <div className="text-xs text-ink3">CA : {line.revenue_share_percent}%</div>
+                      <div className="text-xs text-ink3">{t('bcg.revenue', 'CA :')} {line.revenue_share_percent}%</div>
                     )}
                     {line.rationale && (
                       <p className="text-xs mt-1 text-ink3">
@@ -75,7 +77,7 @@ export default function BcgMatrix({ output, editing, onOutputChange }) {
                 );
               })}
               {(!byQuadrant[key] || byQuadrant[key].length === 0) && (
-                <div className="text-xs text-ink3 italic">Aucune ligne dans ce quadrant</div>
+                <div className="text-xs text-ink3 italic">{t('bcg.emptyQuadrant', 'Aucune ligne dans ce quadrant')}</div>
               )}
             </div>
           </div>
@@ -84,7 +86,7 @@ export default function BcgMatrix({ output, editing, onOutputChange }) {
 
       {output.portfolio_balance && (
         <div className="card p-4">
-          <h4 className="font-title font-semibold mb-2">⚖️ Équilibre du portefeuille</h4>
+          <h4 className="font-title font-semibold mb-2">⚖️ {t('bcg.portfolioBalance', 'Équilibre du portefeuille')}</h4>
           <p className="text-sm">
             <EditableText
               value={output.portfolio_balance}
@@ -97,7 +99,7 @@ export default function BcgMatrix({ output, editing, onOutputChange }) {
 
       {output.key_decisions?.length > 0 && (
         <div className="card p-4 bg-orange/5 border-orange/30">
-          <h4 className="font-title font-semibold mb-2">🎯 Décisions clés</h4>
+          <h4 className="font-title font-semibold mb-2">🎯 {t('bcg.keyDecisions', 'Décisions clés')}</h4>
           <ul className="list-disc list-inside text-sm space-y-1">
             {output.key_decisions.map((d, i) => (
               <li key={i}>

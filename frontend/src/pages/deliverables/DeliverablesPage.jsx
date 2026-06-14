@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Download, FileText, Presentation, FileSpreadsheet, File, RefreshCw, AlertCircle, Loader2 } from 'lucide-react';
 import { useProjectStore } from '../../store/projectStore';
+import { useAuthStore } from '../../store/authStore';
 import { exportApi, agentApi } from '../../api';
 import DeliverablesView from '../../components/viz/DeliverablesView';
 
@@ -16,11 +17,13 @@ const FORMATS = [
 export default function DeliverablesPage() {
   const { id } = useParams();
   const { t } = useTranslation();
-  const { agents, fetchAgents, current, fetchProject } = useProjectStore();
+  const { agents, fetchAgents, current, fetchProject, agentsLoading } = useProjectStore();
+  const user = useAuthStore((s) => s.user);
+  const userLang = user?.lang;
   const [exporting, setExporting] = useState(null);
   const [regenerating, setRegenerating] = useState(false);
 
-  useEffect(() => { fetchAgents(id); fetchProject(id); }, [id, fetchAgents, fetchProject]);
+  useEffect(() => { fetchAgents(id); fetchProject(id); }, [id, fetchAgents, fetchProject, userLang]);
 
   const finalAgent = agents.find((a) => a.agentId === 8);
 
@@ -88,11 +91,11 @@ export default function DeliverablesPage() {
       <div className="mb-6">
         <h1 className="font-title text-3xl font-bold mb-1">{t('deliverables.title')}</h1>
         <p className="text-ink3">{t('deliverables.subtitle')}</p>
-        {current?.name && <p className="text-sm text-ink3 mt-1">Projet : <strong>{current.name}</strong></p>}
+        {current?.name && <p className="text-sm text-ink3 mt-1">{t('common.project', 'Projet')} : <strong>{current.name}</strong></p>}
       </div>
 
       <div className="card p-6 mb-6">
-        <h2 className="font-title text-xl font-semibold mb-4">Exports</h2>
+        <h2 className="font-title text-xl font-semibold mb-4">{t('deliverables.exports')}</h2>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {FORMATS.map((f) => {
             const Icon = f.icon;
@@ -106,7 +109,7 @@ export default function DeliverablesPage() {
                 <Icon size={32} className="mx-auto mb-2 text-orange" />
                 <div className="font-title font-semibold">{f.label}</div>
                 <div className="text-xs text-ink3 mt-1">
-                  {exporting === f.id ? 'Génération…' : <Download size={12} className="inline" />}
+                  {exporting === f.id ? t('deliverables.generatingText') : <Download size={12} className="inline" />}
                 </div>
               </button>
             );
@@ -116,7 +119,7 @@ export default function DeliverablesPage() {
 
       <div className="card p-6">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="font-title text-xl font-semibold">Aperçu — Livrables finaux</h2>
+          <h2 className="font-title text-xl font-semibold">{t('deliverables.preview')}</h2>
           {finalAgent && (finalAgent.status === 'ERROR' || finalAgent.status === 'DONE') && (
             <button
               onClick={handleRegenerate}
@@ -124,24 +127,36 @@ export default function DeliverablesPage() {
               className="btn-secondary text-sm flex items-center gap-1.5"
             >
               <RefreshCw size={14} className={regenerating ? 'animate-spin' : ''} />
-              Régénérer
+              {t('deliverables.regenerate')}
             </button>
           )}
         </div>
-        {!finalAgent ? (
+        {agentsLoading ? (
+          <div className="p-8 text-center flex flex-col items-center justify-center min-h-[250px]">
+            <Loader2 size={32} className="text-orange animate-spin mb-3" />
+            <p className="font-semibold text-slate-700">
+              {userLang === 'en' ? 'Translating Deliverables...' : 'Traduction en cours...'}
+            </p>
+            <p className="text-xs text-ink3 mt-1 max-w-md mx-auto">
+              {userLang === 'en'
+                ? 'DeepSeek is translating the final deliverables preview. Please wait.'
+                : "DeepSeek traduit l'aperçu des livrables finaux. Veuillez patienter."}
+            </p>
+          </div>
+        ) : !finalAgent ? (
           <div className="p-6 text-center">
-            <p className="text-ink3 mb-4">Agent 8 (Livrables finaux) n'a pas encore été lancé.</p>
+            <p className="text-ink3 mb-4">{t('deliverables.noDeliverables')}</p>
             <button onClick={handleRegenerate} disabled={regenerating} className="btn-primary flex items-center gap-2 mx-auto">
               <RefreshCw size={16} className={regenerating ? 'animate-spin' : ''} />
-              Générer les livrables
+              {t('deliverables.generateBtn')}
             </button>
           </div>
         ) : finalAgent.status === 'RUNNING' || finalAgent.status === 'PENDING' || regenerating ? (
           <div className="p-8 text-center flex flex-col items-center justify-center">
             <Loader2 size={32} className="text-orange animate-spin mb-3" />
-            <p className="font-semibold text-slate-700">Génération des livrables finaux en cours…</p>
+            <p className="font-semibold text-slate-700">{t('deliverables.generating')}</p>
             <p className="text-xs text-ink3 mt-1 max-w-md mx-auto">
-              L'Agent 8 consolide toutes les analyses (SWOT, PESTEL, Porter, axes stratégiques, KPIs, etc.). Cela peut prendre 1 à 2 minutes.
+              {t('deliverables.generatingDesc')}
             </p>
           </div>
         ) : finalAgent.status === 'ERROR' ? (

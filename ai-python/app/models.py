@@ -41,3 +41,4 @@ class ExportExecution(BaseModel):
 class ExportRequest(BaseModel):
     project: ExportProject
     executions: list[ExportExecution] = []
+    language: str = "fr"

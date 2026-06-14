@@ -25,6 +25,7 @@ router.post('/projects/:projectId/agent-events', asyncHandler(async (req, res) =
   };
   if (b.status === 'RUNNING') update.startedAt = new Date();
   if (b.output !== undefined) update.output = b.output;
+  if (b.language !== undefined) update.lang = b.language;
   if (b.modelUsed !== undefined) update.modelUsed = b.modelUsed;
   if (b.tokensInput !== undefined) update.tokensInput = b.tokensInput;
   if (b.tokensOutput !== undefined) update.tokensOutput = b.tokensOutput;

@@ -10,11 +10,66 @@ PAPER = "F7F4EF"
 PAPER2 = "EDE9E1"
 
 
-def pretty(output) -> str:
+TRANSLATIONS = {
+    "fr": {
+        "date": "Date :",
+        "by": "par",
+        "executive_summary": "Synthèse exécutive",
+        "no_data": "(Aucune donnée)",
+        "sources": "Sources",
+        "project": "Projet",
+        "mode": "Mode",
+        "generated_on": "Strategor — généré le",
+        "output_unavailable": "[Output indisponible]",
+        "source_col": "Source",
+        "heading_agent": "Agent",
+        "heading_section": "Section",
+        "heading_content": "Contenu",
+        "heading_status": "Statut",
+        "heading_model": "Modèle",
+        "heading_tokens_in": "Tokens IN",
+        "heading_tokens_out": "Tokens OUT",
+        "sheet_synthesis": "Synthèse",
+        "sheet_agents": "Agents",
+        "sheet_analyses": "Analyses",
+        "sheet_sources": "Sources",
+    },
+    "en": {
+        "date": "Date:",
+        "by": "by",
+        "executive_summary": "Executive Summary",
+        "no_data": "(No data available)",
+        "sources": "Sources",
+        "project": "Project",
+        "mode": "Mode",
+        "generated_on": "Strategor — generated on",
+        "output_unavailable": "[Output unavailable]",
+        "source_col": "Source",
+        "heading_agent": "Agent",
+        "heading_section": "Section",
+        "heading_content": "Content",
+        "heading_status": "Status",
+        "heading_model": "Model",
+        "heading_tokens_in": "Tokens IN",
+        "heading_tokens_out": "Tokens OUT",
+        "sheet_synthesis": "Synthesis",
+        "sheet_agents": "Agents",
+        "sheet_analyses": "Analyses",
+        "sheet_sources": "Sources",
+    }
+}
+
+
+def translate(key: str, lang: str = "fr") -> str:
+    lang_key = "en" if str(lang).lower().startswith("en") else "fr"
+    return TRANSLATIONS[lang_key].get(key, key)
+
+
+def pretty(output, lang: str = "fr") -> str:
     try:
         return json.dumps(output, ensure_ascii=False, indent=2)
     except Exception:
-        return "[Output indisponible]"
+        return translate("output_unavailable", lang)
 
 
 def today() -> str:

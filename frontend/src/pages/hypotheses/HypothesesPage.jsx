@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Sparkles, RefreshCw, ArrowRight, AlertTriangle, Loader2 } from 'lucide-react';
 import { agentApi } from '../../api';
 import { useProjectStore } from '../../store/projectStore';
+import { useAuthStore } from '../../store/authStore';
 
 const linesToArr = (s) => (s || '').split('\n').map((x) => x.trim()).filter(Boolean);
 const arrToLines = (a) => (Array.isArray(a) ? a.join('\n') : a || '');
@@ -20,6 +21,9 @@ export default function HypothesesPage() {
   const { id } = useParams();
   const navigate = useNavigate();
   const continueAnalysis = useProjectStore((s) => s.continueAnalysis);
+  const agentsLoading = useProjectStore((s) => s.agentsLoading);
+  const user = useAuthStore((s) => s.user);
+  const userLang = user?.lang;
 
   const [agent1, setAgent1] = useState(null);
   const [form, setForm] = useState(null);
@@ -50,10 +54,10 @@ export default function HypothesesPage() {
   };
 
   useEffect(() => {
+    initedRef.current = false;
     const stop = startPolling();
     return () => { stop(); if (pollRef.current) clearTimeout(pollRef.current); };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [id]);
+  }, [id, userLang]);
 
   // Initialize the editable form once Agent 1 is done.
   useEffect(() => {
@@ -122,13 +126,25 @@ export default function HypothesesPage() {
         </p>
       </div>
 
-      {(!status || status === 'PENDING' || status === 'RUNNING') && (
+      {agentsLoading ? (
+        <div className="card p-10 text-center">
+          <Loader2 size={28} className="text-orange animate-spin mx-auto mb-3" />
+          <p className="font-medium">
+            {userLang === 'en' ? 'Translating Hypotheses...' : 'Traduction en cours…'}
+          </p>
+          <p className="text-ink3 text-sm mt-1">
+            {userLang === 'en'
+              ? 'DeepSeek is translating the context profile. Please wait.'
+              : "DeepSeek traduit le profil de contexte. Veuillez patienter."}
+          </p>
+        </div>
+      ) : (!status || status === 'PENDING' || status === 'RUNNING') ? (
         <div className="card p-10 text-center">
           <Loader2 size={28} className="text-orange animate-spin mx-auto mb-3" />
           <p className="font-medium">Analyse du brief en cours…</p>
           <p className="text-ink3 text-sm mt-1">L'agent Profil normalise vos informations (quelques secondes).</p>
         </div>
-      )}
+      ) : null}
 
       {status === 'ERROR' && (
         <div className="card p-8 text-center">
@@ -142,7 +158,7 @@ export default function HypothesesPage() {
         </div>
       )}
 
-      {status === 'DONE' && form && (
+      {status === 'DONE' && form && !agentsLoading && (
         <div className="card p-6 md:p-8 space-y-4">
           <Field label="Activité" value={form.activity} onChange={setField('activity')} rows={2} />
           <Field label="Clientèle" value={form.clientele} onChange={setField('clientele')} rows={2} />

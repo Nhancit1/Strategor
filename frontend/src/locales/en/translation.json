@@ -15,6 +15,7 @@
     "pro": "Pro"
   },
   "nav": {
+    "title": "AI Strategist",
     "dashboard": "Dashboard",
     "settings": "Settings",
     "logout": "Sign out"
@@ -38,14 +39,60 @@
     "newProject": "New project",
     "noProjects": "You haven't created any project yet.",
     "createFirst": "Create my first project",
-    "limitFree": "Free plan: 1 project max. Upgrade to Pro for more."
+    "limitFree": "Free plan: 1 project max. Upgrade to Pro for more.",
+    "continue": "Continue →",
+    "deleteConfirm": "Delete \"{{name}}\"?",
+    "mode": "Mode:",
+    "rename": "Rename project",
+    "status": {
+      "ONBOARDING": "Profile setup",
+      "ANALYZING": "Analysis in progress",
+      "PROFILE_REVIEW": "Hypotheses review",
+      "DIAGNOSTIC_REVIEW": "Diagnostic review",
+      "VALIDATING": "To validate",
+      "DONE": "Completed",
+      "FAILED": "Failed"
+    }
   },
   "onboarding": {
     "title": "Your company profile",
     "step": "Step {{current}}/{{total}}",
     "launchAnalysis": "Launch analysis",
     "saving": "Saving…",
-    "saved": "Saved"
+    "saved": "Saved",
+    "financeButton": "💰 Fill Financials",
+    "financeButtonTitle": "Recommended: improves analyses",
+    "skipButton": "⊝ Skip & Launch",
+    "skipButtonTitle": "Launch without financial data",
+    "steps": {
+      "starting_point": "Starting point",
+      "company": "Company",
+      "sector": "Sector",
+      "territory": "Territory",
+      "stage_size": "Stage & size",
+      "target_market": "Target market",
+      "objectives": "Objectives",
+      "internal": "Strengths & portfolio",
+      "recap": "Recap"
+    }
+  },
+  "settings": {
+    "title": "Settings",
+    "profile": "Profile",
+    "email": "Email",
+    "firstName": "First name",
+    "lastName": "Last name",
+    "language": "Language",
+    "security": "Security",
+    "currentPassword": "Current password",
+    "newPassword": "New password",
+    "changePassword": "Change password",
+    "dangerZone": "Danger zone",
+    "dangerDesc": "Deleting your account is permanent and deletes all your projects (GDPR).",
+    "deleteAccount": "Delete my account",
+    "deleteConfirm": "Permanently delete your account? This action is irreversible.",
+    "profileUpdated": "✓ Profile updated",
+    "passwordChanged": "✓ Password changed"
   },
   "agents": {
     "title": "Analysis in progress",
@@ -69,7 +116,32 @@
     "exportPdf": "Export PDF",
     "exportDocx": "Export Word",
     "exportPptx": "Export PowerPoint",
-    "exportXlsx": "Export Excel"
+    "exportXlsx": "Export Excel",
+    "exports": "Exports",
+    "preview": "Preview — Final deliverables",
+    "regenerate": "Regenerate",
+    "noDeliverables": "Agent 8 (Final deliverables) has not been run yet.",
+    "generateBtn": "Generate deliverables",
+    "generating": "Generating final deliverables...",
+    "generatingDesc": "Agent 8 is consolidating all analyses (SWOT, PESTEL, Porter, strategic axes, KPIs, etc.). This might take 1 to 2 minutes.",
+    "generatingText": "Generating…"
+  },
+  "porter": {
+    "title": "Porter's 5 Forces",
+    "marketAttractiveness": "Market Attractiveness:",
+    "keyLevers": "🛠️ Priority Levers",
+    "intensity": {
+      "low": "Low",
+      "medium": "Medium",
+      "high": "High"
+    },
+    "forces": {
+      "rivalry": "Rivalry",
+      "newEntrants": "New Entrants",
+      "substitutes": "Substitutes",
+      "suppliers": "Suppliers",
+      "buyers": "Buyers"
+    }
   },
   "errors": {
     "network": "Server connection error",

@@ -1,6 +1,9 @@
 import dotenv from 'dotenv';
 dotenv.config();
 
+// Watch reload trigger for .env changes
+
+
 const required = (key, fallback) => {
   const v = process.env[key] ?? fallback;
   if (v === undefined) {

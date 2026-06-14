@@ -5,7 +5,7 @@ from docx import Document
 from docx.shared import Pt, RGBColor
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 from .common import (today, done, flatten_output, executive_summary, collect_sources,
-                     ORANGE, ORANGE_DARK, INK3)
+                     translate, ORANGE, ORANGE_DARK, INK3)
 
 
 def _heading(doc, text, size, hex_color):
@@ -17,7 +17,7 @@ def _heading(doc, text, size, hex_color):
     return p
 
 
-def export(project, executions) -> bytes:
+def export(project, executions, lang: str = "fr") -> bytes:
     doc = Document()
 
     title = doc.add_paragraph()
@@ -29,20 +29,20 @@ def export(project, executions) -> bytes:
 
     meta = doc.add_paragraph()
     meta.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    mrun = meta.add_run(f"Date : {today()} — Strategor")
+    mrun = meta.add_run(f"{translate('date', lang)} {today()} — Strategor")
     mrun.font.size = Pt(11)
     mrun.font.color.rgb = RGBColor.from_string(INK3)
 
     summary = executive_summary(executions)
     if summary:
-        _heading(doc, "Synthèse exécutive", 16, ORANGE_DARK)
+        _heading(doc, translate("executive_summary", lang), 16, ORANGE_DARK)
         doc.add_paragraph(summary)
 
     for e in done(executions):
-        _heading(doc, f"Agent {e.agentId} — {e.agentName or ''}", 16, ORANGE_DARK)
+        _heading(doc, f"{translate('heading_agent', lang)} {e.agentId} — {e.agentName or ''}", 16, ORANGE_DARK)
         blocks = flatten_output(e.output)
         if not blocks:
-            doc.add_paragraph("(Aucune donnée)")
+            doc.add_paragraph(translate("no_data", lang))
         for heading, lines in blocks:
             _heading(doc, heading, 12, INK3)
             if len(lines) == 1 and not lines[0].startswith("• "):
@@ -53,7 +53,7 @@ def export(project, executions) -> bytes:
 
     sources = collect_sources(executions)
     if sources:
-        _heading(doc, "Sources", 16, ORANGE_DARK)
+        _heading(doc, translate("sources", lang), 16, ORANGE_DARK)
         for s in sources:
             doc.add_paragraph(s, style="List Bullet")
 

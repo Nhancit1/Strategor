@@ -10,7 +10,7 @@ import subprocess
 import tempfile
 import uuid
 from .common import (today, done, flatten_output, executive_summary, collect_sources,
-                     ORANGE, ORANGE_DARK, INK, INK3, PAPER, PAPER2)
+                     translate, ORANGE, ORANGE_DARK, INK, INK3, PAPER, PAPER2)
 from ..config import settings
 
 _CSS = f"""
@@ -39,45 +39,46 @@ def _render_block(parts, heading, lines):
         parts.append("</ul>")
 
 
-def _build_html(project, executions) -> str:
+def _build_html(project, executions, lang: str = "fr") -> str:
+    html_lang = "en" if str(lang).lower().startswith("en") else "fr"
     parts = [
-        '<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8">',
+        f'<!DOCTYPE html><html lang="{html_lang}"><head><meta charset="UTF-8">',
         f"<style>{_CSS}</style></head><body>",
         f"<h1>Stratégie — {html.escape(project.name)}</h1>",
-        f'<div class="meta">Date : {today()} — Strategor</div>',
+        f'<div class="meta">{translate("date", lang)} {today()} — Strategor</div>',
     ]
 
     summary = executive_summary(executions)
     if summary:
         parts.append('<div class="summary">')
-        parts.append("<h2 style='margin-top:0;border:0'>Synthèse exécutive</h2>")
+        parts.append(f"<h2 style='margin-top:0;border:0'>{translate('executive_summary', lang)}</h2>")
         parts.append(f"<p>{html.escape(summary)}</p>")
         parts.append("</div>")
 
     for e in done(executions):
         parts.append('<div class="agent">')
-        parts.append(f"<h2>Agent {e.agentId} — {html.escape(e.agentName or '')}</h2>")
+        parts.append(f"<h2>{translate('heading_agent', lang)} {e.agentId} — {html.escape(e.agentName or '')}</h2>")
         blocks = flatten_output(e.output)
         if not blocks:
-            parts.append("<p><em>(Aucune donnée)</em></p>")
+            parts.append(f"<p><em>{translate('no_data', lang)}</em></p>")
         for heading, lines in blocks:
             _render_block(parts, heading, lines)
         parts.append("</div>")
 
     sources = collect_sources(executions)
     if sources:
-        parts.append('<div class="agent"><h2>Sources</h2><ul>')
+        parts.append(f'<div class="agent"><h2>{translate("sources", lang)}</h2><ul>')
         for s in sources:
             parts.append(f"<li>{html.escape(s)}</li>")
         parts.append("</ul></div>")
 
-    parts.append(f'<div class="footer">Strategor — généré le {today()}</div>')
+    parts.append(f'<div class="footer">{translate("generated_on", lang)} {today()}</div>')
     parts.append("</body></html>")
     return "".join(parts)
 
 
-def export(project, executions) -> bytes:
-    doc_html = _build_html(project, executions)
+def export(project, executions, lang: str = "fr") -> bytes:
+    doc_html = _build_html(project, executions, lang)
     if settings.pdf_engine == "chromium":
         return _render_chromium(doc_html)
     return _render_weasyprint(doc_html)

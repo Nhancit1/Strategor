@@ -1,3 +1,5 @@
+import { useTranslation } from 'react-i18next';
+
 /** Safely render a value: if the AI returned an object instead of a string, JSON-stringify it */
 function safeText(val) {
   if (!val) return '';
@@ -6,6 +8,7 @@ function safeText(val) {
 }
 
 export default function DeliverablesView({ output }) {
+  const { t } = useTranslation();
   const er = output?.executive_report;
   const deck = Array.isArray(output?.board_deck) ? output.board_deck : [];
   const plan = Array.isArray(output?.team_plan) ? output.team_plan : [];
@@ -17,7 +20,7 @@ export default function DeliverablesView({ output }) {
     return (
       <div className="space-y-4">
         <p className="text-ink3 text-sm">
-          L'agent a produit des données mais le format n'est pas reconnu. Voici le contenu brut :
+          {t('deliverables.unrecognized', "L'agent a produit des données mais le format n'est pas reconnu. Voici le contenu brut :")}
         </p>
         <pre className="bg-paper2 p-4 rounded-lg text-xs overflow-auto max-h-[60vh]">
           {JSON.stringify(output, null, 2)}
@@ -30,22 +33,22 @@ export default function DeliverablesView({ output }) {
     <div className="space-y-6">
       {er && (
         <div className="card p-5">
-          <h3 className="font-title font-semibold text-lg mb-3 text-orange">📄 Rapport dirigeant</h3>
+          <h3 className="font-title font-semibold text-lg mb-3 text-orange">📄 {t('deliverables.executiveReport', 'Rapport dirigeant')}</h3>
           {er.executive_summary && (
             <div className="mb-4">
-              <h4 className="text-sm font-semibold mb-1">Synthèse exécutive</h4>
+              <h4 className="text-sm font-semibold mb-1">{t('deliverables.executiveSummary', 'Synthèse exécutive')}</h4>
               <p className="text-sm text-ink2 whitespace-pre-line">{safeText(er.executive_summary)}</p>
             </div>
           )}
           {er.strategic_analysis && (
             <div className="mb-4">
-              <h4 className="text-sm font-semibold mb-1">Analyse stratégique</h4>
+              <h4 className="text-sm font-semibold mb-1">{t('deliverables.strategicAnalysis', 'Analyse stratégique')}</h4>
               <p className="text-sm text-ink2 whitespace-pre-line">{safeText(er.strategic_analysis)}</p>
             </div>
           )}
           {er.recommendations?.length > 0 && (
             <div className="mb-4">
-              <h4 className="text-sm font-semibold mb-1">Recommandations</h4>
+              <h4 className="text-sm font-semibold mb-1">{t('deliverables.recommendationsTitle', 'Recommandations')}</h4>
               <ul className="list-disc list-inside text-sm space-y-1">
                 {er.recommendations.map((r, i) => <li key={i}>{safeText(r)}</li>)}
               </ul>
@@ -53,7 +56,7 @@ export default function DeliverablesView({ output }) {
           )}
           {er.action_plan_18m && (
             <div>
-              <h4 className="text-sm font-semibold mb-1">Plan 18 mois</h4>
+              <h4 className="text-sm font-semibold mb-1">{t('deliverables.plan18m', 'Plan 18 mois')}</h4>
               <p className="text-sm text-ink2 whitespace-pre-line">{safeText(er.action_plan_18m)}</p>
             </div>
           )}
@@ -62,7 +65,7 @@ export default function DeliverablesView({ output }) {
 
       {deck.length > 0 && (
         <div className="card p-5">
-          <h3 className="font-title font-semibold text-lg mb-3 text-orange">📊 Deck board</h3>
+          <h3 className="font-title font-semibold text-lg mb-3 text-orange">📊 {t('deliverables.boardDeck', 'Deck board')}</h3>
           <div className="space-y-2">
             {deck.map((slide, i) => (
               <div key={i} className="border border-paper3 p-3 rounded-lg">
@@ -80,7 +83,7 @@ export default function DeliverablesView({ output }) {
 
       {plan.length > 0 && (
         <div className="card p-5">
-          <h3 className="font-title font-semibold text-lg mb-3 text-orange">👥 Plan équipes</h3>
+          <h3 className="font-title font-semibold text-lg mb-3 text-orange">👥 {t('deliverables.teamPlan', 'Plan équipes')}</h3>
           <div className="space-y-2">
             {plan.map((p, i) => (
               <div key={i} className="border border-paper3 p-3 rounded-lg">

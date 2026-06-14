@@ -3,7 +3,7 @@ NO cost), readable Analyses, and a Sources sheet. Cost is never included."""
 import io
 from openpyxl import Workbook
 from openpyxl.styles import Font, PatternFill, Alignment
-from .common import today, done, flatten_output, executive_summary, collect_sources
+from .common import today, done, flatten_output, executive_summary, collect_sources, translate
 
 HEADER_FILL = PatternFill("solid", fgColor="E8621A")  # brand orange
 HEADER_FONT = Font(bold=True, color="FFFFFF")
@@ -16,18 +16,18 @@ def _header(ws, row, values):
         c.font = HEADER_FONT
 
 
-def export(project, executions) -> bytes:
+def export(project, executions, lang: str = "fr") -> bytes:
     wb = Workbook()
 
     # Synthèse
     s = wb.active
-    s.title = "Synthèse"
-    _header(s, 1, ["Projet", project.name])
-    s.cell(row=2, column=1, value="Date"); s.cell(row=2, column=2, value=today())
-    s.cell(row=3, column=1, value="Mode"); s.cell(row=3, column=2, value=project.analysisMode or "comprehensive")
+    s.title = translate("sheet_synthesis", lang)
+    _header(s, 1, [translate("project", lang), project.name])
+    s.cell(row=2, column=1, value=translate("date", lang)); s.cell(row=2, column=2, value=today())
+    s.cell(row=3, column=1, value=translate("mode", lang)); s.cell(row=3, column=2, value=project.analysisMode or "comprehensive")
     summary = executive_summary(executions)
     if summary:
-        s.cell(row=5, column=1, value="Synthèse exécutive").font = Font(bold=True)
+        s.cell(row=5, column=1, value=translate("executive_summary", lang)).font = Font(bold=True)
         c = s.cell(row=6, column=1, value=summary)
         c.alignment = Alignment(wrap_text=True, vertical="top")
         s.merge_cells(start_row=6, start_column=1, end_row=6, end_column=6)
@@ -35,8 +35,15 @@ def export(project, executions) -> bytes:
     s.column_dimensions["B"].width = 60
 
     # Agents (all executions) — model + tokens only, NO cost
-    a = wb.create_sheet("Agents")
-    _header(a, 1, ["ID", "Agent", "Statut", "Modèle", "Tokens IN", "Tokens OUT"])
+    a = wb.create_sheet(translate("sheet_agents", lang))
+    _header(a, 1, [
+        "ID",
+        translate("heading_agent", lang),
+        translate("heading_status", lang),
+        translate("heading_model", lang),
+        translate("heading_tokens_in", lang),
+        translate("heading_tokens_out", lang)
+    ])
     r = 2
     for e in executions:
         a.cell(row=r, column=1, value=e.agentId)
@@ -50,15 +57,19 @@ def export(project, executions) -> bytes:
         a.column_dimensions[col].width = 16
 
     # Analyses (DONE only) — readable, section by section
-    o = wb.create_sheet("Analyses")
-    _header(o, 1, ["Agent", "Section", "Contenu"])
+    o = wb.create_sheet(translate("sheet_analyses", lang))
+    _header(o, 1, [
+        translate("heading_agent", lang),
+        translate("heading_section", lang),
+        translate("heading_content", lang)
+    ])
     r = 2
     for e in done(executions):
         label = f"{e.agentId} — {e.agentName}"
         blocks = flatten_output(e.output)
         if not blocks:
             o.cell(row=r, column=1, value=label)
-            o.cell(row=r, column=3, value="(Aucune donnée)")
+            o.cell(row=r, column=3, value=translate("no_data", lang))
             r += 1
             continue
         for heading, lines in blocks:
@@ -77,8 +88,8 @@ def export(project, executions) -> bytes:
     # Sources
     sources = collect_sources(executions)
     if sources:
-        sh = wb.create_sheet("Sources")
-        _header(sh, 1, ["Source"])
+        sh = wb.create_sheet(translate("sheet_sources", lang))
+        _header(sh, 1, [translate("source_col", lang)])
         for i, src in enumerate(sources, start=2):
             sh.cell(row=i, column=1, value=src)
         sh.column_dimensions["A"].width = 100

@@ -15,6 +15,8 @@ const agentExecutionSchema = new mongoose.Schema(
     output: { type: mongoose.Schema.Types.Mixed, default: null },
     editedOutput: { type: mongoose.Schema.Types.Mixed, default: null },
     versions: { type: mongoose.Schema.Types.Mixed, default: null },
+    lang: { type: String, default: 'fr' },
+    translations: { type: mongoose.Schema.Types.Mixed, default: {} },
     modelUsed: { type: String, default: null },
     tokensInput: { type: Number, default: null },
     tokensOutput: { type: Number, default: null },

@@ -3,7 +3,9 @@ import { asyncHandler, ApiError } from '../middleware/error.js';
 import { requireAuth } from '../middleware/auth.js';
 import { loadOwnedProject } from '../utils/ownership.js';
 import { AgentExecution } from '../models/AgentExecution.js';
+import { User } from '../models/User.js';
 import { generateExport } from '../services/pythonClient.js';
+import { translateExecutionIfNeeded } from '../services/translator.js';
 
 const router = Router({ mergeParams: true });
 router.use(requireAuth);
@@ -23,10 +25,17 @@ router.post('/:format', asyncHandler(async (req, res) => {
 
   const project = await loadOwnedProject(req.params.projectId, req.user.id);
   const execs = await AgentExecution.find({ project: project._id }).sort({ agentId: 1 });
+  const user = await User.findById(req.user.id).select('lang');
+  const targetLang = user?.lang || 'fr';
+
+  const translatedExecs = await Promise.all(
+    execs.map((e) => translateExecutionIfNeeded(e, targetLang))
+  );
 
   const payload = {
+    language: targetLang,
     project: { id: project.id.toString(), name: project.name, analysisMode: project.analysisMode },
-    executions: execs.map((e) => ({
+    executions: translatedExecs.map((e) => ({
       agentId: e.agentId,
       agentName: e.agentName,
       status: e.status,

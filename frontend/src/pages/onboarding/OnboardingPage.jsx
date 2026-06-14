@@ -15,15 +15,15 @@ import Step8Internal from './Step8Internal';
 import Step8Recap from './Step8Recap';
 
 const STEPS = [
-  { id: 1, label: 'Point de départ', component: Step1StartingPoint },
-  { id: 2, label: 'Entreprise', component: Step2Company },
-  { id: 3, label: 'Secteur', component: Step3Sector },
-  { id: 4, label: 'Territoire', component: Step4Territory },
-  { id: 5, label: 'Stade & taille', component: Step5StageSize },
-  { id: 6, label: 'Marché cible', component: Step6Market },
-  { id: 7, label: 'Objectifs', component: Step7Objectives },
-  { id: 8, label: 'Forces & portefeuille', component: Step8Internal },
-  { id: 9, label: 'Récapitulatif', component: Step8Recap },
+  { id: 1, key: 'starting_point', component: Step1StartingPoint },
+  { id: 2, key: 'company', component: Step2Company },
+  { id: 3, key: 'sector', component: Step3Sector },
+  { id: 4, key: 'territory', component: Step4Territory },
+  { id: 5, key: 'stage_size', component: Step5StageSize },
+  { id: 6, key: 'target_market', component: Step6Market },
+  { id: 7, key: 'objectives', component: Step7Objectives },
+  { id: 8, key: 'internal', component: Step8Internal },
+  { id: 9, key: 'recap', component: Step8Recap },
 ];
 
 export default function OnboardingPage() {
@@ -86,7 +86,7 @@ export default function OnboardingPage() {
               onClick={() => setStep(s.id)}
               className={`hover:text-ink ${step === s.id ? 'text-orange font-semibold' : ''}`}
             >
-              {s.label}
+              {t(`onboarding.steps.${s.key}`)}
             </button>
           ))}
         </div>
@@ -125,13 +125,13 @@ export default function OnboardingPage() {
             <button
               onClick={() => navigate(`/projects/${id}/finance`)}
               className="btn-primary"
-              title="Recommandé : améliore tes analyses"
+              title={t('onboarding.financeButtonTitle')}
             >
-              💰 Renseigner les finances
+              {t('onboarding.financeButton')}
               <ChevronRight size={16} className="inline ml-1" />
             </button>
-            <button onClick={handleLaunch} className="btn-secondary" title="Lancer sans données financières">
-              ⊝ Passer & lancer
+            <button onClick={handleLaunch} className="btn-secondary" title={t('onboarding.skipButtonTitle')}>
+              {t('onboarding.skipButton')}
             </button>
           </div>
         )}

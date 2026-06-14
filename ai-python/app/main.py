@@ -78,7 +78,7 @@ async def export(fmt: str, req: ExportRequest,
     except KeyError as e:
         raise HTTPException(status_code=400, detail=str(e))
     try:
-        data = exporter(req.project, req.executions)
+        data = exporter(req.project, req.executions, req.language)
     except Exception as e:
         log.exception("Export %s failed: %s", fmt, e)
         raise HTTPException(status_code=500, detail=f"Export {fmt} échoué : {e}")

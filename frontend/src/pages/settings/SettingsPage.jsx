@@ -1,10 +1,12 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '../../store/authStore';
 import { authApi, userApi } from '../../api';
 
 export default function SettingsPage() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const user = useAuthStore((s) => s.user);
   const setUser = useAuthStore((s) => s.setUser);
   const logout = useAuthStore((s) => s.logout);
@@ -20,21 +22,21 @@ export default function SettingsPage() {
   const saveProfile = async () => {
     const { data } = await userApi.update(profile);
     setUser(data);
-    setMsg('✓ Profil mis à jour');
+    setMsg(t('settings.profileUpdated'));
   };
 
   const changePwd = async () => {
     try {
       await authApi.changePassword(pwd.current, pwd.next);
       setPwd({ current: '', next: '' });
-      setMsg('✓ Mot de passe modifié');
+      setMsg(t('settings.passwordChanged'));
     } catch (e) {
-      setMsg('✗ ' + (e.response?.data?.message || 'Erreur'));
+      setMsg('✗ ' + (e.response?.data?.message || t('common.error')));
     }
   };
 
   const deleteAccount = async () => {
-    if (!confirm('Supprimer définitivement votre compte ? Cette action est irréversible.')) return;
+    if (!confirm(t('settings.deleteConfirm'))) return;
     await authApi.deleteAccount();
     await logout();
     navigate('/login');
@@ -42,61 +44,61 @@ export default function SettingsPage() {
 
   return (
     <div className="container-narrow py-8">
-      <h1 className="font-title text-3xl font-bold mb-6">Paramètres</h1>
+      <h1 className="font-title text-3xl font-bold mb-6">{t('settings.title')}</h1>
       {msg && <div className="card p-3 mb-4 bg-paper2 text-sm">{msg}</div>}
 
       {/* Profil */}
       <div className="card p-6 mb-4">
-        <h2 className="font-title text-xl font-semibold mb-4">Profil</h2>
+        <h2 className="font-title text-xl font-semibold mb-4">{t('settings.profile')}</h2>
         <div className="space-y-3">
           <div>
-            <label className="form-label">Email</label>
+            <label className="form-label">{t('settings.email')}</label>
             <input className="form-input" value={user?.email || ''} disabled />
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="form-label">Prénom</label>
+              <label className="form-label">{t('settings.firstName')}</label>
               <input className="form-input" value={profile.firstName} onChange={(e) => setProfile({ ...profile, firstName: e.target.value })} />
             </div>
             <div>
-              <label className="form-label">Nom</label>
+              <label className="form-label">{t('settings.lastName')}</label>
               <input className="form-input" value={profile.lastName} onChange={(e) => setProfile({ ...profile, lastName: e.target.value })} />
             </div>
           </div>
           <div>
-            <label className="form-label">Langue</label>
+            <label className="form-label">{t('settings.language')}</label>
             <select className="form-input" value={profile.lang} onChange={(e) => setProfile({ ...profile, lang: e.target.value })}>
               <option value="fr">Français</option>
               <option value="en">English</option>
             </select>
           </div>
-          <button onClick={saveProfile} className="btn-primary">Enregistrer</button>
+          <button onClick={saveProfile} className="btn-primary">{t('common.save')}</button>
         </div>
       </div>
 
       {/* Sécurité */}
       <div className="card p-6 mb-4">
-        <h2 className="font-title text-xl font-semibold mb-4">Sécurité</h2>
+        <h2 className="font-title text-xl font-semibold mb-4">{t('settings.security')}</h2>
         <div className="space-y-3">
           <div>
-            <label className="form-label">Mot de passe actuel</label>
+            <label className="form-label">{t('settings.currentPassword')}</label>
             <input type="password" className="form-input" value={pwd.current} onChange={(e) => setPwd({ ...pwd, current: e.target.value })} />
           </div>
           <div>
-            <label className="form-label">Nouveau mot de passe</label>
+            <label className="form-label">{t('settings.newPassword')}</label>
             <input type="password" minLength={8} className="form-input" value={pwd.next} onChange={(e) => setPwd({ ...pwd, next: e.target.value })} />
           </div>
-          <button onClick={changePwd} className="btn-secondary">Changer le mot de passe</button>
+          <button onClick={changePwd} className="btn-secondary">{t('settings.changePassword')}</button>
         </div>
       </div>
 
       {/* Danger zone */}
       <div className="card p-6 border-red-200">
-        <h2 className="font-title text-xl font-semibold mb-2 text-red-700">Zone dangereuse</h2>
+        <h2 className="font-title text-xl font-semibold mb-2 text-red-700">{t('settings.dangerZone')}</h2>
         <p className="text-sm text-ink3 mb-4">
-          Supprimer votre compte est définitif et entraîne la suppression de tous vos projets (RGPD).
+          {t('settings.dangerDesc')}
         </p>
-        <button onClick={deleteAccount} className="btn-danger">Supprimer mon compte</button>
+        <button onClick={deleteAccount} className="btn-danger">{t('settings.deleteAccount')}</button>
       </div>
     </div>
   );

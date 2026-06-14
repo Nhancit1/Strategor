@@ -9,6 +9,7 @@ export const useProjectStore = create((set, get) => ({
   financeCompleteness: 0,
   agents: [],
   loading: false,
+  agentsLoading: false,
   error: null,
 
   fetchProjects: async () => {
@@ -97,9 +98,15 @@ export const useProjectStore = create((set, get) => ({
   },
 
   fetchAgents: async (id) => {
-    const { data } = await agentApi.list(id);
-    set({ agents: data });
-    return data;
+    set({ agentsLoading: true });
+    try {
+      const { data } = await agentApi.list(id);
+      set({ agents: data, agentsLoading: false });
+      return data;
+    } catch (e) {
+      set({ agentsLoading: false });
+      throw e;
+    }
   },
 
   // Mise à jour via WebSocket (event push)

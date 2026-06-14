@@ -97,22 +97,29 @@ def _count_web_searches(resp) -> int:
         return 0
 
 
-async def _research(context: str) -> tuple[str, list, int]:
+async def _research(context: str, language: str = "fr") -> tuple[str, list, int]:
     """Best-effort web research. Returns (findings_text, sources, grounding_cost_cents).
     Never raises: on any failure returns ('', [], 0) -> agent falls back to ungrounded."""
     try:
+        is_en = language.lower().startswith("en")
+        system_instruction = (
+            "You are a market analyst. Search the web for FACTUAL, RECENT, and QUANTITATIVE information to support the analysis below. "
+            "Prioritize reputable sources (financial press, institutions, industry reports, official websites); avoid forums and unreliable sources. "
+            "Provide a dense synthesis of key facts, figures, and trends in English.\n\n"
+            "=== Analysis Context ===\n" + (context or "")[:2500]
+        ) if is_en else (
+            "Tu es un analyste de marché. Recherche sur le web des informations FACTUELLES, "
+            "RÉCENTES et CHIFFRÉES pour étayer l'analyse ci-dessous. Privilégie des sources "
+            "réputées (presse économique, institutions, rapports sectoriels, sites officiels) ; "
+            "évite forums et sources non fiables. Restitue une synthèse dense des faits clés, "
+            "chiffres et tendances, en français.\n\n"
+            "=== Contexte de l'analyse ===\n" + (context or "")[:2500]
+        )
         resp = await _client.messages.create(
             model=settings.model_research,
             max_tokens=2048,
-            system=(
-                "Tu es un analyste de marché. Recherche sur le web des informations FACTUELLES, "
-                "RÉCENTES et CHIFFRÉES pour étayer l'analyse ci-dessous. Privilégie des sources "
-                "réputées (presse économique, institutions, rapports sectoriels, sites officiels) ; "
-                "évite forums et sources non fiables. Restitue une synthèse dense des faits clés, "
-                "chiffres et tendances, en français.\n\n"
-                "=== Contexte de l'analyse ===\n" + (context or "")[:2500]
-            ),
-            messages=[{"role": "user", "content": "Effectue tes recherches et synthétise les faits pertinents."}],
+            system=system_instruction,
+            messages=[{"role": "user", "content": "Perform your research and synthesize the relevant facts." if is_en else "Effectue tes recherches et synthétise les faits pertinents."}],
             tools=[{
                 "type": settings.web_search_tool_type,
                 "name": "web_search",
@@ -145,18 +152,21 @@ async def generate_structured(
     user_prompt: str = "Lance ton analyse maintenant.",
     max_tokens: int = 4096,
     use_web_search: bool = False,
+    language: str = "fr",
 ) -> StructuredResponse:
     model = _model_for(tier)
 
     grounding_cost = 0
     web_sources: list = []
     if use_web_search and settings.grounding_enabled:
-        findings, web_sources, grounding_cost = await _research(system_prompt)
+        findings, web_sources, grounding_cost = await _research(system_prompt, language)
         if findings:
+            is_en = language.lower().startswith("en")
             system_prompt = (
                 system_prompt
-                + "\n\n=== Données factuelles issues d'une recherche web récente "
-                  "(intègre-les et appuie ton analyse dessus) ===\n" + findings + "\n"
+                + ("\n\n=== Factual data from recent web research (integrate this into your analysis) ===\n" + findings + "\n")
+                if is_en else
+                (system_prompt + "\n\n=== Données factuelles issues d'une recherche web récente (intègre-les et appuie ton analyse dessus) ===\n" + findings + "\n")
             )
 
     # Anthropic requires tool names to match ^[a-zA-Z0-9_-]{1,128}$
@@ -167,13 +177,23 @@ async def generate_structured(
     tool_name = "submit_" + re.sub(r"[^a-z0-9]+", "_", _ascii).strip("_")[:100]
 
     # Append schema instruction to the prompt
-    system_prompt += (
-        "\n\nTu DOIS répondre UNIQUEMENT en générant un bloc de code JSON valide (entouré de ```json et ```). "
-        "Le JSON doit STRICTEMENT respecter le schéma suivant :\n"
-        f"{output_schema}\n"
-        "RÈGLE ABSOLUE : SOIS EXTRÊMEMENT CONCIS. Résume tes idées en phrases courtes ou mots-clés. "
-        "Ton JSON risque d'être coupé si tu génères trop de texte, ce qui fera échouer le système. Rédige l'essentiel uniquement !"
-    )
+    is_en = language.lower().startswith("en")
+    if is_en:
+        system_prompt += (
+            "\n\nYou MUST reply ONLY by generating a valid JSON code block (enclosed in ```json and ```). "
+            "The JSON must STRICTELY adhere to the following schema:\n"
+            f"{output_schema}\n"
+            "ABSOLUTE RULE: BE EXTREMELY CONCISE. Summarize your thoughts in short phrases or bullet points. "
+            "Your JSON might get truncated if you generate too much text, which will cause the system to fail. Write only the essentials!"
+        )
+    else:
+        system_prompt += (
+            "\n\nTu DOIS répondre UNIQUEMENT en générant un bloc de code JSON valide (entouré de ```json et ```). "
+            "Le JSON doit STRICTEMENT respecter le schéma suivant :\n"
+            f"{output_schema}\n"
+            "RÈGLE ABSOLUE : SOIS EXTRÊMEMENT CONCIS. Résume tes idées en phrases courtes ou mots-clés. "
+            "Ton JSON risque d'être coupé si tu génères trop de texte, ce qui fera échouer le système. Rédige l'essentiel uniquement !"
+        )
 
     resp = await _client.messages.create(
         model=model,

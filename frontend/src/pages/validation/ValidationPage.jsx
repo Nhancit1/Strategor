@@ -1,8 +1,9 @@
 import { useEffect, useState, useMemo, useCallback } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { CheckCircle2, RefreshCw, Pencil, X, Save } from 'lucide-react';
+import { CheckCircle2, RefreshCw, Pencil, X, Save, Loader2 } from 'lucide-react';
 import { useProjectStore } from '../../store/projectStore';
+import { useAuthStore } from '../../store/authStore';
 import { agentApi } from '../../api';
 
 import ProfileView from '../../components/viz/ProfileView';
@@ -41,7 +42,9 @@ export default function ValidationPage() {
   const { id, tab } = useParams();
   const navigate = useNavigate();
   const { t } = useTranslation();
-  const { agents, fetchAgents } = useProjectStore();
+  const { agents, fetchAgents, agentsLoading } = useProjectStore();
+  const user = useAuthStore((s) => s.user);
+  const userLang = user?.lang;
   const [activeTab, setActiveTab] = useState(tab || TABS[0].id);
   const [regenerating, setRegenerating] = useState(false);
 
@@ -50,7 +53,7 @@ export default function ValidationPage() {
   const [editedOutput, setEditedOutput] = useState(null);
   const [saving, setSaving] = useState(false);
 
-  useEffect(() => { fetchAgents(id); }, [id, fetchAgents]);
+  useEffect(() => { fetchAgents(id); }, [id, fetchAgents, userLang]);
   useEffect(() => { if (tab) setActiveTab(tab); }, [tab]);
 
   // Reset editing state when switching tabs
@@ -175,9 +178,21 @@ export default function ValidationPage() {
         })}
       </div>
 
-      <div className="bg-white p-6 rounded-xl border border-paper3 shadow-card">
-        {agents.length === 0 ? (
-          <p className="text-ink3">{t('common.loading')}</p>
+      <div className="bg-white p-6 rounded-xl border border-paper3 shadow-card min-h-[300px] flex flex-col justify-center">
+        {agentsLoading ? (
+          <div className="flex flex-col items-center justify-center py-12 text-center my-auto">
+            <Loader2 size={40} className="text-orange animate-spin mb-4" />
+            <h3 className="font-title text-lg font-semibold mb-1">
+              {userLang === 'en' ? 'Translating Report...' : 'Traduction en cours...'}
+            </h3>
+            <p className="text-sm text-ink3 max-w-md">
+              {userLang === 'en' 
+                ? 'DeepSeek is translating the business strategy output to English. This may take a few seconds.' 
+                : "DeepSeek traduit l'analyse stratégique. Cela peut prendre quelques secondes."}
+            </p>
+          </div>
+        ) : agents.length === 0 ? (
+          <p className="text-ink3 text-center">{t('common.loading')}</p>
         ) : !currentAgent ? (
           <p className="text-ink3">Cet agent n'a pas été exécuté pour ce projet (mode ou conditions non remplis).</p>
         ) : currentAgent.status === 'SKIPPED' ? (

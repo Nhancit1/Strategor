@@ -1,3 +1,5 @@
+import { useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { useAuthStore } from './store/authStore';
 
@@ -44,6 +46,15 @@ function RequireAdmin({ children }) {
 }
 
 export default function App() {
+  const user = useAuthStore((s) => s.user);
+  const { i18n } = useTranslation();
+
+  useEffect(() => {
+    if (user?.lang) {
+      i18n.changeLanguage(user.lang);
+    }
+  }, [user?.lang, i18n]);
+
   return (
     <Routes>
       {/* Public + minimal-layout authed (forced change-password) */}

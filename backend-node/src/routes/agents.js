@@ -6,7 +6,9 @@ import { analyzeLimiter } from '../middleware/rateLimit.js';
 import { AgentExecution } from '../models/AgentExecution.js';
 import { OnboardingProfile } from '../models/OnboardingProfile.js';
 import { FinanceLite } from '../models/FinanceLite.js';
+import { User } from '../models/User.js';
 import { startAnalysis } from '../services/pythonClient.js';
+import { translateExecutionIfNeeded } from '../services/translator.js';
 
 // mergeParams so :projectId from the parent mount is available.
 const router = Router({ mergeParams: true });
@@ -21,13 +23,22 @@ async function getExec(projectId, agentId) {
 
 router.get('/', asyncHandler(async (req, res) => {
   await loadOwnedProject(req.params.projectId, req.user.id);
-  const execs = await AgentExecution.find({ project: req.params.projectId }).sort({ agentId: 1 }).lean();
-  res.json(execs);
+  const execs = await AgentExecution.find({ project: req.params.projectId }).sort({ agentId: 1 });
+  const user = await User.findById(req.user.id).select('lang');
+  const targetLang = user?.lang || 'fr';
+  const translated = await Promise.all(
+    execs.map((e) => translateExecutionIfNeeded(e, targetLang))
+  );
+  res.json(translated);
 }));
 
 router.get('/:agentId', asyncHandler(async (req, res) => {
   await loadOwnedProject(req.params.projectId, req.user.id);
-  res.json((await getExec(req.params.projectId, Number(req.params.agentId))).toJSON());
+  const exec = await getExec(req.params.projectId, Number(req.params.agentId));
+  const user = await User.findById(req.user.id).select('lang');
+  const targetLang = user?.lang || 'fr';
+  const translated = await translateExecutionIfNeeded(exec, targetLang);
+  res.json(typeof translated.toJSON === 'function' ? translated.toJSON() : translated);
 }));
 
 router.put('/:agentId/output', asyncHandler(async (req, res) => {
@@ -48,6 +59,9 @@ async function relaunch(req, res) {
   exec.errorMessage = null;
   await exec.save();
 
+  const user = await User.findById(req.user.id).select('lang');
+  const lang = user?.lang || 'fr';
+
   const profile = await OnboardingProfile.findOne({ project: project._id });
   const finance = await FinanceLite.findOne({ project: project._id });
   project.status = 'ANALYZING';
@@ -66,7 +80,7 @@ async function relaunch(req, res) {
   startAnalysis({
     projectId: project.id.toString(),
     mode: project.analysisMode || 'standard',
-    language: 'fr',
+    language: lang,
     phase: 'single',
     targetAgentId: agentId,
     seedOutputs,

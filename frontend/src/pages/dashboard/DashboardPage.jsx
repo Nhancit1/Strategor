@@ -5,7 +5,8 @@ import { Plus, Trash2, Pencil } from 'lucide-react';
 import { useProjectStore } from '../../store/projectStore';
 import { useAuthStore } from '../../store/authStore';
 
-function ProjectCard({ p, statusRoute, statusLabel, deleteProject, updateProject }) {
+function ProjectCard({ p, statusRoute, deleteProject, updateProject }) {
+  const { t } = useTranslation();
   const [isEditing, setIsEditing] = useState(false);
   const [editName, setEditName] = useState('');
   const inputRef = useRef(null);
@@ -59,26 +60,26 @@ function ProjectCard({ p, statusRoute, statusLabel, deleteProject, updateProject
               <button 
                 onClick={handleStartEdit}
                 className="opacity-0 group-hover:opacity-100 p-1 text-ink3 hover:text-orange transition-all flex-shrink-0"
-                title="Renommer le projet"
+                title={t('dashboard.rename')}
               >
                 <Pencil size={14} />
               </button>
             </>
           )}
         </div>
-        <p className="text-sm text-ink3 mb-3">{statusLabel(p.status)}</p>
+        <p className="text-sm text-ink3 mb-3">{t(`dashboard.status.${p.status}`, { defaultValue: p.status })}</p>
         <p className="text-xs text-ink3">
-          Mode : <span className="font-medium">{p.analysisMode || 'standard'}</span>
+          {t('dashboard.mode')} <span className="font-medium">{p.analysisMode || 'standard'}</span>
         </p>
       </Link>
       <div className="mt-4 pt-4 border-t border-paper3 flex justify-between items-center">
         <Link to={statusRoute(p)} className="text-sm text-orange hover:underline">
-          Continuer →
+          {t('dashboard.continue')}
         </Link>
         <button
-          onClick={() => { if (confirm(`Supprimer "${p.name}" ?`)) deleteProject(p.id); }}
+          onClick={() => { if (confirm(t('dashboard.deleteConfirm', { name: p.name }))) deleteProject(p.id); }}
           className="text-ink3 hover:text-red-600 transition-colors"
-          title="Supprimer"
+          title={t('common.delete')}
         >
           <Trash2 size={16} />
         </button>
@@ -101,7 +102,7 @@ export default function DashboardPage() {
     setError(null);
     setCreating(true);
     try {
-      const project = await createProject({ name: 'Nouveau projet' });
+      const project = await createProject({ name: t('dashboard.newProject') });
       navigate(`/projects/${project.id}/onboarding`);
     } catch (err) {
       setError(err.response?.data?.message || t('errors.network'));
@@ -109,16 +110,6 @@ export default function DashboardPage() {
       setCreating(false);
     }
   };
-
-  const statusLabel = (s) => ({
-    ONBOARDING: 'Profil en cours',
-    ANALYZING: 'Analyse en cours',
-    PROFILE_REVIEW: 'Hypothèses à valider',
-    DIAGNOSTIC_REVIEW: 'Diagnostic à valider',
-    VALIDATING: 'À valider',
-    DONE: 'Terminé',
-    FAILED: 'Échec',
-  }[s] || s);
 
   const statusRoute = (project) => {
     switch (project.status) {
@@ -164,7 +155,6 @@ export default function DashboardPage() {
               key={p.id} 
               p={p} 
               statusRoute={statusRoute} 
-              statusLabel={statusLabel} 
               deleteProject={deleteProject} 
               updateProject={updateProject} 
             />

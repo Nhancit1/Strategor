@@ -15,6 +15,7 @@
     "pro": "Pro"
   },
   "nav": {
+    "title": "Stratège IA",
     "dashboard": "Tableau de bord",
     "settings": "Paramètres",
     "logout": "Déconnexion"
@@ -38,14 +39,60 @@
     "newProject": "Nouveau projet",
     "noProjects": "Vous n'avez pas encore créé de projet.",
     "createFirst": "Créer mon premier projet",
-    "limitFree": "Plan Gratuit : 1 projet maximum. Passez en Pro pour plus."
+    "limitFree": "Plan Gratuit : 1 projet maximum. Passez en Pro pour plus.",
+    "continue": "Continuer →",
+    "deleteConfirm": "Supprimer \"{{name}}\" ?",
+    "mode": "Mode :",
+    "rename": "Renommer le projet",
+    "status": {
+      "ONBOARDING": "Profil en cours",
+      "ANALYZING": "Analyse en cours",
+      "PROFILE_REVIEW": "Hypothèses à valider",
+      "DIAGNOSTIC_REVIEW": "Diagnostic à valider",
+      "VALIDATING": "À valider",
+      "DONE": "Terminé",
+      "FAILED": "Échec"
+    }
   },
   "onboarding": {
     "title": "Profil de votre entreprise",
     "step": "Étape {{current}}/{{total}}",
     "launchAnalysis": "Lancer l'analyse",
     "saving": "Enregistrement…",
-    "saved": "Enregistré"
+    "saved": "Enregistré",
+    "financeButton": "💰 Renseigner les finances",
+    "financeButtonTitle": "Recommandé : améliore tes analyses",
+    "skipButton": "⊝ Passer & lancer",
+    "skipButtonTitle": "Lancer sans données financières",
+    "steps": {
+      "starting_point": "Point de départ",
+      "company": "Entreprise",
+      "sector": "Secteur",
+      "territory": "Territoire",
+      "stage_size": "Stade & taille",
+      "target_market": "Marché cible",
+      "objectives": "Objectifs",
+      "internal": "Forces & portefeuille",
+      "recap": "Récapitulatif"
+    }
+  },
+  "settings": {
+    "title": "Paramètres",
+    "profile": "Profil",
+    "email": "Email",
+    "firstName": "Prénom",
+    "lastName": "Nom",
+    "language": "Langue",
+    "security": "Sécurité",
+    "currentPassword": "Mot de passe actuel",
+    "newPassword": "Nouveau mot de passe",
+    "changePassword": "Changer le mot de passe",
+    "dangerZone": "Zone dangereuse",
+    "dangerDesc": "Supprimer votre compte est définitif et entraîne la suppression de tous vos projets (RGPD).",
+    "deleteAccount": "Supprimer mon compte",
+    "deleteConfirm": "Supprimer définitivement votre compte ? Cette action est irréversible.",
+    "profileUpdated": "✓ Profil mis à jour",
+    "passwordChanged": "✓ Mot de passe modifié"
   },
   "agents": {
     "title": "Analyse en cours",
@@ -69,7 +116,32 @@
     "exportPdf": "Exporter PDF",
     "exportDocx": "Exporter Word",
     "exportPptx": "Exporter PowerPoint",
-    "exportXlsx": "Exporter Excel"
+    "exportXlsx": "Exporter Excel",
+    "exports": "Exports",
+    "preview": "Aperçu — Livrables finaux",
+    "regenerate": "Régénérer",
+    "noDeliverables": "Agent 8 (Livrables finaux) n'a pas encore été lancé.",
+    "generateBtn": "Générer les livrables",
+    "generating": "Génération des livrables finaux en cours…",
+    "generatingDesc": "L'Agent 8 consolide toutes les analyses (SWOT, PESTEL, Porter, axes stratégiques, KPIs, etc.). Cela peut prendre 1 à 2 minutes.",
+    "generatingText": "Génération…"
+  },
+  "porter": {
+    "title": "5 Forces de Porter",
+    "marketAttractiveness": "Attractivité du marché :",
+    "keyLevers": "🛠️ Leviers prioritaires",
+    "intensity": {
+      "low": "Faible",
+      "medium": "Moyenne",
+      "high": "Élevée"
+    },
+    "forces": {
+      "rivalry": "Rivalité",
+      "newEntrants": "Nouveaux entrants",
+      "substitutes": "Substituts",
+      "suppliers": "Fournisseurs",
+      "buyers": "Clients"
+    }
   },
   "errors": {
     "network": "Erreur de connexion au serveur",
