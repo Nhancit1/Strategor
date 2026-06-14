@@ -1,19 +1,21 @@
 """
-The 12 Strategor agents. Metadata mirrors the Spring AgentDefinition beans;
+The 15 Strategor agents. Metadata mirrors the Spring AgentDefinition beans;
 missions and JSON Schemas come verbatim from prompts.py.
 
 Execution DAG (computed from depends_on by the orchestrator):
   L0: 1
   L1: 2, 3, 4, 10
-  L2: 9            (depends on 4)
-  L3: 5            (depends on 2,3,4,9,10)
-  L4: 6, 11        (depend on 5)
-  L5: 7, 12        (depend on 6 / 5,6)
-  L6: 8            (depends on 5,6,7,12)
+  L2: 9                     (depends on 1,4)
+  L3: 5                     (depends on 2,3,4,9,10)
+  L4: 11                    (depends on 5)            <- BCG now precedes Strategy
+  L5: 6                     (depends on 5,11)
+  L6: 7, 12, 13, 14         (depend on 5,6 / 6)
+  L7: 8                     (depends on 5,6,7,11,12,13,14)
+  L8: 15  (Contrôle de cohérence — reviews ALL numeric-heavy outputs)
 """
 from typing import Optional
 from .base import Agent
-from .prompts import MISSIONS, SCHEMAS
+from .prompts import MISSIONS, SCHEMAS, FRAMEWORKS
 from ..deepseek_client import ModelTier
 
 
@@ -40,6 +42,7 @@ class Agent2Pestel(Agent):
     uses_web_search = True
     mission = MISSIONS[2]
     output_schema = SCHEMAS[2]
+    framework_note = FRAMEWORKS[2]
 
 
 class Agent3Swot(Agent):
@@ -52,6 +55,7 @@ class Agent3Swot(Agent):
     uses_finance = True
     mission = MISSIONS[3]
     output_schema = SCHEMAS[3]
+    framework_note = FRAMEWORKS[3]
 
 
 class Agent4Competition(Agent):
@@ -85,7 +89,7 @@ class Agent6Strategy(Agent):
     agent_name = "Axes stratégiques & roadmap"
     category = "STRATEGY"
     tier = ModelTier.SONNET
-    depends_on = [5]
+    depends_on = [5, 11]
     active_in_modes = ["standard", "comprehensive"]
     uses_finance = False
     mission = MISSIONS[6]
@@ -109,7 +113,8 @@ class Agent8Deliverables(Agent):
     agent_name = "Livrables finaux"
     category = "DELIVERABLES"
     tier = ModelTier.SONNET
-    depends_on = [5, 6, 7, 12]
+    depends_on = [5, 6, 7, 11, 12, 13, 14]
+    max_output_tokens = 8192
     active_in_modes = ["standard", "comprehensive"]
     uses_finance = False
     mission = MISSIONS[8]
@@ -127,6 +132,7 @@ class Agent9Porter(Agent):
     uses_web_search = True
     mission = MISSIONS[9]
     output_schema = SCHEMAS[9]
+    framework_note = FRAMEWORKS[9]
 
 
 class Agent10ValueChain(Agent):
@@ -139,6 +145,7 @@ class Agent10ValueChain(Agent):
     uses_finance = True
     mission = MISSIONS[10]
     output_schema = SCHEMAS[10]
+    framework_note = FRAMEWORKS[10]
 
 
 class Agent11Bcg(Agent):
@@ -152,6 +159,7 @@ class Agent11Bcg(Agent):
     uses_web_search = True
     mission = MISSIONS[11]
     output_schema = SCHEMAS[11]
+    framework_note = FRAMEWORKS[11]
 
     # BCG is skipped for micro / very-early companies (mono-offer common).
     def is_conditional(self, profile: Optional[dict]) -> bool:
@@ -204,11 +212,27 @@ class Agent15Consistency(Agent):
     agent_name = "Contrôle de cohérence"
     category = "REVIEW"
     tier = ModelTier.SONNET
-    depends_on = [5, 6, 7, 8, 12]
+    depends_on = [5, 6, 7, 8, 11, 12, 13, 14]
+    max_output_tokens = 8192
     active_in_modes = ["standard", "comprehensive"]
     uses_finance = False
     mission = MISSIONS[15]
     output_schema = SCHEMAS[15]
+
+
+class Agent16PartnerReview(Agent):
+    """Strategic-soundness review (BCG/McKinsey partner lens). Distinct from Agent 15
+    (numeric/semantic consistency): judges whether the strategy is actually GOOD and
+    board-ready. Explicitly does NOT verify arithmetic — that is Agent 15's job."""
+    agent_id = 16
+    agent_name = "Revue stratégique"
+    category = "REVIEW"
+    tier = ModelTier.OPUS
+    depends_on = [5, 6, 7, 8, 11, 12, 13, 14]
+    active_in_modes = ["standard", "comprehensive"]
+    uses_finance = True
+    mission = MISSIONS[16]
+    output_schema = SCHEMAS[16]
 
 ALL_AGENTS = [
     Agent1Profile(), Agent2Pestel(), Agent3Swot(), Agent4Competition(),
@@ -217,4 +241,5 @@ ALL_AGENTS = [
     Agent13RiskRegister(),
     Agent14Finance(),
     Agent15Consistency(),
+    Agent16PartnerReview(),
 ]

@@ -18,6 +18,8 @@ from .claude_client import generate_structured
 from . import callbacks
 from .config import settings
 from .models import AnalyzeRequest
+from .numeric_integrity import check_numeric_integrity
+from .self_correction import run_self_correction
 
 log = logging.getLogger("strategor.orchestrator")
 
@@ -81,6 +83,26 @@ async def run_analysis(req: AnalyzeRequest) -> None:
                 for agent in level
             ])
 
+        # ── Deterministic numeric-integrity pass (completing runs only) ──
+        # Pure-code cross-agent checks; complements Agent 15; never blocks completion.
+        if req.phase in ("full", "post_diagnostic"):
+            try:
+                finance_data = req.financeLite.get("data") if req.financeLite else None
+                report = check_numeric_integrity(outputs, req.profile, finance_data)
+                # Close the loop: regenerate implicated agents, re-validate (bounded).
+                if settings.self_correction_enabled:
+                    async def _regen(agent, correction_notes):
+                        await _run_one_agent(req, agent, outputs, counter, sem,
+                                             correction_notes=correction_notes, is_correction=True)
+                    report = await run_self_correction(
+                        req, outputs, req.profile, finance_data, report, _regen)
+                await callbacks.post_consistency_report(project_id, report)
+                log.info("project=%s consistency: %s (%d check(s), %d regenerated)",
+                         project_id, report["status"], report["summary"]["checks"],
+                         len(report.get("corrections", {}).get("regenerated_agents", [])))
+            except Exception as e:
+                log.warning("consistency pass failed project=%s: %s", project_id, e)
+
         await callbacks.post_analysis_complete(project_id, failed=False, phase=req.phase)
         log.info("Orchestration project=%s done (%d agents)", project_id, counter["done"])
     except Exception as e:  # pragma: no cover
@@ -89,7 +111,9 @@ async def run_analysis(req: AnalyzeRequest) -> None:
 
 
 async def _run_one_agent(req: AnalyzeRequest, agent: Agent,
-                         outputs: dict, counter: dict, sem: asyncio.Semaphore) -> None:
+                         outputs: dict, counter: dict, sem: asyncio.Semaphore,
+                         correction_notes: Optional[str] = None,
+                         is_correction: bool = False) -> None:
     project_id = req.projectId
     profile = req.profile
     finance = req.financeLite.get("data") if req.financeLite else None
@@ -108,12 +132,15 @@ async def _run_one_agent(req: AnalyzeRequest, agent: Agent,
         return
 
     # RUNNING — start
+    start_msg = "Démarrage…"
+    if is_correction:
+        start_msg = "Correction des incohérences…" if correction_notes else "Nouvelle revue de cohérence…"
     await callbacks.post_agent_event(project_id, {
         "agentId": agent.agent_id,
         "agentName": agent.agent_name,
         "status": "RUNNING",
         "progress": 10,
-        "message": "Démarrage…",
+        "message": start_msg,
         "doneCount": counter["done"],
     })
 
@@ -126,12 +153,8 @@ async def _run_one_agent(req: AnalyzeRequest, agent: Agent,
             if dep_id in outputs:
                 deps[dep_id] = outputs[dep_id]
 
-        prompt = agent.build_system_prompt(profile, finance, deps, req.language)
-        
-        with open("debug_agent_6.log", "w") as f:
-            f.write(f"DEPS KEYS: {list(deps.keys())}\n")
-            f.write("PROMPT:\n")
-            f.write(prompt)
+        prompt = agent.build_system_prompt(profile, finance, deps, req.language,
+                                            correction_notes=correction_notes)
 
         await callbacks.post_agent_event(project_id, {
             "agentId": agent.agent_id,
@@ -150,13 +173,14 @@ async def _run_one_agent(req: AnalyzeRequest, agent: Agent,
                 output_schema=agent.output_schema,
                 tier=agent.tier,
                 user_prompt="Launch your analysis now." if is_en else "Lance ton analyse maintenant.",
-                max_tokens=4096,
+                max_tokens=agent.max_output_tokens,
                 use_web_search=agent.uses_web_search,
                 language=req.language,
             )
 
         outputs[agent.agent_id] = result.payload
-        counter["done"] += 1
+        if not is_correction:
+            counter["done"] += 1
 
         await callbacks.post_agent_event(project_id, {
             "agentId": agent.agent_id,
@@ -171,6 +195,7 @@ async def _run_one_agent(req: AnalyzeRequest, agent: Agent,
             "tokensOutput": result.tokens_output,
             "costEstimateCents": result.cost_estimate_cents,
             "groundingCostCents": result.grounding_cost_cents,
+            "sources": result.sources,
             "language": req.language,
         })
 

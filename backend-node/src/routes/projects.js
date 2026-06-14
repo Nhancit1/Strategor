@@ -19,6 +19,7 @@ const projectDto = (p) => ({
   status: p.status,
   currentStep: p.currentStep,
   analysisMode: p.analysisMode,
+  consistencyReport: p.consistencyReport ?? null,
   createdAt: p.createdAt ? p.createdAt.toISOString() : null,
 });
 

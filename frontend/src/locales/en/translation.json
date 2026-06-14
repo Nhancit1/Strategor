@@ -17,6 +17,7 @@
   "nav": {
     "title": "AI Strategist",
     "dashboard": "Dashboard",
+    "guide": "Guide",
     "settings": "Settings",
     "logout": "Sign out"
   },
@@ -147,5 +148,228 @@
     "network": "Server connection error",
     "unauthorized": "Session expired, please sign in again",
     "validation": "Please check the form fields"
+  },
+  "guide": {
+    "title": "Welcome to Strategor",
+    "badge": "User Guide",
+    "subtitle": "Strategor transforms your company profile into a complete, board-level strategy. A team of specialized AI agents collaborates for you — and you stay in control at each step. This guide explains what to do, how the app works, and how to read and use each result.",
+    "startBtn": "Get Started",
+    "nav": {
+      "methodo": "Methodology",
+      "parcours": "The Journey",
+      "resultats": "Understanding your results",
+      "conseils": "Tips"
+    },
+    "stepsSummary": {
+      "step1": {
+        "title": "Describe",
+        "desc": "Fill in your company profile (and financials, if you wish)."
+      },
+      "step2": {
+        "title": "Let analyze",
+        "desc": "AI agents build the analysis; you validate key steps."
+      },
+      "step3": {
+        "title": "Decide & export",
+        "desc": "Review, adjust, then export your strategy ready to present."
+      }
+    },
+    "methodo": {
+      "title": "The methodology",
+      "intro": "Where a consulting mission takes weeks, Strategor produces a complete initial analysis in a single session. The tool does not replace your judgment: it structures and accelerates your reflection.",
+      "pillars": {
+        "experts": {
+          "title": "An expert team",
+          "desc": "Each AI agent is specialized (PESTEL, competition, finance…) and builds on the work of the previous ones, layer by layer."
+        },
+        "data": {
+          "title": "Grounded on data",
+          "desc": "Market analyses are based on recent web research, with sources, and on your documents."
+        },
+        "control": {
+          "title": "You stay in control",
+          "desc": "Two validation checkpoints and a module-by-module review: the AI proposes, you decide."
+        }
+      },
+      "outro": "The analysis is built in phases: Scoping → External analysis → Internal analysis → Diagnostic → Strategy & measurement → Execution, and finally your deliverables."
+    },
+    "parcours": {
+      "title": "The journey, step by step",
+      "checkpoint": "Checkpoint",
+      "steps": {
+        "step1": {
+          "title": "Create a project",
+          "todo": "From the dashboard, create a new project. One project = one strategic analysis for a company."
+        },
+        "step2": {
+          "title": "Fill the profile (onboarding)",
+          "todo": "Describe your company: activity, sector, territories, target market, objectives, portfolio of offerings.",
+          "tip": "The more precise you are, the more relevant the analysis. This step conditions everything else."
+        },
+        "step3": {
+          "title": "Add your figures and documents (optional)",
+          "todo": "Enter some financial metrics and import your documents (PDF, Word, Excel). They feed the analysis with your real data."
+        },
+        "step4": {
+          "title": "Launch the analysis",
+          "todo": "Start the analysis. The AI agent team gets to work; progress is displayed in real-time."
+        },
+        "step5": {
+          "title": "Validate the hypotheses",
+          "todo": "First checkpoint: review how the AI understood your company and correct if needed before continuing.",
+          "tip": "Take this moment seriously: everything else builds on it."
+        },
+        "step6": {
+          "title": "Validate the diagnostic",
+          "todo": "Second checkpoint: validate the diagnostic summary before the AI builds the strategy."
+        },
+        "step7": {
+          "title": "Review and validate each module",
+          "todo": "On the validation page, browse the tabs (one per analysis). For each, you can edit the content, regenerate it, then validate it.",
+          "tip": "The AI proposes, you decide: adjust anything that needs to be."
+        },
+        "step8": {
+          "title": "Export your deliverables",
+          "todo": "Once everything is validated, export the complete strategy in Word, PDF, PowerPoint, or Excel format."
+        }
+      }
+    },
+    "resultats": {
+      "title": "Understanding your results",
+      "intro": "Each analysis has its tab on the validation page. Expand a card to learn what it is, how to read it, and how to use it.",
+      "labels": {
+        "what": "What it is",
+        "read": "How to read it",
+        "use": "How to use it"
+      },
+      "phases": {
+        "cadrage": "Scoping",
+        "externe": "External analysis",
+        "interne": "Internal analysis",
+        "diagnostic": "Diagnostic",
+        "strategie": "Strategy & measurement",
+        "execution": "Execution & reliability"
+      },
+      "items": {
+        "profile": {
+          "name": "Profile & Context",
+          "what": "The standardized reading of your company: activity, clientele, positioning, strengths and challenges.",
+          "read": "This is the starting point: a clear summary of who you are.",
+          "use": "Verify that it matches you — it serves as the foundation for all subsequent analyses."
+        },
+        "pestel": {
+          "name": "PESTEL Analysis",
+          "what": "Macro factors influencing your market: Political, Economic, Social, Technological, Environmental, Legal.",
+          "read": "Each factor is scored by its impact, intensity, and horizon (short / medium / long term).",
+          "use": "Anticipate changes in your environment and trends to monitor."
+        },
+        "competitive": {
+          "name": "Competitive Intelligence",
+          "what": "A mapping of your competitors and their positioning.",
+          "read": "The map situates your company against its competitors on two key axes.",
+          "use": "Identify gaps left open and your possible differentiation."
+        },
+        "porter": {
+          "name": "Porter's 5 Forces",
+          "what": "The structural attractiveness of your market (entrants, suppliers, customers, substitutes, rivalry).",
+          "read": "Each force is scored by its intensity and justification.",
+          "use": "Understand where the profitability of your sector is really played."
+        },
+        "swot": {
+          "name": "SWOT / TOWS Analysis",
+          "what": "Your Strengths and Weaknesses (internal), Opportunities and Threats (external), and cross-referenced actions.",
+          "read": "The matrix prioritizes; TOWS actions cross-reference axes (strengths × opportunities, etc.).",
+          "use": "Transform the assessment into concrete, prioritized actions."
+        },
+        "value_chain": {
+          "name": "Value Chain",
+          "what": "Activities that create value (primary and support).",
+          "read": "Each activity is evaluated by its importance and performance.",
+          "use": "Target the most profitable improvement levers."
+        },
+        "diagnostic": {
+          "name": "Consolidated Diagnostic",
+          "what": "The synthesis of all analyses: position, fault lines, windows of opportunity, urgency level, and executive verdict.",
+          "read": "This is the heart of the analysis — the overall vision that connects everything.",
+          "use": "This is the basis of all your strategic decisions. Read it first."
+        },
+        "roadmap": {
+          "name": "Strategic Axes & Roadmap",
+          "what": "Your priority axes and their execution plan: initiatives, quick wins, quarterly milestones, resources.",
+          "read": "A roadmap over ~18 months, structured by axis.",
+          "use": "Your action plan: where to start and in what order."
+        },
+        "bcg": {
+          "name": "BCG Matrix",
+          "what": "The positioning of your business portfolio (market growth × relative market share).",
+          "read": "Four quadrants: Stars, Cash cows, Question marks, Dogs.",
+          "use": "Decide where to invest, maintain, harvest, or divest."
+        },
+        "kpi": {
+          "name": "KPIs & Dashboard",
+          "what": "Indicators to track, organized (financial, customer, process, learning), with targets and benchmarks.",
+          "read": "A 'north star' metric and a balanced scorecard.",
+          "use": "Drive execution and measure your progress over time."
+        },
+        "change": {
+          "name": "Change Management",
+          "what": "The human dimension of implementation: stakeholders, RACI matrix, communication plan, resistance.",
+          "read": "Who does what, who to communicate to, what adoption risks.",
+          "use": "Put all the chances on your side for a successful execution."
+        },
+        "risk": {
+          "name": "Risk Register",
+          "what": "Major risks identified, assessed, and accompanied by mitigation measures.",
+          "read": "Each risk is scored (probability × impact) with a plan.",
+          "use": "Anticipate and prepare your responses before problems arise."
+        },
+        "finance": {
+          "name": "Financial Analysis & Scenarios",
+          "what": "Numerical projections and scenarios (sensitivity to key variables).",
+          "read": "Multiple scenarios to test the robustness of the strategy.",
+          "use": "Quantify your decisions and evaluate their strength against uncertainties."
+        },
+        "consistency": {
+          "name": "Consistency Check",
+          "what": "An automatic review that detects inconsistencies between different analyses.",
+          "read": "The list of points to check, with their severity.",
+          "use": "Make your report reliable before presenting it to a committee or an investor."
+        }
+      }
+    },
+    "conseils": {
+      "title": "Tips & Best Practices",
+      "cta": {
+        "title": "Ready to build your strategy?",
+        "desc": "Create a project and let yourself be guided.",
+        "btn": "Go to Dashboard"
+      },
+      "items": {
+        "tip1": {
+          "title": "Be precise right from onboarding",
+          "desc": "The quality of the analysis depends directly on the quality of what you describe."
+        },
+        "tip2": {
+          "title": "Add your real data",
+          "desc": "Financial indicators and documents make the analysis much more concrete."
+        },
+        "tip3": {
+          "title": "Pay attention to checkpoints",
+          "desc": "Validating hypotheses and then the diagnostic prevents errors from propagating."
+        },
+        "tip4": {
+          "title": "Edit without hesitation",
+          "desc": "You know your company better than the AI does: correct, specify, rephrase."
+        },
+        "tip5": {
+          "title": "Regenerate if needed",
+          "desc": "A module doesn't suit you? Relaunch it to get a new proposal."
+        },
+        "tip6": {
+          "title": "Export at the end",
+          "desc": "When everything is validated, export the strategy in the format of your choice."
+        }
+      }
+    }
   }
 }

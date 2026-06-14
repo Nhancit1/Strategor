@@ -31,6 +31,7 @@ router.post('/projects/:projectId/agent-events', asyncHandler(async (req, res) =
   if (b.tokensOutput !== undefined) update.tokensOutput = b.tokensOutput;
   if (b.costEstimateCents !== undefined) update.costEstimateCents = b.costEstimateCents;
   if (b.groundingCostCents !== undefined) update.groundingCostCents = b.groundingCostCents;
+  if (b.sources !== undefined) update.sources = b.sources;
   if (b.errorMessage !== undefined) update.errorMessage = b.errorMessage;
   if (b.status === 'DONE' || b.status === 'ERROR') update.completedAt = new Date();
 
@@ -107,6 +108,14 @@ router.post('/projects/:projectId/analysis-complete', asyncHandler(async (req, r
   else if (b.phase === 'diagnostic') status = 'DIAGNOSTIC_REVIEW'; // Diagnostic done -> awaiting review
   else status = 'VALIDATING';
   await Project.findByIdAndUpdate(req.params.projectId, { $set: { status } });
+  res.status(204).end();
+}));
+
+// Python pushes the deterministic numeric-integrity report (cross-agent consistency).
+// body: { report: { status, summary, checks, semantic } }
+router.post('/projects/:projectId/consistency-report', asyncHandler(async (req, res) => {
+  const report = req.body?.report ?? null;
+  await Project.findByIdAndUpdate(req.params.projectId, { $set: { consistencyReport: report } });
   res.status(204).end();
 }));
 

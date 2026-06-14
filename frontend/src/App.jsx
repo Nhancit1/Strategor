@@ -10,6 +10,7 @@ import LoginPage from './pages/auth/LoginPage';
 import ChangePasswordPage from './pages/auth/ChangePasswordPage';
 
 import DashboardPage from './pages/dashboard/DashboardPage';
+import GuidePage from './pages/guide/GuidePage';
 import OnboardingPage from './pages/onboarding/OnboardingPage';
 import HypothesesPage from './pages/hypotheses/HypothesesPage';
 import DiagnosticReviewPage from './pages/diagnostic/DiagnosticReviewPage';
@@ -67,6 +68,7 @@ export default function App() {
       <Route element={<RequireAuth><RequirePasswordChanged><AppLayout /></RequirePasswordChanged></RequireAuth>}>
         <Route path="/" element={<Navigate to="/dashboard" replace />} />
         <Route path="/dashboard" element={<DashboardPage />} />
+        <Route path="/guide" element={<GuidePage />} />
         <Route path="/projects/:id/onboarding" element={<OnboardingPage />} />
         <Route path="/projects/:id/hypotheses" element={<HypothesesPage />} />
         <Route path="/projects/:id/diagnostic-review" element={<DiagnosticReviewPage />} />

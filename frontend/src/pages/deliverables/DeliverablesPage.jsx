@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Download, FileText, Presentation, FileSpreadsheet, File, RefreshCw, AlertCircle, Loader2 } from 'lucide-react';
@@ -6,6 +6,7 @@ import { useProjectStore } from '../../store/projectStore';
 import { useAuthStore } from '../../store/authStore';
 import { exportApi, agentApi } from '../../api';
 import DeliverablesView from '../../components/viz/DeliverablesView';
+import ReportCanvas from '../../components/viz/ReportCanvas';
 
 const FORMATS = [
   { id: 'pdf', label: 'PDF', icon: File, mime: 'application/pdf' },
@@ -22,6 +23,10 @@ export default function DeliverablesPage() {
   const userLang = user?.lang;
   const [exporting, setExporting] = useState(null);
   const [regenerating, setRegenerating] = useState(false);
+  const [designExporting, setDesignExporting] = useState(null);
+  const [showRenderer, setShowRenderer] = useState(false);
+  const [progress, setProgress] = useState(null);
+  const reportRef = useRef(null);
 
   useEffect(() => { fetchAgents(id); fetchProject(id); }, [id, fetchAgents, fetchProject, userLang]);
 
@@ -85,9 +90,50 @@ export default function DeliverablesPage() {
     }
   };
 
+  // Design-faithful export: render every page off-screen, capture, assemble (PDF/Word/PPT).
+  const handleDesignExport = async (format) => {
+    if (designExporting || exporting) return;
+    setProgress(null);
+    setDesignExporting(format);
+    setShowRenderer(true);
+    try {
+      // give the off-screen renderer time to mount and paint (incl. ECharts)
+      await new Promise((r) => setTimeout(r, 1800));
+      const container = reportRef.current;
+      const sectionEls = container ? Array.from(container.querySelectorAll('[data-report-section]')) : [];
+      if (sectionEls.length === 0) throw new Error('Aucune page de rapport à exporter.');
+      const { exportFullReport } = await import('../../utils/exportReport');
+      await exportFullReport(
+        sectionEls, format,
+        { name: current?.name || 'Stratégie', projectId: id },
+        (done, total) => setProgress({ done, total }),
+      );
+    } catch (e) {
+      console.error('Design export failed', e);
+      alert("L'export (design) a échoué. " + (e?.message || ''));
+    } finally {
+      setShowRenderer(false);
+      setDesignExporting(null);
+      setProgress(null);
+    }
+  };
+
+  const busy = Boolean(exporting || designExporting);
 
   return (
     <div className="container-wide py-8">
+      {showRenderer && <ReportCanvas ref={reportRef} agents={agents} />}
+      {designExporting && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+          <div className="rounded-xl bg-white px-6 py-5 text-center shadow-lg">
+            <Loader2 size={28} className="text-orange animate-spin mx-auto mb-3" />
+            <p className="font-title font-semibold text-ink">Génération du rapport (design)…</p>
+            <p className="text-sm text-ink3 mt-1">
+              {progress ? `Page ${progress.done} / ${progress.total}` : 'Préparation des pages…'}
+            </p>
+          </div>
+        </div>
+      )}
       <div className="mb-6">
         <h1 className="font-title text-3xl font-bold mb-1">{t('deliverables.title')}</h1>
         <p className="text-ink3">{t('deliverables.subtitle')}</p>
@@ -102,14 +148,16 @@ export default function DeliverablesPage() {
             return (
               <button
                 key={f.id}
-                onClick={() => handleExport(f.id)}
-                disabled={exporting === f.id || !finalAgent || finalAgent.status !== 'DONE'}
+                onClick={() => (f.id === 'xlsx' ? handleExport(f.id) : handleDesignExport(f.id))}
+                disabled={busy || !finalAgent || finalAgent.status !== 'DONE'}
                 className="card p-5 text-center hover:shadow-cardHover transition-all disabled:opacity-50"
               >
                 <Icon size={32} className="mx-auto mb-2 text-orange" />
                 <div className="font-title font-semibold">{f.label}</div>
                 <div className="text-xs text-ink3 mt-1">
-                  {exporting === f.id ? t('deliverables.generatingText') : <Download size={12} className="inline" />}
+                  {(exporting === f.id || designExporting === f.id)
+                    ? (designExporting === f.id && progress ? `${progress.done}/${progress.total}` : t('deliverables.generatingText'))
+                    : <Download size={12} className="inline" />}
                 </div>
               </button>
             );

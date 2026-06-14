@@ -11,6 +11,7 @@ the user-documents text (same convention as the Java orchestrator).
 from __future__ import annotations
 from typing import Any, Optional
 from ..deepseek_client import ModelTier
+from .factsheet import build_factsheet
 
 DOCUMENTS_KEY = -1  # sentinel: deps[-1] = parsed user documents text
 
@@ -76,7 +77,9 @@ class Agent:
     active_in_modes: list[str] = ["standard", "comprehensive"]
     uses_finance: bool = False  # whether financeContext is injected
     uses_web_search: bool = False  # whether this agent grounds its analysis via web search
+    max_output_tokens: int = 4096  # per-agent output cap (heavy synthesis agents override)
     mission: str = ""
+    framework_note: str = ""  # canonical framework definition (set on framework agents)
 
     # ── conditional skip (only Agent 11 overrides) ──
     def is_conditional(self, profile: Optional[dict]) -> bool:
@@ -184,13 +187,19 @@ class Agent:
         finance: Optional[dict],
         deps: Optional[dict],
         language: str = "fr",
+        correction_notes: Optional[str] = None,
     ) -> str:
         is_en = language.lower().startswith("en")
         parts = [self.preamble(profile, is_en)]
+        # Canonical fact-sheet + numeric-discipline contract — shared by EVERY agent
+        # so figures stay consistent across the whole analysis (see factsheet.py).
+        parts.append(build_factsheet(profile, finance))
         if self.uses_finance:
             parts.append(self.finance_context(finance, is_en))
         parts.append(self.dependency_context(deps, is_en))
         parts.append(self.mission)
+        if self.framework_note:
+            parts.append(self.framework_note)
         if is_en:
             parts.append(
                 "\n\n=== Rigorous Analysis Rules (MUST be respected in your entire response) ===\n"
@@ -200,6 +209,10 @@ class Agent:
                 "give a qualitative range instead, or explicitly mark it as a hypothesis.\n"
                 "- When an assertion is supported by web research sources, "
                 "cite them in parentheses (source name, and URL if available).\n"
+                "- Any MARKET figure (market size, growth rate, market share) MUST come from the "
+                "web-research data provided above. If it is not supported there, mark it "
+                "'[Hypothesis]' or give a qualitative range. NEVER invent a source or a date "
+                "(e.g. a fabricated 'IDC 2023') — an unverifiable citation is worse than none.\n"
             )
             parts.append("\n\nIMPORTANT: Write your entire response (all field values) in English.\n")
             parts.append(
@@ -219,6 +232,10 @@ class Agent:
                 "donne plutôt une fourchette qualitative, ou marque-le explicitement comme hypothèse.\n"
                 "- Quand une affirmation s'appuie sur une source issue de la recherche web, "
                 "cite-la entre parenthèses (nom de la source, et URL si disponible).\n"
+                "- Tout chiffre de MARCHÉ (taille, croissance, part de marché) DOIT provenir des "
+                "données de recherche web fournies ci-dessus. S'il n'y figure pas, marque-le "
+                "« [Hypothèse] » ou donne une fourchette qualitative. N'invente JAMAIS une source "
+                "ni une date (ex. un « IDC 2023 » fabriqué) — une citation invérifiable est pire que pas de citation.\n"
             )
             parts.append(
                 "\n\n=== RÈGLE CRITIQUE (GÉNÉRATION JSON) ===\n"
@@ -227,5 +244,13 @@ class Agent:
                 "2. Même si tu manques de données, tu NE DOIS SOUS AUCUN PRÉTEXTE renvoyer un objet vide {}.\n"
                 "3. Invente des valeurs par défaut pertinentes (ex: 'À définir', 'Axe 1') pour satisfaire le schéma JSON si nécessaire, mais garantis que la structure finale respecte parfaitement le schéma attendu et contienne toutes les clés obligatoires.\n"
                 "4. NE PLACE JAMAIS tes réponses principales (comme les axes ou les listes) au format markdown dans un champ texte libre. Tu dois impérativement utiliser les tableaux et objets JSON prévus à cet effet."
+            )
+        if correction_notes:
+            parts.append(
+                "\n\n=== CORRECTIONS DEMANDÉES (régénération ciblée) ===\n"
+                "Une passe de contrôle de cohérence a détecté des incohérences impliquant ta sortie "
+                "précédente. Régénère ta réponse COMPLÈTE en corrigeant SPÉCIFIQUEMENT les points "
+                "suivants, tout en respectant les faits canoniques et les règles de cohérence numérique :\n"
+                f"{correction_notes}\n"
             )
         return "".join(parts)

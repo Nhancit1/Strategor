@@ -17,6 +17,8 @@ const projectSchema = new mongoose.Schema(
     groundingCostCents: { type: Number, default: 0 }, // web-search / grounding cost
     tokensTotal: { type: Number, default: 0 },
     costAlert: { type: Boolean, default: false },     // crossed alert threshold (informational)
+    // ── Deterministic numeric-integrity report (from the Python validator) ──
+    consistencyReport: { type: mongoose.Schema.Types.Mixed, default: null },
     deletedAt: { type: Date, default: null },
   },
   { timestamps: true, toJSON: baseToJSON(['costTotalCents', 'groundingCostCents', 'tokensTotal', 'costAlert']) }

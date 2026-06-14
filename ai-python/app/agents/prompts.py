@@ -200,7 +200,7 @@ Termine par une synthèse : les 3 risques prioritaires (probabilité × impact l
 Respecte strictement les règles de rigueur : aucun chiffre précis non étayé ; utilise des fourchettes et marque les hypothèses.''',
     15: '''Mission : CONTRÔLE DE COHÉRENCE de l'ensemble de l'analyse (rôle de relecteur).
 
-Relis les sorties des autres agents (diagnostic, axes, KPIs, livrables, conduite du changement) et détecte les INCOHÉRENCES et CONTRADICTIONS :
+Relis les sorties des autres agents (diagnostic, axes stratégiques, matrice BCG, KPIs, registre de risques, analyse financière & scénarios, livrables, conduite du changement) et détecte les INCOHÉRENCES et CONTRADICTIONS :
   - chiffres ou hypothèses incompatibles entre agents
   - axe stratégique qui contredit le diagnostic
   - KPI sans lien avec un axe
@@ -208,6 +208,22 @@ Relis les sorties des autres agents (diagnostic, axes, KPIs, livrables, conduite
 
 Pour CHAQUE incohérence : description, agents concernés, sévérité (LOW/MEDIUM/HIGH) et correction suggérée.
 Termine par une appréciation globale de la cohérence de l'analyse.''',
+    16: '''Mission : REVUE STRATÉGIQUE — rôle d'associé (partner) type BCG/McKinsey.
+
+Tu n'es PAS le correcteur de cohérence chiffrée (c'est le rôle de l'agent « Contrôle de cohérence »). NE VÉRIFIE PAS l'arithmétique. Ton rôle est de juger, SANS COMPLAISANCE, la QUALITÉ et la SOLIDITÉ STRATÉGIQUE de l'analyse — comme un associé qui devrait défendre ce travail devant un conseil d'administration ou un investisseur exigeant.
+
+Relis l'ensemble de la stratégie (diagnostic, axes, KPIs, matrice BCG, registre de risques, analyse financière, livrables, conduite du changement) et évalue chaque dimension :
+- STRATEGIC_CHOICE : y a-t-il une vraie décision — un « où jouer » et un « comment gagner » tranchés — ou un catalogue d'initiatives non hiérarchisé ? Les 2-3 priorités sont-elles explicites ? Le segment / la verticale cible est-il décidé, ou laissé ouvert ?
+- EVIDENCE : les affirmations clés sont-elles étayées (sources, données client) ou assénées ? Des chiffres de marché précis sont-ils avancés sans source vérifiable ?
+- FRAMEWORK_RIGOR : les cadres (BCG, Porter, chaîne de valeur…) sont-ils utilisés conformément à leur définition ? (ex. part de marché relative BCG = part / part du plus gros concurrent.)
+- DELIVERABILITY : la stratégie est-elle exécutable avec les moyens RÉELS de l'entreprise (équipe, trésorerie, bande passante de direction) ? Trop de chantiers simultanés ? Une acquisition est-elle finançable ?
+- RISK : les risques majeurs de la transformation ELLE-MÊME (exécution, dépendance, trésorerie) sont-ils identifiés ?
+
+Pour CHAQUE faiblesse : 'issue' (précise), 'dimension', 'severity' (LOW/MEDIUM/HIGH), 'agents_involved' (numéros des agents concernés), 'recommendation' (action concrète).
+Liste les 'required_fixes' : les corrections INDISPENSABLES avant présentation au client.
+Termine par 'board_readiness' (READY / MINOR_REVISIONS / MAJOR_REVISIONS / NOT_READY) et un 'verdict' de 2-3 phrases.
+
+Sois exigeant et concret : préfère « l'axe 2 ne tranche pas entre cible PME et grands comptes » à « pourrait être précisé ». Si la stratégie est un catalogue sans choix, dis-le franchement.''',
 }
 
 _SCHEMAS_JSON: dict[int, str] = {
@@ -1233,6 +1249,75 @@ _SCHEMAS_JSON: dict[int, str] = {
         ]
     }
     ''',
+    16: r'''
+    {
+        "type": "object",
+        "properties": {
+            "board_readiness": { "type": "string", "enum": ["READY", "MINOR_REVISIONS", "MAJOR_REVISIONS", "NOT_READY"] },
+            "verdict": { "type": "string" },
+            "strengths": { "type": "array", "items": { "type": "string" } },
+            "weaknesses": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "issue": { "type": "string" },
+                        "dimension": { "type": "string", "enum": ["STRATEGIC_CHOICE", "EVIDENCE", "FRAMEWORK_RIGOR", "DELIVERABILITY", "RISK"] },
+                        "severity": { "type": "string", "enum": ["LOW", "MEDIUM", "HIGH"] },
+                        "agents_involved": { "type": "array", "items": { "type": "string" } },
+                        "recommendation": { "type": "string" }
+                    },
+                    "required": ["issue", "severity", "recommendation"]
+                }
+            },
+            "required_fixes": { "type": "array", "items": { "type": "string" } }
+        },
+        "required": ["board_readiness", "verdict", "strengths", "weaknesses"]
+    }
+    ''',
 }
 
 SCHEMAS: dict[int, dict] = {k: json.loads(v) for k, v in _SCHEMAS_JSON.items()}
+
+
+# Canonical framework definitions, injected into the relevant agents' prompts so the
+# frameworks are applied correctly (the audit found BCG relative-share misuse, etc.).
+FRAMEWORKS: dict[int, str] = {
+    2: (
+        "\n\n=== CADRE PESTEL — définition à respecter ===\n"
+        "Couvre les SIX dimensions macro et place chaque facteur dans la BONNE catégorie : "
+        "Politique, Économique, Socioculturel, Technologique, Écologique/Environnemental, Légal. "
+        "Ne confonds pas Légal et Politique. Ce sont des facteurs EXTERNES (environnement), "
+        "pas des choix internes de l'entreprise."
+    ),
+    3: (
+        "\n\n=== CADRE SWOT / TOWS — définition à respecter ===\n"
+        "Forces et Faiblesses sont INTERNES à l'entreprise ; Opportunités et Menaces sont EXTERNES "
+        "(marché/environnement). Ne classe jamais un facteur externe comme une force interne, ni l'inverse. "
+        "Les actions TOWS croisent les axes : SO (forces × opportunités), WO (faiblesses × opportunités), "
+        "ST (forces × menaces), WT (faiblesses × menaces)."
+    ),
+    9: (
+        "\n\n=== CADRE 5 FORCES DE PORTER — définition à respecter ===\n"
+        "Évalue les CINQ forces distinctes, sans les confondre : (1) menace des nouveaux entrants, "
+        "(2) pouvoir de négociation des fournisseurs, (3) pouvoir de négociation des clients, "
+        "(4) menace des produits/services de substitution, (5) intensité de la rivalité entre concurrents existants. "
+        "Pour chaque force, note l'INTENSITÉ (faible/moyenne/élevée) et justifie-la par un facteur structurel "
+        "(barrières à l'entrée, concentration, coûts de transfert, différenciation…)."
+    ),
+    10: (
+        "\n\n=== CADRE CHAÎNE DE VALEUR (PORTER) — définition à respecter ===\n"
+        "Distingue les activités PRIMAIRES (logistique entrante, production/opérations, logistique sortante, "
+        "marketing & ventes, services) des activités de SOUTIEN (infrastructure de l'entreprise, gestion des "
+        "ressources humaines, développement technologique, achats/approvisionnements). Classe chaque activité "
+        "dans la bonne catégorie ; la marge provient de la valeur créée au-delà des coûts cumulés."
+    ),
+    11: (
+        "\n\n=== CADRE MATRICE BCG — définition STRICTE à respecter ===\n"
+        "Part de marché RELATIVE = ta part de marché ÷ part du plus gros concurrent (et NON la part de ta propre "
+        "base installée). Règle des quadrants : part relative ≥ 1,0 ⇒ « part forte » (Star ou Vache à lait) ; "
+        "part relative < 1,0 ⇒ « part faible » (Dilemme ou Poids mort). Croissance du marché élevée ⇒ haut "
+        "(Star ou Dilemme) ; faible ⇒ bas (Vache à lait ou Poids mort). Le quadrant DOIT être cohérent avec ces "
+        "deux coordonnées, et les parts de CA des lignes doivent totaliser environ 100%."
+    ),
+}

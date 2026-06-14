@@ -17,6 +17,7 @@
   "nav": {
     "title": "Stratège IA",
     "dashboard": "Tableau de bord",
+    "guide": "Guide",
     "settings": "Paramètres",
     "logout": "Déconnexion"
   },
@@ -147,5 +148,228 @@
     "network": "Erreur de connexion au serveur",
     "unauthorized": "Session expirée, veuillez vous reconnecter",
     "validation": "Veuillez vérifier les champs du formulaire"
+  },
+  "guide": {
+    "title": "Bienvenue sur Strategor",
+    "badge": "Guide d'utilisation",
+    "subtitle": "Strategor transforme le profil de votre entreprise en une stratégie complète, de niveau comité de direction. Une équipe d'agents IA spécialisés collabore pour vous — et vous gardez la main à chaque étape. Ce guide vous explique quoi faire, comment l'app fonctionne, et comment lire et utiliser chaque résultat.",
+    "startBtn": "Commencer",
+    "nav": {
+      "methodo": "Méthodologie",
+      "parcours": "Le parcours",
+      "resultats": "Comprendre vos résultats",
+      "conseils": "Conseils"
+    },
+    "stepsSummary": {
+      "step1": {
+        "title": "Décrivez",
+        "desc": "Renseignez le profil de votre entreprise (et vos chiffres, si vous le souhaitez)."
+      },
+      "step2": {
+        "title": "Laissez analyser",
+        "desc": "Les agents IA construisent l'analyse ; vous validez les étapes clés."
+      },
+      "step3": {
+        "title": "Décidez & exportez",
+        "desc": "Relisez, ajustez, puis exportez votre stratégie prête à présenter."
+      }
+    },
+    "methodo": {
+      "title": "La méthodologie",
+      "intro": "Là où une mission de conseil mobilise des semaines, Strategor produit une première analyse complète en une seule session. L'outil ne remplace pas votre jugement : il structure et accélère votre réflexion.",
+      "pillars": {
+        "experts": {
+          "title": "Une équipe d'experts",
+          "desc": "Chaque agent IA est spécialisé (PESTEL, concurrence, finance…) et s'appuie sur le travail des précédents, couche par couche."
+        },
+        "data": {
+          "title": "Ancré sur des données",
+          "desc": "Les analyses de marché s'appuient sur une recherche web récente, avec sources, et sur vos documents."
+        },
+        "control": {
+          "title": "Vous gardez la main",
+          "desc": "Deux points de validation et une relecture module par module : l'IA propose, vous décidez."
+        }
+      },
+      "outro": "L'analyse se construit en phases : Cadrage → Analyse externe → Analyse interne → Diagnostic → Stratégie & mesure → Exécution, puis vos livrables."
+    },
+    "parcours": {
+      "title": "Le parcours, pas à pas",
+      "checkpoint": "Point de contrôle",
+      "steps": {
+        "step1": {
+          "title": "Créez un projet",
+          "todo": "Depuis le tableau de bord, créez un nouveau projet. Un projet = une analyse stratégique pour une entreprise."
+        },
+        "step2": {
+          "title": "Renseignez le profil (onboarding)",
+          "todo": "Décrivez votre entreprise : activité, secteur, territoires, marché cible, objectifs, portefeuille d'offres.",
+          "tip": "Plus vous êtes précis, plus l'analyse est pertinente. C'est l'étape qui conditionne tout le reste."
+        },
+        "step3": {
+          "title": "Ajoutez vos chiffres et documents (optionnel)",
+          "todo": "Saisissez quelques indicateurs financiers et importez vos documents (PDF, Word, Excel). Ils nourrissent l'analyse avec vos données réelles."
+        },
+        "step4": {
+          "title": "Lancez l'analyse",
+          "todo": "Démarrez l'analyse. L'équipe d'agents IA se met au travail ; l'avancement s'affiche en temps réel."
+        },
+        "step5": {
+          "title": "Valisez les hypothèses",
+          "todo": "Premier point de contrôle : relisez la façon dont l'IA a compris votre entreprise et corrigez si besoin avant de continuer.",
+          "tip": "Prenez ce moment au sérieux : tout le reste s'appuie dessus."
+        },
+        "step6": {
+          "title": "Validez le diagnostic",
+          "todo": "Deuxième point de contrôle : validez la synthèse du diagnostic avant que l'IA ne construise la stratégie."
+        },
+        "step7": {
+          "title": "Relisez et validez chaque module",
+          "todo": "Sur la page de validation, parcourez les onglets (un par analyse). Pour chacun, vous pouvez éditer le contenu, le régénérer, puis le valider.",
+          "tip": "L'IA propose, vous décidez : ajustez tout ce qui doit l'être."
+        },
+        "step8": {
+          "title": "Exportez vos livrables",
+          "todo": "Une fois tout validé, exportez la stratégie complète au format Word, PDF, PowerPoint ou Excel."
+        }
+      }
+    },
+    "resultats": {
+      "title": "Comprendre vos résultats",
+      "intro": "Chaque analyse a son onglet sur la page de validation. Dépliez une carte pour savoir ce que c'est, comment la lire, et comment l'utiliser.",
+      "labels": {
+        "what": "Ce que c'est",
+        "read": "Comment le lire",
+        "use": "Comment l'utiliser"
+      },
+      "phases": {
+        "cadrage": "Cadrage",
+        "externe": "Analyse externe",
+        "interne": "Analyse interne",
+        "diagnostic": "Diagnostic",
+        "strategie": "Stratégie & mesure",
+        "execution": "Exécution & fiabilité"
+      },
+      "items": {
+        "profile": {
+          "name": "Profil & Contexte",
+          "what": "La lecture normalisée de votre entreprise : activité, clientèle, positionnement, forces et enjeux.",
+          "read": "C'est le point de départ : une synthèse claire de qui vous êtes.",
+          "use": "Vérifiez qu'elle vous correspond — elle sert de socle à toutes les analyses suivantes."
+        },
+        "pestel": {
+          "name": "Analyse PESTEL",
+          "what": "Les facteurs macro qui influencent votre marché : Politique, Économique, Social, Technologique, Environnemental, Légal.",
+          "read": "Chaque facteur est noté par son impact, son intensité et son horizon (court / moyen / long terme).",
+          "use": "Anticipez les évolutions de votre environnement et les tendances à surveiller."
+        },
+        "competitive": {
+          "name": "Intelligence compétitive",
+          "what": "Une cartographie de vos concurrents et de leur positionnement.",
+          "read": "La carte situe votre entreprise face à ses concurrents sur deux axes clés.",
+          "use": "Repérez les espaces laissés libres et votre différenciation possible."
+        },
+        "porter": {
+          "name": "5 Forces de Porter",
+          "what": "L'attractivité structurelle de votre marché (entrants, fournisseurs, clients, substituts, rivalité).",
+          "read": "Chaque force est notée par son intensité et sa justification.",
+          "use": "Comprenez où se joue réellement la rentabilité de votre secteur."
+        },
+        "swot": {
+          "name": "Analyse SWOT / TOWS",
+          "what": "Vos Forces et Faiblesses (internes), vos Opportunités et Menaces (externes), et les actions croisées.",
+          "read": "La matrice priorise ; les actions TOWS croisent les axes (forces × opportunités, etc.).",
+          "use": "Transformez le constat en actions concrètes et hiérarchisées."
+        },
+        "value_chain": {
+          "name": "Chaîne de valeur",
+          "what": "Les activités qui créent de la valeur (primaires et de soutien).",
+          "read": "Chaque activité est évaluée par son importance et sa performance.",
+          "use": "Ciblez les leviers d'amélioration les plus rentables."
+        },
+        "diagnostic": {
+          "name": "Diagnostic consolidé",
+          "what": "La synthèse de toutes les analyses : position, lignes de faille, fenêtres d'opportunité, niveau d'urgence et verdict dirigeant.",
+          "read": "C'est le cœur de l'analyse — la vision d'ensemble qui relie tout.",
+          "use": "C'est la base de toutes vos décisions stratégiques. Lisez-la en priorité."
+        },
+        "roadmap": {
+          "name": "Axes stratégiques & roadmap",
+          "what": "Vos axes prioritaires et leur plan d'exécution : initiatives, quick wins, jalons trimestriels, ressources.",
+          "read": "Une feuille de route sur ~18 mois, structurée par axe.",
+          "use": "Votre plan d'action : par où commencer et dans quel ordre."
+        },
+        "bcg": {
+          "name": "Matrice BCG",
+          "what": "Le positionnement de votre portefeuille d'activités (croissance du marché × part de marché relative).",
+          "read": "Quatre quadrants : Vedettes, Vaches à lait, Dilemmes, Poids morts.",
+          "use": "Décidez où investir, maintenir, récolter ou désengager."
+        },
+        "kpi": {
+          "name": "KPIs & tableau de bord",
+          "what": "Les indicateurs à suivre, organisés (financier, client, process, apprentissage), avec cibles et benchmarks.",
+          "read": "Une métrique « north star » et un tableau de bord équilibré.",
+          "use": "Pilotez l'exécution et mesurez vos progrès dans le temps."
+        },
+        "change": {
+          "name": "Conduite du changement",
+          "what": "La dimension humaine de la mise en œuvre : parties prenantes, matrice RACI, plan de communication, résistances.",
+          "read": "Qui fait quoi, qui communiquer, quels risques d'adhésion.",
+          "use": "Mettez toutes les chances de votre côté pour une exécution réussie."
+        },
+        "risk": {
+          "name": "Registre de risques",
+          "what": "Les risques majeurs identifiés, évalués et accompagnés de mesures d'atténuation.",
+          "read": "Chaque risque est noté (probabilité × impact) avec un plan.",
+          "use": "Anticipez et préparez vos réponses avant que les problèmes ne surviennent."
+        },
+        "finance": {
+          "name": "Analyse financière & scénarios",
+          "what": "Des projections chiffrées et des scénarios (sensibilité aux variables clés).",
+          "read": "Plusieurs scénarios pour tester la robustesse de la stratégie.",
+          "use": "Chiffrez vos décisions et évaluez leur solidité face aux aléas."
+        },
+        "consistency": {
+          "name": "Contrôle de cohérence",
+          "what": "Une revue automatique qui détecte les incohérences entre les différentes analyses.",
+          "read": "La liste des points à vérifier, avec leur gravité.",
+          "use": "Fiabilisez votre rapport avant de le présenter à un comité ou un investisseur."
+        }
+      }
+    },
+    "conseils": {
+      "title": "Conseils & bonnes pratiques",
+      "cta": {
+        "title": "Prêt à construire votre stratégie ?",
+        "desc": "Créez un projet et laissez-vous guider.",
+        "btn": "Aller au tableau de bord"
+      },
+      "items": {
+        "tip1": {
+          "title": "Soyez précis dès l'onboarding",
+          "desc": "La qualité de l'analyse dépend directement de la qualité de ce que vous décrivez."
+        },
+        "tip2": {
+          "title": "Ajoutez vos données réelles",
+          "desc": "Indicateurs financiers et documents rendent l'analyse beaucoup plus concrète."
+        },
+        "tip3": {
+          "title": "Soignez les points de contrôle",
+          "desc": "Valider les hypothèses puis le diagnostic évite que les erreurs se propagent."
+        },
+        "tip4": {
+          "title": "Éditez sans hésiter",
+          "desc": "Vous connaissez votre entreprise mieux que l'IA : corrigez, précisez, reformulez."
+        },
+        "tip5": {
+          "title": "Régénérez si besoin",
+          "desc": "Un module ne vous convient pas ? Relancez-le pour obtenir une nouvelle proposition."
+        },
+        "tip6": {
+          "title": "Exportez à la fin",
+          "desc": "Quand tout est validé, exportez la stratégie au format de votre choix."
+        }
+      }
+    }
   }
 }

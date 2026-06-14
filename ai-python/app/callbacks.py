@@ -30,6 +30,16 @@ async def post_analysis_complete(project_id: str, failed: bool = False, phase: s
         log.warning("analysis-complete callback failed (%s): %s", project_id, e)
 
 
+async def post_consistency_report(project_id: str, report: dict) -> None:
+    """Persist the deterministic numeric-integrity report on the project."""
+    url = f"{settings.node_url}/internal/projects/{project_id}/consistency-report"
+    try:
+        async with httpx.AsyncClient(timeout=15) as client:
+            await client.post(url, json={"report": report}, headers=_headers)
+    except Exception as e:
+        log.warning("consistency-report callback failed (%s): %s", project_id, e)
+
+
 async def post_document_parsed(document_id: str, parsed_content: str | None,
                                status: str, parse_error: str | None = None) -> None:
     url = f"{settings.node_url}/internal/documents/{document_id}/parsed"

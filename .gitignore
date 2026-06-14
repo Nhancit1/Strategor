@@ -1,17 +1,6 @@
-# deps
 node_modules/
-**/node_modules/
 __pycache__/
 *.pyc
-.venv/
-
-# env + secrets
 .env
-**/.env
-
-# builds
-frontend/dist/
-
-# misc
-.DS_Store
-*.log
+dist/
+debug_agent_*.log

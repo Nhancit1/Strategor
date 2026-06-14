@@ -1,7 +1,7 @@
-import { useEffect, useState, useMemo, useCallback } from 'react';
+import { useEffect, useState, useMemo, useCallback, useRef } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { CheckCircle2, RefreshCw, Pencil, X, Save, Loader2 } from 'lucide-react';
+import { CheckCircle2, RefreshCw, Pencil, X, Save, Loader2, Download, FileText } from 'lucide-react';
 import { useProjectStore } from '../../store/projectStore';
 import { useAuthStore } from '../../store/authStore';
 import { agentApi } from '../../api';
@@ -20,6 +20,9 @@ import ChangeView from '../../components/viz/ChangeView';
 import RiskMatrix from '../../components/viz/RiskMatrix';
 import FinanceScenarios from '../../components/viz/FinanceScenarios';
 import ConsistencyView from '../../components/viz/ConsistencyView';
+import ConsistencyReport from '../../components/viz/ConsistencyReport';
+import SourcesPanel from '../../components/viz/SourcesPanel';
+import PartnerReviewView from '../../components/viz/PartnerReviewView';
 
 const TABS = [
   { id: 'profile', agentId: 1, label: 'Profil', Component: ProfileView },
@@ -36,17 +39,20 @@ const TABS = [
   { id: 'risks', agentId: 13, label: 'Risques', Component: RiskMatrix },
   { id: 'finance', agentId: 14, label: 'Finance', Component: FinanceScenarios },
   { id: 'review', agentId: 15, label: 'Cohérence', Component: ConsistencyView },
+  { id: 'partner', agentId: 16, label: 'Revue Associé', Component: PartnerReviewView },
 ];
 
 export default function ValidationPage() {
   const { id, tab } = useParams();
   const navigate = useNavigate();
   const { t } = useTranslation();
-  const { agents, fetchAgents, agentsLoading } = useProjectStore();
+  const { agents, fetchAgents, agentsLoading, current, fetchProject } = useProjectStore();
   const user = useAuthStore((s) => s.user);
   const userLang = user?.lang;
   const [activeTab, setActiveTab] = useState(tab || TABS[0].id);
   const [regenerating, setRegenerating] = useState(false);
+  const exportRef = useRef(null);
+  const [exporting, setExporting] = useState(null);
 
   // ── Editing state ──────────────────────────────────
   const [editing, setEditing] = useState(false);
@@ -54,6 +60,7 @@ export default function ValidationPage() {
   const [saving, setSaving] = useState(false);
 
   useEffect(() => { fetchAgents(id); }, [id, fetchAgents, userLang]);
+  useEffect(() => { fetchProject(id); }, [id, fetchProject]);
   useEffect(() => { if (tab) setActiveTab(tab); }, [tab]);
 
   // Reset editing state when switching tabs
@@ -138,6 +145,27 @@ export default function ValidationPage() {
     [agents]
   );
 
+  // Export the currently-visualised page (exact on-screen design) to PDF / Word.
+  const handleExport = async (format) => {
+    if (!exportRef.current || exporting) return;
+    setExporting(format);
+    try {
+      const label = TABS.find((tt) => tt.id === activeTab)?.label || 'rapport';
+      const safe = `${(current?.name || 'strategor')}-${label}`.replace(/[^\w.-]+/g, '_');
+      const { exportViewToPdf, exportViewToDocx } = await import('../../utils/exportView');
+      if (format === 'pdf') {
+        await exportViewToPdf(exportRef.current, `${safe}.pdf`);
+      } else {
+        await exportViewToDocx(exportRef.current, `${safe}.docx`, `${current?.name || ''} — ${label}`);
+      }
+    } catch (e) {
+      console.error('Export failed', e);
+      alert("L'export a échoué. Veuillez réessayer.");
+    } finally {
+      setExporting(null);
+    }
+  };
+
   // When editing, show the live edited copy; otherwise show the persisted version
   const displayOutput = editing ? editedOutput : (currentAgent?.editedOutput || currentAgent?.output);
 
@@ -154,6 +182,11 @@ export default function ValidationPage() {
           </Link>
         )}
       </div>
+
+      <ConsistencyReport
+        report={current?.consistencyReport}
+        onOpenReview={() => onSelectTab('review')}
+      />
 
       <div className="flex gap-1 mb-6 overflow-x-auto pb-2">
         {TABS.map((tt) => {
@@ -231,6 +264,14 @@ export default function ValidationPage() {
                 </>
               ) : (
                 <>
+                  <button onClick={() => handleExport('pdf')} disabled={!!exporting} className="btn-secondary text-sm flex items-center gap-1.5">
+                    <Download size={14} className={exporting === 'pdf' ? 'animate-spin' : ''} />
+                    {exporting === 'pdf' ? 'Export…' : 'PDF'}
+                  </button>
+                  <button onClick={() => handleExport('docx')} disabled={!!exporting} className="btn-secondary text-sm flex items-center gap-1.5">
+                    <FileText size={14} className={exporting === 'docx' ? 'animate-spin' : ''} />
+                    {exporting === 'docx' ? 'Export…' : 'Word'}
+                  </button>
                   <button
                     onClick={handleStartEdit}
                     className="btn-secondary text-sm flex items-center gap-1.5"
@@ -258,7 +299,8 @@ export default function ValidationPage() {
               </div>
             )}
 
-            {/* ── Content area ────────────────────────── */}
+            {/* ── Content area (captured for export) ──── */}
+            <div ref={exportRef} className="bg-white">
             {Visualization && displayOutput ? (
               <Visualization
                 output={displayOutput}
@@ -270,6 +312,8 @@ export default function ValidationPage() {
                 {JSON.stringify(displayOutput, null, 2)}
               </pre>
             )}
+            </div>
+            <SourcesPanel sources={currentAgent?.sources} />
           </>
         )}
       </div>

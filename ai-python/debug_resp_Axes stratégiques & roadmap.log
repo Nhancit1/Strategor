@@ -1,0 +1,116 @@
+```json
+{
+  "strategic_axes": [
+    {
+      "title": "Industrialiser le modèle produit : du sur-mesure au configurable",
+      "description": "TechNova doit impérativement transformer son approche 'hautement personnalisable' en architecture modulaire pré-packagée. L'objectif : réduire de 60-70% le time-to-value (passer de 6-12 mois à 2-3 mois pour les déploiements standards) et multiplier par 3-4 la capacité de delivery sans accroître linéairement l'équipe engineering. Cette refonte est la condition sine qua non pour atteindre l'objectif ARR x2 sous 3 ans tout en préservant des marges brutes >75%.",
+      "initiatives": [
+        "Audit technique immédiat (Q1 2025) : cartographier l'ensemble des customisations clients actuelles, identifier les 20% de fonctionnalités demandées par 80% des clients, et définir l'architecture cible modulaire (socle commun + modules verticaux finance/logistique + layer de configuration no-code/low-code)",
+        "Lancer un 'Core Product Squad' dédié (6-8 personnes mixtes product/engineering/data science) avec mandat exclusif : livrer v1.0 du socle standardisé sous 9 mois (Q3 2025), en gelant temporairement toute nouvelle customisation client hors roadmap approuvée",
+        "Migrer progressivement les clients existants vers la nouvelle architecture (playbook de migration client par client sur 12-15 mois, avec incentives commerciaux pour early adopters : 15-20% discount renouvellement contre migration rapide)",
+        "Développer un configurateur client self-service (interface graphique type drag-and-drop) permettant aux clients mid-market de paramétrer 70-80% de leurs besoins sans intervention engineering TechNova (réduction drastique du coût d'acquisition client CAC)",
+        "Établir une gouvernance produit stricte : refuser systématiquement toute demande custom non alignée avec la roadmap standardisée, sauf si le client finance le développement à 150-200% du coût réel ET accepte que la fonctionnalité soit mise au catalogue général"
+      ],
+      "quick_wins": [
+        "Créer un 'catalogue de modules standards' commercial (semaine 1-2) : documenter et packager les 5-7 configurations clients les plus fréquentes en offres pré-tarifées (ex: 'Pack Finance Trade Optimization', 'Pack Logistique Last-Mile') pour accélérer cycles de vente et créer effet d'ancrage tarifaire",
+        "Négocier avec 2-3 clients pilotes actuels (idéalement représentant 15-25% ARR) un accord win-win : ils acceptent de co-créer la v1.0 standardisée en échange d'un gel tarifaire 24 mois + statut 'partenaire de référence' utilisable commercialement (closing sous 4-6 semaines)"
+      ],
+      "milestones": [
+        {
+          "quarter": "Q1 2025",
+          "milestone": "Audit technique complet livré + Architecture cible modulaire validée par Comex + 2 clients pilotes migration signés"
+        },
+        {
+          "quarter": "Q2 2025",
+          "milestone": "Core Product Squad opérationnel + Freeze nouvelles customisations effectif + Catalogue commercial 7 modules standards déployé"
+        },
+        {
+          "quarter": "Q3 2025",
+          "milestone": "Livraison v1.0 socle standardisé + Premiers déploiements clients <3 mois réalisés + Configurateur self-service beta lancé"
+        },
+        {
+          "quarter": "Q4 2025",
+          "milestone": "50% de la base clients migrée vers nouvelle architecture + Time-to-value moyen réduit à 4 mois (vs. 9 mois initial) + CAC réduit de 30%"
+        },
+        {
+          "quarter": "Q1 2026",
+          "milestone": "Configurateur self-service en production + 80% nouveaux deals sur offres standardisées + Marges brutes maintenues >75%"
+        },
+        {
+          "quarter": "Q2 2026",
+          "milestone": "100% base clients sur architecture modulaire + Équipe engineering stabilisée (croissance <20% vs. croissance ARR 40-50%) + NPS produit >50"
+        }
+      ],
+      "resources": [
+        "Budget R&D additionnel 800k-1,2M€ sur 18 mois (financement série A impératif) pour Core Product Squad + refonte architecture",
+        "Product Owner senior externe (recrutement ou interim 6-12 mois) avec expérience scaling SaaS B2B 10M→50M€",
+        "Consultant technique architecture cloud-native (3-6 mois mission) spécialisé multi-tenant SaaS",
+        "Change manager interne pour accompagner équipes sales/CSM sur nouvelle approche (formation, playbooks, objection handling)",
+        "Budget legal/contractuel 30-50k€ pour révision T&Cs clients et clauses migration"
+      ]
+    },
+    {
+      "title": "Conquérir le mid-market européen par un go-to-market scalable",
+      "description": "Actuellement concentré sur grands comptes/ETI (probablement 5-15 clients représentant 60-80% ARR), TechNova doit rapidement diversifier vers le mid-market (entreprises 50-500M€ CA) pour réduire la dépendance client, accélérer la vélocité commerciale (cycles de vente 4-6 mois vs. 12-18 mois grands comptes) et construire un moteur de croissance récurrent. Cible : signer 30-40 nouveaux logos mid-market sous 18 mois, contribuant 25-35% de l'ARR incrémental.",
+      "initiatives": [
+        "Segmenter rigoureusement le marché européen par verticale (logistique 3PL/4PL, finance trade & commodity, retail distribution) et géographie (priorité DACH + Benelux où réglementations ESG/CSRD créent budgets dédiés), construire ICPs (Ideal Customer Profiles) précis pour chaque segment avec scoring quantitatif",
+        "Recruter 3-4 Account Executives mid-market dédiés (profils 3-5 ans xp SaaS B2B, quota 400-600k€ ARR annuel chacun) + 1 Sales Enablement Manager pour construire playbooks, automatiser prospection, gérer stack martech (Salesforce + Outreach/Salesloft + Gong)",
+        "Lancer programme de partenariats OEM/channel avec 2-3 acteurs complémentaires stratégiques : (1) intégrateurs ERP mid-market (ex: partenaires SAP Business One, Microsoft Dynamics) pour co-vendre module optimisation logistique en bundle, (2) cabinets conseil supply chain (ex: Argon & Co, Alix Partners) pour prescription projets transformation, (3) éditeurs TMS/WMS mid-market pour intégration technique native",
+        "Développer machine marketing digital scalable : ABM (Account-Based Marketing) ciblé sur 200-300 comptes prioritaires, content marketing SEO verticalisé (études de cas sectorielles, ROI calculators, webinaires), nurturing automatisé, participation salons verticaux (Transport Logistic Munich, SupplyChainEvent Paris)",
+        "Créer offre d'entrée 'land' mid-market simplifiée : module unique use-case critique (ex: 'Optimisation tournées last-mile' pour logistique, 'Prévision flux trade finance' pour finance) à 30-50k€ ACV avec time-to-value <60 jours, servant de tête de pont pour upsell modules additionnels (stratégie 'land & expand' classique)"
+      ],
+      "quick_wins": [
+        "Identifier dans le pipe actuel 5-10 opportunités mid-market en stagnation (>6 mois sans avancée) et organiser 'deal blitz' intensif sur 3 semaines : implication CEO/CTO sur demos, offre commerciale agressive (15-20% discount + POC gratuit limité 30 jours), closing forcé avec objectif convertir 40-50% (soit 2-3 deals immédiats générant 150-250k€ ARR)",
+        "Nouer partenariat tactique express (signature <6 semaines) avec 1 intégrateur mid-market local dominant (ex: Gold Partner SAP en France/Allemagne) : deal simple de co-marketing (webinaire commun, case study partagée, leads referral 10% commission) générant 10-15 leads qualifiés sous 2 mois"
+      ],
+      "milestones": [
+        {
+          "quarter": "Q1 2025",
+          "milestone": "Segmentation marché + ICPs finalisés + 3 AEs mid-market recrutés + Offre 'land' packagée et tarifée + 1er partenariat OEM signé"
+        },
+        {
+          "quarter": "Q2 2025",
+          "milestone": "Playbooks commerciaux déployés + Stack martech opérationnel + 8-12 nouveaux logos mid-market signés + Pipeline généré 2M€+ ARR"
+        },
+        {
+          "quarter": "Q3 2025",
+          "milestone": "15-20 logos mid-market cumulés + 2e-3e partenariats OEM actifs + Premiers upsells mid-market réalisés (NRR segment >110%) + Cycles de vente moyens réduits à 5 mois"
+        },
+        {
+          "quarter": "Q4 2025",
+          "milestone": "25-30 logos mid-market + Contribution mid-market à 20-25% ARR total + CAC payback <12 mois segment mid-market + Sales Efficiency (ARR/Sales Headcount) améliorée 30%"
+        },
+        {
+          "quarter": "Q1 2026",
+          "milestone": "35-40 logos mid-market cumulés + Partenaires OEM générant 15-20% du pipeline + Premières expansions géographiques DACH/Benelux opérationnelles"
+        },
+        {
+          "quarter": "Q2 2026",
+          "milestone": "Mid-market représente 30-35% ARR total + Churn segment <10% annualisé + Modèle économique mid-market profitable (LTV/CAC >3x) + Réplication playbook sur nouveaux pays lancée"
+        }
+      ],
+      "resources": [
+        "Budget commercial additionnel 600-900k€ sur 18 mois : salaires AEs + commissions + stack martech (Salesforce, Outreach, Gong, 6sense/Demandbase ABM)",
+        "VP Sales expérimenté scaling mid-market SaaS (recrutement prioritaire Q1 2025, profil ayant déjà fait 5M→25M€ ARR)",
+        "Budget marketing 250-400k€ : events, content, ABM campaigns, webinaires, SEO/SEM",
+        "Ressources legal/partnerships 1 FTE pour structurer accords OEM/channel et gérer relations partenaires",
+        "Consultant GTM externe 3-6 mois (ex-practitioner SaaS B2B) pour accélérer construction playbooks et formation équipes"
+      ]
+    },
+    {
+      "title": "Sécuriser et weaponiser le talent IA dans la guerre des compétences",
+      "description": "[Hypothèse] Avec 15-25 personnes R&D core sur 10-50 total, TechNova dispose d'une équipe technique probablement excellente mais sous-dimensionnée et vulnérable face à la guerre des talents IA (turnover tech 15-25%/an, inflation salariale 10-20%/an, concurrence GAFAM/licornes VC-backed). Le double objectif (croissance ARR + nouveau module IA) exige doublement capacité engineering sous 18 mois TOUT EN réduisant drastiquement le risque de départ talents critiques. Cette bataille se gagne par une combinaison de rétention agressive, recrutement international, et architecture organisationnelle résiliente.",
+      "initiatives": [
+        "Lancer immédiatement (Q1 2025) programme de rétention talents critiques : (1) equity refresh significatif pour top 10-15 contributeurs techniques (attribution 0,5-1,5% capital chacun, vesting 4 ans avec cliff 1 an), (2) augmentations salariales ciblées 15-25% pour aligner sur marché (benchmark Figures.hr/Ravio), (3) budget formation continue illimité (conférences IA, certifications cloud, side-projects innovation), (4) politique remote-first Europe élargie pour accès à talents non-relocalisables",
+        "Diversifier géographiquement le recrutement engineering : ouvrir hub technique satellite en Europe de l'Est (Pologne/Roumanie/Portugal coûts salariaux 40-60% inférieurs vs. France/Allemagne tout en gardant timezone compatible) avec objectif recruter 8-12 engineers sous 12 mois, réduisant pression salariale et risque concentration géographique",
+        "Structurer l'organisation R&D pour résilience : (1) implémenter système de 'pair programming' et documentation exhaustive (pas de single point of failure humain), (2) créer guildes techniques transverses (ML/data, backend, frontend) réduisant dépendance individuelle, (3) mettre en place rotation interne trimestrielle pour cross-skilling, (4) externaliser tactiquement certaines tâches non-core (infra DevOps via AWS/Azure managed services, data labeling via Scale AI/Labelbox)",
+        "Construire marque employeur tech attractive : (1) publier régulièrement articles techniques blog/Medium sur challenges IA logistique (SEO recrutement), (2) open-sourcer composants non-différenciants (bibliothèques data processing) pour visibility communauté, (3) sponsoriser meetups/conférences IA locales, (4) créer programme ambassadeurs internes (engineers prenant la parole events externes avec prime 2-5k€/intervention)",
+        "Établir partenariats académiques stratégiques : (1) conventions CIFRE avec 2-3 labos recherche IA européens (INRIA, TUM Munich, EPFL) pour co-financer thèses appliquées tout en constituant pipeline recrutement junior, (2) programme stages/apprentissages structuré avec grandes écoles (CentraleSupélec, Polytechnique, EPFL) servant de test-drive mutuel avant embauche"
+      ],
+      "quick_wins": [
+        "Conduire sous 2 semaines entretiens 1-on-1 confidentiels CEO/CTO avec chacun des 10-15 contributeurs techniques clés : écouter frustrations, comprendre aspirations, identifier risques de départ imminents, et négocier individuellement packages de rétention sur-mesure (mix equity/cash/flexibilité) pour sécuriser 18 mois minimum",
+        "Publier immédiatement 3-5 offres d'emploi engineering sur plateformes européennes (Stack Overflow, Honeypot, WeLoveDevs) avec proposition de valeur agressive : 'Résolvez des problèmes IA complexes à impact business direct, remote-first Europe, equity significative, tech stack moderne (Python/TensorFlow/Kubernetes), équipe senior 15 pers., clients Fortune 500' – objectif générer 30-50 candidatures qualifiées sous 4 semaines"
+      ],
+      "milestones": [
+        {
+          "quarter": "Q1in

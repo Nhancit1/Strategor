@@ -57,6 +57,7 @@ class StructuredResponse:
     cost_estimate_cents: int
     model_used: str  # tier name (HAIKU/SONNET/OPUS), matches legacy modelUsed
     grounding_cost_cents: int = 0  # web-search request + research-model cost
+    sources: list = field(default_factory=list)  # [{title, url}] from grounding research
 
 
 _client = AsyncAnthropic(api_key=settings.anthropic_api_key)
@@ -253,4 +254,5 @@ async def generate_structured(
         cost_estimate_cents=estimate_cost_cents(tier, tokens_in, tokens_out),
         model_used=tier.value,
         grounding_cost_cents=grounding_cost,
+        sources=web_sources,
     )

@@ -2,7 +2,7 @@ import { Outlet, Link, NavLink, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '../../store/authStore';
 import { useProjectStore } from '../../store/projectStore';
-import { LogOut, Settings, LayoutDashboard, ShieldCheck, Globe } from 'lucide-react';
+import { LogOut, Settings, LayoutDashboard, ShieldCheck, Globe, BookOpen } from 'lucide-react';
 import { userApi } from '../../api';
 
 export default function AppLayout() {
@@ -38,6 +38,15 @@ export default function AppLayout() {
             >
               <LayoutDashboard size={16} className="inline mr-1.5" />
               {t('nav.dashboard')}
+            </NavLink>
+            <NavLink
+              to="/guide"
+              className={({ isActive }) =>
+                `btn-ghost ${isActive ? 'bg-paper2 text-ink' : ''}`
+              }
+            >
+              <BookOpen size={16} className="inline mr-1.5" />
+              {t('nav.guide', 'Guide')}
             </NavLink>
             <NavLink
               to="/settings"

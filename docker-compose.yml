@@ -33,6 +33,9 @@ services:
       WEB_SEARCH_MAX_USES: ${WEB_SEARCH_MAX_USES:-5}
       WEB_SEARCH_COST_CENTS: ${WEB_SEARCH_COST_CENTS:-1}
       MODEL_RESEARCH: ${MODEL_RESEARCH:-claude-sonnet-4-6}
+      SELF_CORRECTION_ENABLED: ${SELF_CORRECTION_ENABLED:-true}
+      SELF_CORRECTION_MAX_ROUNDS: ${SELF_CORRECTION_MAX_ROUNDS:-2}
+      SELF_CORRECTION_MAX_AGENTS: ${SELF_CORRECTION_MAX_AGENTS:-6}
     volumes:
       - uploads:/data/uploads   # shared with node (read parsed files by path)
     expose:

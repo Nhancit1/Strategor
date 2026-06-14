@@ -22,6 +22,7 @@ const agentExecutionSchema = new mongoose.Schema(
     tokensOutput: { type: Number, default: null },
     costEstimateCents: { type: Number, default: null },
     groundingCostCents: { type: Number, default: null },
+    sources: { type: mongoose.Schema.Types.Mixed, default: null }, // grounding sources [{title,url}]
     progressPercent: { type: Number, default: 0 },
     startedAt: { type: Date, default: null },
     completedAt: { type: Date, default: null },
