@@ -130,12 +130,10 @@ export default function HypothesesPage() {
         <div className="card p-10 text-center">
           <Loader2 size={28} className="text-orange animate-spin mx-auto mb-3" />
           <p className="font-medium">
-            {userLang === 'en' ? 'Translating Hypotheses...' : 'Traduction en cours…'}
+            Chargement du profil...
           </p>
           <p className="text-ink3 text-sm mt-1">
-            {userLang === 'en'
-              ? 'DeepSeek is translating the context profile. Please wait.'
-              : "DeepSeek traduit le profil de contexte. Veuillez patienter."}
+            Veuillez patienter pendant la récupération des hypothèses.
           </p>
         </div>
       ) : (!status || status === 'PENDING' || status === 'RUNNING') ? (

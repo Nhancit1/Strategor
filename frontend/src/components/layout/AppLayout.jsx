@@ -76,27 +76,7 @@ export default function AppLayout() {
                 {user.email}
               </span>
             )}
-            <button
-              onClick={async () => {
-                const currentLang = user?.lang || 'fr';
-                const newLang = currentLang === 'fr' ? 'en' : 'fr';
-                try {
-                  const { data } = await userApi.update({
-                    firstName: user?.firstName,
-                    lastName: user?.lastName,
-                    lang: newLang,
-                  });
-                  setUser(data);
-                } catch (err) {
-                  console.error('Failed to update language', err);
-                }
-              }}
-              className="btn-ghost flex items-center gap-1.5 px-2 py-1 text-sm text-ink3 hover:text-orange transition-colors font-semibold"
-              title={t('nav.toggleLanguage', 'Changer de langue')}
-            >
-              <Globe size={16} />
-              <span>{user?.lang === 'en' ? 'FR' : 'EN'}</span>
-            </button>
+
             <button onClick={handleLogout} className="btn-ghost" title={t('nav.logout')}>
               <LogOut size={16} />
             </button>

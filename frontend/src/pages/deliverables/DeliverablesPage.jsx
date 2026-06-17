@@ -183,12 +183,10 @@ export default function DeliverablesPage() {
           <div className="p-8 text-center flex flex-col items-center justify-center min-h-[250px]">
             <Loader2 size={32} className="text-orange animate-spin mb-3" />
             <p className="font-semibold text-slate-700">
-              {userLang === 'en' ? 'Translating Deliverables...' : 'Traduction en cours...'}
+              Chargement des livrables...
             </p>
             <p className="text-xs text-ink3 mt-1 max-w-md mx-auto">
-              {userLang === 'en'
-                ? 'DeepSeek is translating the final deliverables preview. Please wait.'
-                : "DeepSeek traduit l'aperçu des livrables finaux. Veuillez patienter."}
+              Veuillez patienter pendant la récupération des livrables finaux.
             </p>
           </div>
         ) : !finalAgent ? (

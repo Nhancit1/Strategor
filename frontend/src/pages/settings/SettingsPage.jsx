@@ -65,13 +65,7 @@ export default function SettingsPage() {
               <input className="form-input" value={profile.lastName} onChange={(e) => setProfile({ ...profile, lastName: e.target.value })} />
             </div>
           </div>
-          <div>
-            <label className="form-label">{t('settings.language')}</label>
-            <select className="form-input" value={profile.lang} onChange={(e) => setProfile({ ...profile, lang: e.target.value })}>
-              <option value="fr">Français</option>
-              <option value="en">English</option>
-            </select>
-          </div>
+
           <button onClick={saveProfile} className="btn-primary">{t('common.save')}</button>
         </div>
       </div>

@@ -216,12 +216,10 @@ export default function ValidationPage() {
           <div className="flex flex-col items-center justify-center py-12 text-center my-auto">
             <Loader2 size={40} className="text-orange animate-spin mb-4" />
             <h3 className="font-title text-lg font-semibold mb-1">
-              {userLang === 'en' ? 'Translating Report...' : 'Traduction en cours...'}
+              Chargement de l'analyse...
             </h3>
             <p className="text-sm text-ink3 max-w-md">
-              {userLang === 'en' 
-                ? 'DeepSeek is translating the business strategy output to English. This may take a few seconds.' 
-                : "DeepSeek traduit l'analyse stratégique. Cela peut prendre quelques secondes."}
+              Veuillez patienter pendant la récupération des analyses des agents.
             </p>
           </div>
         ) : agents.length === 0 ? (

@@ -138,12 +138,10 @@ export default function DiagnosticReviewPage() {
         <div className="card p-10 text-center">
           <Loader2 size={28} className="text-orange animate-spin mx-auto mb-3" />
           <p className="font-medium">
-            {userLang === 'en' ? 'Translating Diagnostic...' : 'Traduction en cours…'}
+            Chargement du diagnostic...
           </p>
           <p className="text-ink3 text-sm mt-1">
-            {userLang === 'en'
-              ? 'DeepSeek is translating the consolidated diagnostic. Please wait.'
-              : "DeepSeek traduit le diagnostic consolidé. Veuillez patienter."}
+            Veuillez patienter pendant la récupération du diagnostic consolidé.
           </p>
         </div>
       ) : (!status || status === 'PENDING' || status === 'RUNNING') ? (
