@@ -1,0 +1,42 @@
+{
+    "projectId": "6a2aeb23bd9ec8ad75c11cd0",
+    "mode": "standard",
+    "language": "fr",
+    "phase": "single",
+    "targetAgentId": 4,
+    "seedOutputs": {
+        "1": {
+            "activity": "Éditeur de logiciel SaaS B2B spécialisé dans l'optimisation des flux logistiques et de la Supply Chain grâce à l'IA.",
+            "clientele": "Grands comptes industriels, ETI de la logistique et grands distributeurs e-commerce.",
+            "positioning": "Haut de gamme / Premium. ROI garanti.",
+            "initial_strengths": [
+                "Technologie IA propriétaire brevetée avec un taux de précision supérieur à la concurrence.",
+                "Base de clients fidèles avec un taux de rétention net (NRR) de 115%."
+            ],
+            "key_challenges": [
+                "Cycle de vente B2B très long (entre 6 et 12 mois).",
+                "Dépendance forte à 3 clients historiques majeurs représentant 45% du CA."
+            ],
+            "synthesis": "TechNova Solutions est une scale-up B2B dans la Supply Chain IA, rentable mais confrontée à des cycles de vente longs et à une concentration de clients."
+        }
+    },
+    "profile": {
+        "companyName": "TechNova Solutions",
+        "sectors": ["Technologie", "SaaS", "B2B"],
+        "territories": ["Europe", "Amérique du Nord"],
+        "stage": "SCALE_UP",
+        "revenueRange": "10M - 50M",
+        "teamSize": "50 - 200",
+        "marketTypes": ["B2B"],
+        "customerDescription": "Grands comptes industriels, ETI de la logistique et grands distributeurs e-commerce.",
+        "objectives": ["Croissance", "Rentabilité", "Internationalisation"],
+        "objectiveDetail": "Nous visons à doubler notre ARR d'ici 3 ans, asseoir notre position aux US, et lancer notre nouveau module d'IA prédictive.",
+        "activityPrecise": "Éditeur de logiciel SaaS B2B spécialisé dans l'optimisation des flux logistiques et de la Supply Chain grâce à l'IA.",
+        "positioning": "Haut de gamme / Premium. Nous vendons sur la base d'un ROI garanti et d'une personnalisation avancée pour les grands comptes.",
+        "valueScope": "Recherche & Développement en IA, édition de logiciel (code), déploiement et intégration client, conseil en optimisation opérationnelle.",
+        "strengths": "Technologie IA propriétaire brevetée, NRR de 115%, équipe PhD.",
+        "weaknesses": "Cycle de vente de 6-12 mois, dépendance à 3 clients (45% CA), manque de notoriété aux US."
+    },
+    "financeLite": null,
+    "documentsContext": null
+}

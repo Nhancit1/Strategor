@@ -82,6 +82,45 @@ def _topo_order(mode: str, ids: set[int]) -> list[int]:
     return [aid for aid in order if aid in ids]
 
 
+def _dependents_map(mode: str) -> dict[int, set[int]]:
+    """agent_id -> ids that directly declare it as a dependency, for the active mode."""
+    agents = active_for_mode(mode)
+    dmap: dict[int, set[int]] = {a.agent_id: set() for a in agents}
+    for a in agents:
+        for dep_id in a.depends_on:
+            if dep_id in dmap:
+                dmap[dep_id].add(a.agent_id)
+    return dmap
+
+
+def _cascade_dependents(targets: dict[int, list[str]], mode: str) -> dict[int, list[str]]:
+    """Graph-aware correction: once an agent is corrected, everything downstream of it is
+    potentially stale too. Expand the target set with the *transitive* dependents of every
+    implicated agent (still excluding the non-regenerable ones), so a fix to e.g. the BCG also
+    refreshes the strategy, deliverables and reviews built on top of it. Bounded afterwards by
+    the per-round cap, and regenerated in topological order so upstream fixes land first."""
+    try:
+        dmap = _dependents_map(mode)
+    except Exception:
+        return targets
+    seen = set(targets)
+    queue = list(targets)
+    while queue:
+        cur = queue.pop()
+        for dep_id in dmap.get(cur, ()):
+            if dep_id in _NON_REGENERABLE or dep_id < 0:
+                continue
+            if dep_id not in seen:
+                seen.add(dep_id)
+                queue.append(dep_id)
+            if dep_id not in targets:
+                targets.setdefault(dep_id, []).append(
+                    f"Une de tes dépendances (agent {cur}) a été corrigée : réaligne tes "
+                    "chiffres, jalons et conclusions sur sa version corrigée."
+                )
+    return targets
+
+
 async def run_self_correction(
     req, outputs: dict, profile: Optional[dict], finance: Optional[dict],
     report: dict, regenerate: Callable[..., Awaitable[None]],
@@ -99,6 +138,8 @@ async def run_self_correction(
             targets = _targets_from_report(report, outputs, include_semantic=(rnd == 1))
             if not targets:
                 break
+            # Graph-aware: also refresh everything declared downstream of the corrected agents.
+            targets = _cascade_dependents(targets, mode)
             ordered = _topo_order(mode, set(targets))[:cap]
             if not ordered:
                 break

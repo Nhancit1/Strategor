@@ -35,52 +35,55 @@ router.post('/projects/:projectId/agent-events', asyncHandler(async (req, res) =
   if (b.errorMessage !== undefined) update.errorMessage = b.errorMessage;
   if (b.status === 'DONE' || b.status === 'ERROR') update.completedAt = new Date();
 
-  // On completion, read prior values FIRST so the project roll-up is retry-safe:
-  // we increment by the delta, so re-running an agent never double-counts cost.
-  let prior = null;
+  // "Latest deliverable" snapshot — only a SUCCESSFUL run defines the agent's current
+  // output and its headline cost. A failed attempt must not overwrite these.
   if (b.status === 'DONE') {
-    prior = await AgentExecution.findOne({ project: projectId, agentId: b.agentId })
-      .select('costEstimateCents groundingCostCents tokensInput tokensOutput')
-      .lean();
+    if (b.modelUsed !== undefined) update.modelUsed = b.modelUsed;
+    if (b.tokensInput !== undefined) update.tokensInput = b.tokensInput;
+    if (b.tokensOutput !== undefined) update.tokensOutput = b.tokensOutput;
+    if (b.costEstimateCents !== undefined) update.costEstimateCents = b.costEstimateCents;
+    if (b.groundingCostCents !== undefined) update.groundingCostCents = b.groundingCostCents;
   }
+
+  // ACTUAL consumption: every billed call is real spend and must be SUMMED (not delta-ed),
+  // so the dashboard matches the provider bill — regenerations, self-correction passes and
+  // billed-but-failed attempts all count. (DONE carries cost; ERROR carries it too when the
+  // call was billed before failing.)
+  const billed = b.status === 'DONE' || b.status === 'ERROR';
+  const runCost = billed ? (b.costEstimateCents ?? 0) : 0;
+  const runGrounding = billed ? (b.groundingCostCents ?? 0) : 0;
+  const runTokens = billed ? ((b.tokensInput ?? 0) + (b.tokensOutput ?? 0)) : 0;
+
+  const inc = {};
+  if (runCost) inc.costConsumedCents = runCost;
+  if (runGrounding) inc.groundingConsumedCents = runGrounding;
+  if (runTokens) inc.tokensConsumed = runTokens;
 
   await AgentExecution.findOneAndUpdate(
     { project: projectId, agentId: b.agentId },
-    { $set: update, $setOnInsert: { project: projectId, agentId: b.agentId } },
+    {
+      $set: update,
+      $setOnInsert: { project: projectId, agentId: b.agentId },
+      ...(Object.keys(inc).length ? { $inc: inc } : {}),
+    },
     { upsert: true, new: true, setDefaultsOnInsert: true }
   );
 
-  // Atomic AI-cost roll-up onto the project (DONE only). Admin-facing reporting
-  // only — this NEVER gates or blocks the run.
-  if (b.status === 'DONE') {
-    const deltaCost = (b.costEstimateCents ?? 0) - (prior?.costEstimateCents ?? 0);
-    const deltaGrounding = (b.groundingCostCents ?? 0) - (prior?.groundingCostCents ?? 0);
-    const deltaTokens =
-      ((b.tokensInput ?? 0) + (b.tokensOutput ?? 0)) -
-      ((prior?.tokensInput ?? 0) + (prior?.tokensOutput ?? 0));
-
-    if (deltaCost || deltaGrounding || deltaTokens) {
-      const proj = await Project.findByIdAndUpdate(
-        projectId,
-        {
-          $inc: {
-            costTotalCents: deltaCost,
-            groundingCostCents: deltaGrounding,
-            tokensTotal: deltaTokens,
-          },
-        },
-        { new: true }
-      );
-      // Informational alert (never blocking) once all-in cost crosses the threshold.
-      const threshold = config.cost.alertThresholdCents;
-      if (
-        proj &&
-        threshold > 0 &&
-        !proj.costAlert &&
-        proj.costTotalCents + proj.groundingCostCents >= threshold
-      ) {
-        await Project.updateOne({ _id: projectId }, { $set: { costAlert: true } });
-      }
+  // Roll the same consumption onto the project (sum — every run counts).
+  if (runCost || runGrounding || runTokens) {
+    const proj = await Project.findByIdAndUpdate(
+      projectId,
+      { $inc: { costTotalCents: runCost, groundingCostCents: runGrounding, tokensTotal: runTokens } },
+      { new: true }
+    );
+    const threshold = config.cost.alertThresholdCents;
+    if (
+      proj &&
+      threshold > 0 &&
+      !proj.costAlert &&
+      proj.costTotalCents + proj.groundingCostCents >= threshold
+    ) {
+      await Project.updateOne({ _id: projectId }, { $set: { costAlert: true } });
     }
   }
 

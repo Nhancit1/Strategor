@@ -113,7 +113,7 @@ router.get('/projects/:id', asyncHandler(async (req, res) => {
     .lean();
   if (!project) throw new ApiError(404, 'Projet introuvable');
   const agents = await AgentExecution.find({ project: req.params.id })
-    .select('agentId agentName status modelUsed tokensInput tokensOutput costEstimateCents groundingCostCents')
+    .select('agentId agentName status modelUsed tokensInput tokensOutput costEstimateCents groundingCostCents costConsumedCents groundingConsumedCents tokensConsumed')
     .sort({ agentId: 1 })
     .lean();
   res.json({
@@ -131,7 +131,9 @@ router.get('/projects/:id', asyncHandler(async (req, res) => {
       modelUsed: a.modelUsed,
       tokensInput: a.tokensInput || 0,
       tokensOutput: a.tokensOutput || 0,
-      costUsd: cents((a.costEstimateCents || 0) + (a.groundingCostCents || 0)),
+      // CONSUMED (sum of all runs) — matches the provider bill and sums to the project total.
+      costUsd: cents((a.costConsumedCents || 0) + (a.groundingConsumedCents || 0)),
+      tokens: a.tokensConsumed || 0,
     })),
   });
 }));

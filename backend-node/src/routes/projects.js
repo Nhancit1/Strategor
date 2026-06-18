@@ -9,7 +9,7 @@ import { OnboardingProfile } from '../models/OnboardingProfile.js';
 import { FinanceLite } from '../models/FinanceLite.js';
 import { ProjectDocument } from '../models/ProjectDocument.js';
 import { AgentExecution } from '../models/AgentExecution.js';
-import { startAnalysis } from '../services/pythonClient.js';
+import { startAnalysis, cancelAnalysis } from '../services/pythonClient.js';
 
 const router = Router();
 
@@ -120,6 +120,32 @@ router.post('/:id/analyze', requireAuth, analyzeLimiter, asyncHandler(async (req
 
   const phase = req.body?.phase || 'all';
 
+  // Reset all agent executions to PENDING for a fresh analysis run
+  if (phase === 'all' || phase === 'profile') {
+    await AgentExecution.updateMany(
+      { project: project._id },
+      {
+        $set: {
+          status: 'PENDING',
+          output: null,
+          editedOutput: null,
+          errorMessage: null,
+          progressPercent: 0,
+          modelUsed: null,
+          tokensInput: null,
+          tokensOutput: null,
+          costEstimateCents: null,
+          groundingCostCents: null,
+          sources: null,
+          startedAt: null,
+          completedAt: null,
+          validatedAt: null,
+          stale: false,
+        }
+      }
+    );
+  }
+
   // Phase "all" runs all agents sequentially. "profile" only runs Agent 1.
   startAnalysis({
     projectId: project.id.toString(),
@@ -224,6 +250,20 @@ router.post('/:id/analyze/continue-diagnostic', requireAuth, analyzeLimiter, asy
   });
 
   res.status(202).json(projectDto(project));
+}));
+
+// Phase 4 — cancel / stop the running analysis.
+router.post('/:id/analyze/cancel', requireAuth, asyncHandler(async (req, res) => {
+  const project = await loadOwnedProject(req.params.id, req.user.id);
+  try {
+    await cancelAnalysis(project.id.toString());
+  } catch (err) {
+    console.error('[analyze/cancel] Python cancel failed:', err.message);
+  }
+  // Immediately update project status to FAILED
+  project.status = 'FAILED';
+  await project.save();
+  res.status(200).json(projectDto(project));
 }));
 
 export default router;

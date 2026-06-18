@@ -18,6 +18,10 @@ export async function startAnalysis(payload) {
   return client.post('/analyze', payload);
 }
 
+export async function cancelAnalysis(projectId) {
+  return client.post('/analyze/cancel', { projectId });
+}
+
 // Fire-and-forget: parse an uploaded document. Python reads it from the shared
 // uploads volume and calls back POST /internal/documents/:id/parsed.
 export async function startParse(payload) {

@@ -97,6 +97,12 @@ export const useProjectStore = create((set, get) => ({
     return data;
   },
 
+  cancelAnalysis: async (id) => {
+    const { data } = await projectApi.cancelAnalysis(id);
+    set({ current: data });
+    return data;
+  },
+
   fetchAgents: async (id) => {
     set({ agentsLoading: true });
     try {

@@ -9,11 +9,12 @@ Endpoints (all called by the Node backend, guarded by the internal token):
 """
 import io
 import logging
+import asyncio
 
 from fastapi import FastAPI, BackgroundTasks, Header, HTTPException, Response
 
 from .config import settings
-from .models import AnalyzeRequest, ParseRequest, ExportRequest
+from .models import AnalyzeRequest, ParseRequest, ExportRequest, CancelRequest
 from .orchestrator import run_analysis
 from .parsing.parser import extract_text
 from .exporters import get_exporter
@@ -42,13 +43,33 @@ async def health():
     return {"status": "UP", "service": "ai"}
 
 
+ACTIVE_TASKS: dict[str, asyncio.Task] = {}
+
+
 @app.post("/analyze", status_code=202)
-async def analyze(req: AnalyzeRequest, background: BackgroundTasks,
-                  x_internal_token: str | None = Header(default=None)):
+async def analyze(req: AnalyzeRequest, x_internal_token: str | None = Header(default=None)):
     _check_internal(x_internal_token)
     # Run the pipeline in the background; progress streams back to Node.
-    background.add_task(run_analysis, req)
+    task = asyncio.create_task(run_analysis(req))
+    ACTIVE_TASKS[req.projectId] = task
+
+    def _cleanup(t):
+        ACTIVE_TASKS.pop(req.projectId, None)
+
+    task.add_done_callback(_cleanup)
     return {"accepted": True, "projectId": req.projectId}
+
+
+@app.post("/analyze/cancel", status_code=200)
+async def cancel_analyze(req: CancelRequest, x_internal_token: str | None = Header(default=None)):
+    _check_internal(x_internal_token)
+    task = ACTIVE_TASKS.get(req.projectId)
+    if task:
+        task.cancel()
+        log.info("Requested cancellation for project task: %s", req.projectId)
+        return {"cancelled": True, "projectId": req.projectId}
+    log.warning("No active task found for project to cancel: %s", req.projectId)
+    return {"cancelled": False, "projectId": req.projectId, "message": "No active task found"}
 
 
 @app.post("/parse", status_code=202)

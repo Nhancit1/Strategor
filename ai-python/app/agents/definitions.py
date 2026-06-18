@@ -78,7 +78,7 @@ class Agent5Diagnostic(Agent):
     tier = ModelTier.OPUS
     depends_on = [2, 3, 4, 9, 10]
     active_in_modes = ["standard", "comprehensive"]
-    uses_finance = False
+    uses_finance = True
     uses_web_search = True
     mission = MISSIONS[5]
     output_schema = SCHEMAS[5]
@@ -89,9 +89,9 @@ class Agent6Strategy(Agent):
     agent_name = "Axes stratégiques & roadmap"
     category = "STRATEGY"
     tier = ModelTier.SONNET
-    depends_on = [5, 11]
+    depends_on = [5, 11, 17]
     active_in_modes = ["standard", "comprehensive"]
-    uses_finance = False
+    uses_finance = True
     mission = MISSIONS[6]
     output_schema = SCHEMAS[6]
 
@@ -114,9 +114,8 @@ class Agent8Deliverables(Agent):
     category = "DELIVERABLES"
     tier = ModelTier.SONNET
     depends_on = [5, 6, 7, 11, 12, 13, 14]
-    max_output_tokens = 8192
     active_in_modes = ["standard", "comprehensive"]
-    uses_finance = False
+    uses_finance = True
     mission = MISSIONS[8]
     output_schema = SCHEMAS[8]
 
@@ -192,7 +191,7 @@ class Agent13RiskRegister(Agent):
     tier = ModelTier.SONNET
     depends_on = [5, 6]
     active_in_modes = ["standard", "comprehensive"]
-    uses_finance = False
+    uses_finance = True
     mission = MISSIONS[13]
     output_schema = SCHEMAS[13]
 
@@ -213,7 +212,6 @@ class Agent15Consistency(Agent):
     category = "REVIEW"
     tier = ModelTier.SONNET
     depends_on = [5, 6, 7, 8, 11, 12, 13, 14]
-    max_output_tokens = 8192
     active_in_modes = ["standard", "comprehensive"]
     uses_finance = False
     mission = MISSIONS[15]
@@ -234,6 +232,21 @@ class Agent16PartnerReview(Agent):
     mission = MISSIONS[16]
     output_schema = SCHEMAS[16]
 
+class Agent17StrategicOptions(Agent):
+    """Generates 2-3 distinct, mutually-exclusive strategic OPTIONS (plus a recommendation)
+    BEFORE Agent 6 commits to a single plan, so the strategy is a deliberate *choice* between
+    real alternatives (premium vs volume, organic vs M&A…) rather than the first plausible
+    plan. Runs after the Diagnostic (5) and BCG (11); Agent 6 consumes its recommendation."""
+    agent_id = 17
+    agent_name = "Options stratégiques"
+    category = "STRATEGY"
+    tier = ModelTier.OPUS
+    depends_on = [5, 11]
+    active_in_modes = ["standard", "comprehensive"]
+    uses_finance = True
+    mission = MISSIONS[17]
+    output_schema = SCHEMAS[17]
+
 ALL_AGENTS = [
     Agent1Profile(), Agent2Pestel(), Agent3Swot(), Agent4Competition(),
     Agent5Diagnostic(), Agent6Strategy(), Agent7Kpis(), Agent8Deliverables(),
@@ -242,4 +255,5 @@ ALL_AGENTS = [
     Agent14Finance(),
     Agent15Consistency(),
     Agent16PartnerReview(),
+    Agent17StrategicOptions(),
 ]

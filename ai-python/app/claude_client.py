@@ -15,7 +15,7 @@ from enum import Enum
 from dataclasses import dataclass, field
 from typing import Any
 from anthropic import AsyncAnthropic
-from .config import settings
+from .config import settings, CACHE_SENTINEL
 
 log = logging.getLogger("strategor.claude")
 
@@ -24,8 +24,6 @@ class ModelTier(str, Enum):
     HAIKU = "HAIKU"
     SONNET = "SONNET"
     OPUS = "OPUS"
-
-
 # cents per million tokens (input, output). Rates verified 2026-05:
 # Haiku 4.5 $1/$5, Sonnet 4.6 $3/$15, Opus 4.7 $5/$25.
 _COST = {
@@ -35,10 +33,30 @@ _COST = {
 }
 
 
-def estimate_cost_cents(tier: ModelTier, tokens_in: int, tokens_out: int) -> int:
-    cin, cout = _COST[tier]
-    cents = tokens_in * cin // 1_000_000 + tokens_out * cout // 1_000_000
-    return int(cents)
+def _rate_for_model(model_str: str, tier: ModelTier) -> tuple[int, int]:
+    """(input, output) cents/Mtok by ACTUAL model — so cost matches the bill even when e.g.
+    MODEL_OPUS is mapped to Sonnet. Falls back to the tier's rate if the name is unrecognized."""
+    name = (model_str or "").lower()
+    if "opus" in name:
+        return _COST[ModelTier.OPUS]
+    if "haiku" in name:
+        return _COST[ModelTier.HAIKU]
+    if "sonnet" in name:
+        return _COST[ModelTier.SONNET]
+    return _COST[tier]
+
+
+def estimate_cost_cents(tier: ModelTier, tokens_in: int, tokens_out: int,
+                        cache_creation_in: int = 0, cache_read_in: int = 0) -> int:
+    """Bill-accurate estimate. Prompt-cache writes bill at 1.25x input, reads at 0.1x input."""
+    cin, cout = _rate_for_model(_model_for(tier), tier)
+    micro = (
+        tokens_in * cin
+        + (cache_creation_in * cin * 5) // 4   # cache write = 1.25x input
+        + (cache_read_in * cin) // 10          # cache read  = 0.10x input
+        + tokens_out * cout
+    )
+    return int(micro // 1_000_000)
 
 
 def _model_for(tier: ModelTier) -> str:
@@ -61,6 +79,120 @@ class StructuredResponse:
 
 
 _client = AsyncAnthropic(api_key=settings.anthropic_api_key)
+
+
+class GenerationError(RuntimeError):
+    """Generation completed (and was billed) but the output was unusable. Carries the
+    billed usage so the caller can still account for the tokens that were consumed."""
+    tokens_input = 0
+    tokens_output = 0
+    cost_estimate_cents = 0
+    grounding_cost_cents = 0
+
+
+def _repair_truncated_json(raw: str) -> str | None:
+    """Best-effort repair of JSON that was truncated by a max_tokens cutoff.
+
+    Strategy:
+      1. Find the first '{' to start the JSON object.
+      2. Truncate back to the last complete value boundary (after a ',' or ':' followed
+         by a complete value, or after a closing bracket/brace).
+      3. Close any remaining open braces/brackets.
+
+    Returns the repaired JSON string, or None if repair is not feasible.
+    """
+    start = raw.find('{')
+    if start == -1:
+        return None
+    s = raw[start:]
+
+    # Walk character by character tracking nesting and string state
+    stack: list[str] = []  # tracks [ and {
+    in_string = False
+    escape = False
+    last_good = -1  # index of last position that ended a complete value
+
+    for i, ch in enumerate(s):
+        if escape:
+            escape = False
+            continue
+        if in_string:
+            if ch == '\\':
+                escape = True
+            elif ch == '"':
+                in_string = False
+                last_good = i
+            continue
+        # Outside string
+        if ch == '"':
+            in_string = True
+        elif ch in ('{', '['):
+            stack.append(ch)
+        elif ch == '}':
+            if stack and stack[-1] == '{':
+                stack.pop()
+                last_good = i
+        elif ch == ']':
+            if stack and stack[-1] == '[':
+                stack.pop()
+                last_good = i
+        elif ch in (',', ':'):
+            pass  # structural, not a value end
+        elif ch in (' ', '\t', '\n', '\r'):
+            pass
+
+    if not stack:
+        # Already balanced — shouldn't happen for a truncated output, but try it
+        try:
+            json.loads(s)
+            return s
+        except Exception:
+            pass
+
+    if last_good == -1:
+        return None
+
+    # Truncate to last_good, then strip any trailing comma / colon / whitespace
+    truncated = s[:last_good + 1].rstrip()
+    # Remove a trailing comma that would be invalid before a closing bracket
+    while truncated and truncated[-1] in (',', ':'):
+        truncated = truncated[:-1].rstrip()
+
+    # Re-scan to find what's still open after truncation
+    stack2: list[str] = []
+    in_str2 = False
+    esc2 = False
+    for ch in truncated:
+        if esc2:
+            esc2 = False
+            continue
+        if in_str2:
+            if ch == '\\':
+                esc2 = True
+            elif ch == '"':
+                in_str2 = False
+            continue
+        if ch == '"':
+            in_str2 = True
+        elif ch in ('{', '['):
+            stack2.append(ch)
+        elif ch == '}':
+            if stack2 and stack2[-1] == '{':
+                stack2.pop()
+        elif ch == ']':
+            if stack2 and stack2[-1] == '[':
+                stack2.pop()
+
+    # Close everything that's still open (in reverse order)
+    closers = {'[': ']', '{': '}'}
+    suffix = ''.join(closers[c] for c in reversed(stack2))
+    repaired = truncated + suffix
+
+    try:
+        json.loads(repaired)
+        return repaired
+    except Exception:
+        return None
 
 
 # ── Web-search grounding helpers ──────────────────────────────────────────────
@@ -196,13 +328,48 @@ async def generate_structured(
             "Ton JSON risque d'être coupé si tu génères trop de texte, ce qui fera échouer le système. Rédige l'essentiel uniquement !"
         )
 
+    # Prompt caching: split at the sentinel into a cached shared prefix + a per-agent suffix.
+    if settings.prompt_cache_enabled and CACHE_SENTINEL in system_prompt:
+        _prefix, _suffix = system_prompt.split(CACHE_SENTINEL, 1)
+        system_param = [
+            {"type": "text", "text": _prefix, "cache_control": {"type": "ephemeral"}},
+            {"type": "text", "text": _suffix},
+        ]
+    else:
+        system_param = system_prompt.replace(CACHE_SENTINEL, "")
+
     resp = await _client.messages.create(
         model=model,
-        max_tokens=8192,
-        system=system_prompt,
+        max_tokens=max_tokens,            # honor each agent's configured output cap (was hardcoded 8192)
+        system=system_param,
         messages=[{"role": "user", "content": user_prompt}],
         extra_headers={"anthropic-beta": "max-tokens-3-5-sonnet-2024-07-15"}
     )
+
+    # Usage + bill-accurate cost (incl. prompt-cache tokens), computed up front so a
+    # post-generation failure can still report what was billed.
+    _u = resp.usage
+    tokens_in = _u.input_tokens
+    tokens_out = _u.output_tokens
+    cache_create = getattr(_u, "cache_creation_input_tokens", 0) or 0
+    cache_read = getattr(_u, "cache_read_input_tokens", 0) or 0
+    cost = estimate_cost_cents(tier, tokens_in, tokens_out, cache_create, cache_read)
+    total_in = tokens_in + cache_create + cache_read
+
+    def _gen_error(msg: str) -> GenerationError:
+        e = GenerationError(msg)
+        e.tokens_input = total_in
+        e.tokens_output = tokens_out
+        e.cost_estimate_cents = cost
+        e.grounding_cost_cents = grounding_cost
+        return e
+
+    # Detect output truncation (stop_reason == "max_tokens" means the response was cut
+    # off before Claude finished generating).
+    stop_reason = getattr(resp, "stop_reason", None)
+    was_truncated = stop_reason == "max_tokens"
+    if was_truncated:
+        log.warning("agent=%s output TRUNCATED (hit max_tokens=%d). Will attempt JSON repair.", agent_name, max_tokens)
 
     # Extract JSON from the markdown response
     text = ""
@@ -215,7 +382,7 @@ async def generate_structured(
     if match:
         json_str = match.group(1)
     else:
-        # Fallback if no markdown block is used
+        # Fallback if no markdown block is used (common when truncated — no closing ```)
         json_str = text.strip()
         # Find first { and last }
         start = json_str.find('{')
@@ -223,35 +390,46 @@ async def generate_structured(
         if start != -1 and end != -1:
             json_str = json_str[start:end+1]
 
+    payload = None
     try:
         payload = json.loads(json_str)
-    except Exception as e:
-        with open(f"debug_resp_{agent_name}.log", "w") as f:
-            f.write(text)
-        raise RuntimeError(f"Claude n'a pas renvoyé un JSON valide pour l'agent {agent_name}. Erreur: {e}")
+    except Exception as parse_err:
+        # Attempt to repair the JSON by closing unclosed brackets/braces at
+        # the last structurally-valid point.  This handles both explicit
+        # max_tokens truncation AND models that simply produce malformed JSON.
+        log.info("agent=%s JSON parse failed (truncated=%s), attempting repair…", agent_name, was_truncated)
+        repaired = _repair_truncated_json(text)
+        if repaired:
+            try:
+                payload = json.loads(repaired)
+                log.info("agent=%s JSON repair succeeded (partial data recovered).", agent_name)
+            except Exception:
+                pass
+        if payload is None:
+            with open(f"debug_resp_{agent_name}.log", "w") as f:
+                f.write(text)
+            raise _gen_error(f"Claude n'a pas renvoyé un JSON valide pour l'agent {agent_name}. Erreur: {parse_err}")
 
     if not payload:
-        raise RuntimeError(f"Claude a renvoyé un objet vide {{}} pour l'agent {agent_name}. Rejet de la réponse.")
+        raise _gen_error(f"Claude a renvoyé un objet vide {{}} pour l'agent {agent_name}. Rejet de la réponse.")
 
     # Validate that required keys from the schema are present
     required_keys = output_schema.get("required", [])
     if isinstance(payload, dict) and required_keys:
         missing_keys = [k for k in required_keys if k not in payload]
         if missing_keys:
-            raise RuntimeError(f"Claude a omis des champs obligatoires ({', '.join(missing_keys)}) pour l'agent {agent_name}.")
+            raise _gen_error(f"Claude a omis des champs obligatoires ({', '.join(missing_keys)}) pour l'agent {agent_name}.")
 
     # Attach gathered sources (post-hoc; not constrained by the agent's schema).
     # The exporters' Sources section reads output.sources / output.citations.
     if web_sources and isinstance(payload, dict) and not payload.get("sources"):
         payload["sources"] = web_sources
 
-    tokens_in = resp.usage.input_tokens
-    tokens_out = resp.usage.output_tokens
     return StructuredResponse(
         payload=payload,
-        tokens_input=tokens_in,
+        tokens_input=total_in,
         tokens_output=tokens_out,
-        cost_estimate_cents=estimate_cost_cents(tier, tokens_in, tokens_out),
+        cost_estimate_cents=cost,
         model_used=tier.value,
         grounding_cost_cents=grounding_cost,
         sources=web_sources,

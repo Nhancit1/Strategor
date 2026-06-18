@@ -10,9 +10,15 @@ class AnalyzeRequest(BaseModel):
     financeLite: Optional[dict[str, Any]] = None  # FinanceLite JSON
     documentsContext: Optional[str] = None        # pre-assembled doc text
     # ── Two-phase flow (Agent 1 hypotheses review) ──
-    phase: str = "full"               # "profile" | "full" | "single" | "all"
+    phase: str = "full"               # "profile" | "full" | "single" | "subset" | "all"
     seedOutputs: Optional[dict[str, Any]] = None  # precomputed agent outputs, e.g. {"1": {...}}
     targetAgentId: Optional[int] = None           # for phase="single": which agent to (re)run
+    targetAgentIds: Optional[list[int]] = None    # for phase="subset": agents to re-derive after an edit
+
+
+# ── /analyze/cancel request ─────────────────────────────────────────
+class CancelRequest(BaseModel):
+    projectId: str
 
 
 # ── /parse request ──────────────────────────────────────────────────

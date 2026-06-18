@@ -38,6 +38,15 @@ class Settings:
     self_correction_max_rounds: int = int(os.getenv("SELF_CORRECTION_MAX_ROUNDS", "2"))
     self_correction_max_agents_per_round: int = int(os.getenv("SELF_CORRECTION_MAX_AGENTS", "6"))
 
+    # Prompt caching: cache the shared, stable prompt prefix (company fact-sheet + rules)
+    # so it is billed once per ~5 min instead of re-sent in full for every agent and every
+    # regeneration. Best-effort — Anthropic ignores it when the prefix is below the min length.
+    prompt_cache_enabled: bool = os.getenv("PROMPT_CACHE_ENABLED", "true").lower() == "true"
+
 
 settings = Settings()
+
+# Marker inserted by build_system_prompt at the cache boundary; the client splits the
+# system prompt here into a cached prefix + a per-agent suffix. Never shown to the model.
+CACHE_SENTINEL = "\u0000__STRATEGOR_CACHE_BREAKPOINT__\u0000"
 

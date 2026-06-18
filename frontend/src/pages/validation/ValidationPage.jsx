@@ -1,7 +1,7 @@
 import { useEffect, useState, useMemo, useCallback, useRef } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { CheckCircle2, RefreshCw, Pencil, X, Save, Loader2, Download, FileText } from 'lucide-react';
+import { CheckCircle2, RefreshCw, Pencil, X, Save, Loader2, Download, ArrowLeft } from 'lucide-react';
 import { useProjectStore } from '../../store/projectStore';
 import { useAuthStore } from '../../store/authStore';
 import { agentApi } from '../../api';
@@ -23,6 +23,7 @@ import ConsistencyView from '../../components/viz/ConsistencyView';
 import ConsistencyReport from '../../components/viz/ConsistencyReport';
 import SourcesPanel from '../../components/viz/SourcesPanel';
 import PartnerReviewView from '../../components/viz/PartnerReviewView';
+import OptionsView from '../../components/viz/OptionsView';
 
 const TABS = [
   { id: 'profile', agentId: 1, label: 'Profil', Component: ProfileView },
@@ -32,6 +33,7 @@ const TABS = [
   { id: 'porter', agentId: 9, label: 'Porter', Component: PorterPentagon },
   { id: 'valuechain', agentId: 10, label: 'Chaîne de valeur', Component: ValueChainDiagram },
   { id: 'diagnostic', agentId: 5, label: 'Diagnostic', Component: DiagnosticView },
+  { id: 'options', agentId: 17, label: 'Options', Component: OptionsView },
   { id: 'strategy', agentId: 6, label: 'Stratégie', Component: StrategyView },
   { id: 'kpis', agentId: 7, label: 'KPIs', Component: KpiDashboard },
   { id: 'bcg', agentId: 11, label: 'BCG', Component: BcgMatrix },
@@ -46,13 +48,13 @@ export default function ValidationPage() {
   const { id, tab } = useParams();
   const navigate = useNavigate();
   const { t } = useTranslation();
-  const { agents, fetchAgents, agentsLoading, current, fetchProject } = useProjectStore();
+  const { agents, fetchAgents, agentsLoading, current, fetchProject, launchAnalysis } = useProjectStore();
   const user = useAuthStore((s) => s.user);
   const userLang = user?.lang;
   const [activeTab, setActiveTab] = useState(tab || TABS[0].id);
   const [regenerating, setRegenerating] = useState(false);
+  const [exportingHtml, setExportingHtml] = useState(false);
   const exportRef = useRef(null);
-  const [exporting, setExporting] = useState(null);
 
   // ── Editing state ──────────────────────────────────
   const [editing, setEditing] = useState(false);
@@ -145,24 +147,38 @@ export default function ValidationPage() {
     [agents]
   );
 
-  // Export the currently-visualised page (exact on-screen design) to PDF / Word.
-  const handleExport = async (format) => {
-    if (!exportRef.current || exporting) return;
-    setExporting(format);
+  // Modules invalidated by an upstream manual edit (see one-click re-derive below).
+  const staleAgents = useMemo(
+    () => agents.filter((a) => a?.stale && a.status === 'DONE'),
+    [agents]
+  );
+  const [rederiving, setRederiving] = useState(false);
+  const handleRederive = async () => {
+    if (rederiving || !staleAgents.length) return;
+    setRederiving(true);
     try {
-      const label = TABS.find((tt) => tt.id === activeTab)?.label || 'rapport';
-      const safe = `${(current?.name || 'strategor')}-${label}`.replace(/[^\w.-]+/g, '_');
-      const { exportViewToPdf, exportViewToDocx } = await import('../../utils/exportView');
-      if (format === 'pdf') {
-        await exportViewToPdf(exportRef.current, `${safe}.pdf`);
-      } else {
-        await exportViewToDocx(exportRef.current, `${safe}.docx`, `${current?.name || ''} — ${label}`);
-      }
+      await agentApi.rederiveStale(id);
+      setTimeout(() => fetchAgents(id), 1200);
     } catch (e) {
-      console.error('Export failed', e);
-      alert("L'export a échoué. Veuillez réessayer.");
+      console.error('Re-derive failed', e);
     } finally {
-      setExporting(null);
+      setRederiving(false);
+    }
+  };
+
+
+
+  const handleExportHtml = async () => {
+    if (exportingHtml || !exportRef.current) return;
+    setExportingHtml(true);
+    try {
+      const { downloadViewAsHtml } = await import('../../utils/exportView');
+      await downloadViewAsHtml(exportRef.current, `strategor-${tabConfig.id}`, `Strategor — ${tabConfig.label}`);
+    } catch (e) {
+      console.error('HTML export failed', e);
+      alert("L'export HTML a échoué. " + (e?.message || ''));
+    } finally {
+      setExportingHtml(false);
     }
   };
 
@@ -176,11 +192,16 @@ export default function ValidationPage() {
           <h1 className="font-title text-3xl font-bold mb-1">{t('validation.title')}</h1>
           <p className="text-ink3">{t('validation.subtitle')}</p>
         </div>
-        {allValidated && (
-          <Link to={`/projects/${id}/deliverables`} className="btn-primary">
-            Voir les livrables →
+        <div className="flex items-center gap-3">
+          <Link to={`/projects/${id}/agents`} className="btn-secondary flex items-center gap-1.5">
+            <ArrowLeft size={16} /> Retour au pipeline
           </Link>
-        )}
+          {allValidated && (
+            <Link to={`/projects/${id}/deliverables`} className="btn-primary">
+              Voir les livrables →
+            </Link>
+          )}
+        </div>
       </div>
 
       <ConsistencyReport
@@ -188,11 +209,32 @@ export default function ValidationPage() {
         onOpenReview={() => onSelectTab('review')}
       />
 
+
+
+      {staleAgents.length > 0 && (
+        <div className="mb-4 flex items-center justify-between gap-3 rounded-lg border border-orange/40 bg-orange/10 px-4 py-3">
+          <p className="text-sm text-ink2">
+            <strong>{staleAgents.length} module{staleAgents.length > 1 ? 's' : ''}</strong>{' '}
+            dépend{staleAgents.length > 1 ? 'ent' : ''} d’une modification récente et
+            doi{staleAgents.length > 1 ? 'vent' : 't'} être régénéré{staleAgents.length > 1 ? 's' : ''}.
+          </p>
+          <button
+            onClick={handleRederive}
+            disabled={rederiving}
+            className="btn-primary text-sm whitespace-nowrap flex items-center gap-1.5"
+          >
+            <RefreshCw size={14} className={rederiving ? 'animate-spin' : ''} />
+            {rederiving ? 'Régénération…' : 'Re-générer les modules périmés'}
+          </button>
+        </div>
+      )}
+
       <div className="flex gap-1 mb-6 overflow-x-auto pb-2">
         {TABS.map((tt) => {
           const agent = agents.find((a) => a.agentId === tt.agentId);
           const validated = !!agent?.validatedAt;
           const skipped = agent?.status === 'SKIPPED';
+          const stale = !!agent?.stale;
           return (
             <button
               key={tt.id}
@@ -206,6 +248,12 @@ export default function ValidationPage() {
               {tt.label}
               {validated && <CheckCircle2 size={14} className="inline ml-1.5 text-green" />}
               {skipped && <span className="ml-1.5 text-xs">⊝</span>}
+              {stale && (
+                <span
+                  title="Périmé — dépend d’une modification"
+                  className={`inline-block ml-1.5 w-2 h-2 rounded-full align-middle ${activeTab === tt.id ? 'bg-white' : 'bg-orange'}`}
+                />
+              )}
             </button>
           );
         })}
@@ -262,13 +310,14 @@ export default function ValidationPage() {
                 </>
               ) : (
                 <>
-                  <button onClick={() => handleExport('pdf')} disabled={!!exporting} className="btn-secondary text-sm flex items-center gap-1.5">
-                    <Download size={14} className={exporting === 'pdf' ? 'animate-spin' : ''} />
-                    {exporting === 'pdf' ? 'Export…' : 'PDF'}
-                  </button>
-                  <button onClick={() => handleExport('docx')} disabled={!!exporting} className="btn-secondary text-sm flex items-center gap-1.5">
-                    <FileText size={14} className={exporting === 'docx' ? 'animate-spin' : ''} />
-                    {exporting === 'docx' ? 'Export…' : 'Word'}
+                  <button
+                    onClick={handleExportHtml}
+                    disabled={exportingHtml}
+                    className="btn-secondary text-sm flex items-center gap-1.5"
+                    title="Télécharger une page HTML autonome, consultable hors-ligne"
+                  >
+                    <Download size={14} className={exportingHtml ? 'animate-pulse' : ''} />
+                    {exportingHtml ? 'Export…' : 'Télécharger (HTML)'}
                   </button>
                   <button
                     onClick={handleStartEdit}
@@ -298,13 +347,15 @@ export default function ValidationPage() {
             )}
 
             {/* ── Content area (captured for export) ──── */}
-            <div ref={exportRef} className="bg-white">
+            <div className="bg-white">
             {Visualization && displayOutput ? (
-              <Visualization
-                output={displayOutput}
-                editing={editing}
-                onOutputChange={handleOutputChange}
-              />
+              <div ref={exportRef}>
+                <Visualization
+                  output={displayOutput}
+                  editing={editing}
+                  onOutputChange={handleOutputChange}
+                />
+              </div>
             ) : (
               <pre className="bg-paper2 p-4 rounded-lg text-xs overflow-auto max-h-[60vh]">
                 {JSON.stringify(displayOutput, null, 2)}

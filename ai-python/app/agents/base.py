@@ -9,9 +9,38 @@ Dependencies are passed as a dict {agentId: payload}. The sentinel key -1 holds
 the user-documents text (same convention as the Java orchestrator).
 """
 from __future__ import annotations
+from datetime import datetime
 from typing import Any, Optional
 from ..deepseek_client import ModelTier
 from .factsheet import build_factsheet
+from ..config import CACHE_SENTINEL
+
+
+def _date_context(is_en: bool = False) -> str:
+    """Anchor every agent to the server's real current date (and current quarter), so
+    roadmaps, milestones and projections are dated forward from *today* instead of from a
+    stale year baked into the model's weights. Without this the pipeline silently emitted
+    past-dated quarters (e.g. a roadmap starting "T1 2025" when we are already past it)."""
+    now = datetime.now()
+    q = (now.month - 1) // 3 + 1
+    d = now.strftime("%Y-%m-%d")
+    if is_en:
+        return (
+            "\n\n=== Current date (authoritative) ===\n"
+            f"Today is {d} \u2014 current quarter Q{q} {now.year}.\n"
+            f"All deadlines, roadmap quarters, milestones and projections MUST be dated at or "
+            f"after Q{q} {now.year}. Never place a milestone in a past quarter, and never assume "
+            "a different 'current year'.\n"
+        )
+    return (
+        "\n\n=== Date du jour (référence) ===\n"
+        f"Nous sommes le {d} \u2014 trimestre courant T{q} {now.year}.\n"
+        f"Toutes les échéances, trimestres de la feuille de route, jalons et projections "
+        f"DOIVENT être datés au trimestre courant ou après (T{q} {now.year}). Ne place "
+        "jamais un jalon dans un trimestre passé, et ne suppose jamais une autre "
+        "« année courante ».\n"
+    )
+
 
 DOCUMENTS_KEY = -1  # sentinel: deps[-1] = parsed user documents text
 
@@ -77,7 +106,7 @@ class Agent:
     active_in_modes: list[str] = ["standard", "comprehensive"]
     uses_finance: bool = False  # whether financeContext is injected
     uses_web_search: bool = False  # whether this agent grounds its analysis via web search
-    max_output_tokens: int = 4096  # per-agent output cap (heavy synthesis agents override)
+    max_output_tokens: int = 16000  # per-agent output cap — generous default to avoid truncation
     mission: str = ""
     framework_note: str = ""  # canonical framework definition (set on framework agents)
 
@@ -191,9 +220,15 @@ class Agent:
     ) -> str:
         is_en = language.lower().startswith("en")
         parts = [self.preamble(profile, is_en)]
+        # Anchor the whole analysis to the server's real "today" (current quarter) so
+        # roadmaps/milestones are dated forward, not from a stale year (see _date_context).
+        parts.append(_date_context(is_en))
         # Canonical fact-sheet + numeric-discipline contract — shared by EVERY agent
         # so figures stay consistent across the whole analysis (see factsheet.py).
         parts.append(build_factsheet(profile, finance))
+        # Cache breakpoint: everything above (company context + date + fact-sheet) is identical
+        # for every agent in a run, so it is cached and billed once instead of re-sent per agent.
+        parts.append(CACHE_SENTINEL)
         if self.uses_finance:
             parts.append(self.finance_context(finance, is_en))
         parts.append(self.dependency_context(deps, is_en))

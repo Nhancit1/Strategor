@@ -29,6 +29,12 @@ const agentExecutionSchema = new mongoose.Schema(
     validatedAt: { type: Date, default: null },
     errorMessage: { type: String, default: null },
     retryCount: { type: Number, default: 0 },
+    stale: { type: Boolean, default: false }, // an upstream edit invalidated this dependent
+    // Cumulative ACTUAL consumption across all runs (regenerations + billed-but-failed
+    // attempts), so reporting matches the provider bill. The fields above stay "latest run".
+    costConsumedCents: { type: Number, default: 0 },
+    groundingConsumedCents: { type: Number, default: 0 },
+    tokensConsumed: { type: Number, default: 0 },
   },
   { timestamps: true, toJSON: baseToJSON(['tokensInput', 'tokensOutput', 'costEstimateCents', 'groundingCostCents']) }
 );

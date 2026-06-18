@@ -63,6 +63,14 @@ _CLIENTS_RE = re.compile(r"\b(\d{1,4})\s+clients?\b", re.IGNORECASE)
 _HEADCOUNT_RE = re.compile(r"\b(\d{1,5})\s+(?:collaborateur|salari|personne|ETP|employ)", re.IGNORECASE)
 _RANGE_RE = re.compile(r"\d+(?:[.,]\d+)?\s*(?:-|–|à)\s*\d+(?:[.,]\d+)?\s*%")
 
+# Quarter labels in a roadmap, several written forms. (q, year) extracted per `order`.
+_Q_FORMS = (
+    (re.compile(r"\bQ([1-4])\s*[-/ ]?\s*(20\d{2})\b", re.IGNORECASE), "qy"),
+    (re.compile(r"\bT([1-4])\s*[-/ ]?\s*(20\d{2})\b", re.IGNORECASE), "qy"),
+    (re.compile(r"\b(20\d{2})\s*[-/ ]?\s*[QT]([1-4])\b", re.IGNORECASE), "yq"),
+    (re.compile(r"\b([1-4])\s*(?:er|ère|e|ème|nd)?\s*trimestre\s+(20\d{2})\b", re.IGNORECASE), "qy"),
+)
+
 
 def _meur(s: str) -> list[float]:
     return [v for v in (_to_float(m.group(1)) for m in _MEUR_RE.finditer(s)) if v is not None]
@@ -182,6 +190,40 @@ def _check_anchor_drift(outputs: dict, checks: list) -> None:
             })
 
 
+
+def _check_dates(outputs: dict, checks: list) -> None:
+    """The 18-month roadmap (Agent 6) must be dated forward. Any quarter earlier than the
+    current quarter is flagged as an ERROR, so the self-correction loop regenerates Agent 6
+    (which now receives today's date and will restart the roadmap at the right quarter).
+    Scoped to Agent 6 on purpose: free-text elsewhere legitimately cites past years."""
+    now = datetime.now()
+    cy, cq = now.year, (now.month - 1) // 3 + 1
+    cur = cy * 4 + (cq - 1)
+    roadmap = outputs.get(6)
+    if not isinstance(roadmap, (dict, list)):
+        return
+    past: set[str] = set()
+    for _path, s in _walk_strings(roadmap):
+        for rx, order in _Q_FORMS:
+            for m in rx.finditer(s):
+                if order == "qy":
+                    q, y = int(m.group(1)), int(m.group(2))
+                else:
+                    y, q = int(m.group(1)), int(m.group(2))
+                if 1 <= q <= 4 and (y * 4 + (q - 1)) < cur:
+                    past.add(f"T{q} {y}")
+    if past:
+        checks.append({
+            "id": "roadmap_past_quarter", "severity": "error",
+            "title": "Feuille de route datée dans le passé",
+            "detail": (f"La feuille de route (agent 6) référence des trimestres antérieurs au "
+                       f"trimestre courant (T{cq} {cy}) : {sorted(past)}. Elle doit démarrer au "
+                       f"trimestre courant ou suivant et couvrir 18 mois glissants."),
+            "agents": [6],
+            "values": {"current_quarter": f"T{cq} {cy}", "past_quarters": sorted(past)},
+        })
+
+
 def _semantic_summary(outputs: dict) -> dict:
     """Summarise Agent 15's LLM inconsistencies so the report unifies both layers."""
     out = {"count": 0, "high": 0, "medium": 0, "low": 0}
@@ -204,7 +246,7 @@ def _semantic_summary(outputs: dict) -> dict:
 def check_numeric_integrity(outputs: dict, profile: Optional[dict] = None,
                             finance: Optional[dict] = None) -> dict:
     checks: list[dict] = []
-    for fn in (_check_bcg, _check_growth_math, _check_anchor_drift):
+    for fn in (_check_bcg, _check_growth_math, _check_anchor_drift, _check_dates):
         try:
             fn(outputs, checks)
         except Exception as e:  # pragma: no cover

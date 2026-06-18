@@ -2,115 +2,184 @@
 {
   "strategic_axes": [
     {
-      "title": "Industrialiser le modèle produit : du sur-mesure au configurable",
-      "description": "TechNova doit impérativement transformer son approche 'hautement personnalisable' en architecture modulaire pré-packagée. L'objectif : réduire de 60-70% le time-to-value (passer de 6-12 mois à 2-3 mois pour les déploiements standards) et multiplier par 3-4 la capacité de delivery sans accroître linéairement l'équipe engineering. Cette refonte est la condition sine qua non pour atteindre l'objectif ARR x2 sous 3 ans tout en préservant des marges brutes >75%.",
+      "title": "Scaling Mid-Market EU : Casser la concentration client",
+      "description": "Lancer version Starter (300-500K€) ciblant ETI 500-2000 ETP logistique/retail EU. Objectif 30 logos sous 18 mois pour réduire dépendance 3 clients (45% CA actuel) à <30%. Cycles vente réduits à 60-90j vs 6-12 mois grands comptes. Industrialiser go-to-market digital et self-service onboarding.",
       "initiatives": [
-        "Audit technique immédiat (Q1 2025) : cartographier l'ensemble des customisations clients actuelles, identifier les 20% de fonctionnalités demandées par 80% des clients, et définir l'architecture cible modulaire (socle commun + modules verticaux finance/logistique + layer de configuration no-code/low-code)",
-        "Lancer un 'Core Product Squad' dédié (6-8 personnes mixtes product/engineering/data science) avec mandat exclusif : livrer v1.0 du socle standardisé sous 9 mois (Q3 2025), en gelant temporairement toute nouvelle customisation client hors roadmap approuvée",
-        "Migrer progressivement les clients existants vers la nouvelle architecture (playbook de migration client par client sur 12-15 mois, avec incentives commerciaux pour early adopters : 15-20% discount renouvellement contre migration rapide)",
-        "Développer un configurateur client self-service (interface graphique type drag-and-drop) permettant aux clients mid-market de paramétrer 70-80% de leurs besoins sans intervention engineering TechNova (réduction drastique du coût d'acquisition client CAC)",
-        "Établir une gouvernance produit stricte : refuser systématiquement toute demande custom non alignée avec la roadmap standardisée, sauf si le client finance le développement à 150-200% du coût réel ET accepte que la fonctionnalité soit mise au catalogue général"
+        "Développer version Starter Module Core (60% fonctionnalités Enterprise, pricing 300-500K€) avec onboarding automatisé - Budget R&D 800K€",
+        "Recruter 5-6 FTE inside sales mid-market + 1 Head of Growth Marketing expérimenté SaaS B2B",
+        "Déployer campagnes inbound LinkedIn/Google Ads ciblées ETI France/Allemagne/Benelux - Budget marketing 1,2M€/an",
+        "Implémenter parcours self-service (free trial 30j Module Prédictif, démo interactive, pricing transparent en ligne)",
+        "Segmenter strictement grands comptes vs mid-market (pricing/fonctionnalités différenciés) pour éviter cannibalisation"
       ],
       "quick_wins": [
-        "Créer un 'catalogue de modules standards' commercial (semaine 1-2) : documenter et packager les 5-7 configurations clients les plus fréquentes en offres pré-tarifées (ex: 'Pack Finance Trade Optimization', 'Pack Logistique Last-Mile') pour accélérer cycles de vente et créer effet d'ancrage tarifaire",
-        "Négocier avec 2-3 clients pilotes actuels (idéalement représentant 15-25% ARR) un accord win-win : ils acceptent de co-créer la v1.0 standardisée en échange d'un gel tarifaire 24 mois + statut 'partenaire de référence' utilisable commercialement (closing sous 4-6 semaines)"
+        "Campagne email outbound ultra-ciblée 100 ETI logistique existantes base de données (prospects warm) - Objectif 5 RDV qualifiés sous 3 semaines",
+        "Publier 3 case studies anonymisés clients actuels (ROI chiffré, témoignages vidéo) sur site web + LinkedIn - Sous 2 semaines"
       ],
       "milestones": [
         {
-          "quarter": "Q1 2025",
-          "milestone": "Audit technique complet livré + Architecture cible modulaire validée par Comex + 2 clients pilotes migration signés"
+          "quarter": "T3 2026",
+          "milestone": "Lancement version Starter Beta (5 clients pilotes ETI à -50% pricing). Go recrutement équipe sales/marketing mid-market."
         },
         {
-          "quarter": "Q2 2025",
-          "milestone": "Core Product Squad opérationnel + Freeze nouvelles customisations effectif + Catalogue commercial 7 modules standards déployé"
+          "quarter": "T4 2026",
+          "milestone": "10 premiers logos mid-market signés (CA incrémental 3-5M€). Plateforme self-service opérationnelle. Campagnes inbound actives."
         },
         {
-          "quarter": "Q3 2025",
-          "milestone": "Livraison v1.0 socle standardisé + Premiers déploiements clients <3 mois réalisés + Configurateur self-service beta lancé"
+          "quarter": "T1 2027",
+          "milestone": "20 logos mid-market cumulés. NRR mid-market >100% validé (premiers renouvellements). Concentration top 3 clients réduite à 35% CA."
         },
         {
-          "quarter": "Q4 2025",
-          "milestone": "50% de la base clients migrée vers nouvelle architecture + Time-to-value moyen réduit à 4 mois (vs. 9 mois initial) + CAC réduit de 30%"
+          "quarter": "T2 2027",
+          "milestone": "30 logos mid-market atteints. CAC:LTV ratio <1:3 confirmé. Ajustements pricing/packaging basés données 6 mois."
         },
         {
-          "quarter": "Q1 2026",
-          "milestone": "Configurateur self-service en production + 80% nouveaux deals sur offres standardisées + Marges brutes maintenues >75%"
+          "quarter": "T3 2027",
+          "milestone": "Ramp-up 40 logos. Concentration top 3 <30% CA. Validation business case pour série B (objectif levée T4 2027)."
         },
         {
-          "quarter": "Q2 2026",
-          "milestone": "100% base clients sur architecture modulaire + Équipe engineering stabilisée (croissance <20% vs. croissance ARR 40-50%) + NPS produit >50"
+          "quarter": "T4 2027",
+          "milestone": "50 logos mid-market (objectif 18 mois atteint). Segment mid-market = 25-30% CA total. Préparation série B 15-20M€."
         }
       ],
       "resources": [
-        "Budget R&D additionnel 800k-1,2M€ sur 18 mois (financement série A impératif) pour Core Product Squad + refonte architecture",
-        "Product Owner senior externe (recrutement ou interim 6-12 mois) avec expérience scaling SaaS B2B 10M→50M€",
-        "Consultant technique architecture cloud-native (3-6 mois mission) spécialisé multi-tenant SaaS",
-        "Change manager interne pour accompagner équipes sales/CSM sur nouvelle approche (formation, playbooks, objection handling)",
-        "Budget legal/contractuel 30-50k€ pour révision T&Cs clients et clauses migration"
+        "5-6 FTE inside sales mid-market (profils ex-Salesforce/HubSpot)",
+        "1 Head of Growth Marketing SaaS B2B (salaire 80-100K€ + equity)",
+        "Budget marketing digital 1,2M€/an (ads, content, SEO)",
+        "Budget R&D version Starter 800K€ (3-4 développeurs 6 mois)",
+        "Plateforme self-service/onboarding automatisé 500K€ (investissement tech)"
       ]
     },
     {
-      "title": "Conquérir le mid-market européen par un go-to-market scalable",
-      "description": "Actuellement concentré sur grands comptes/ETI (probablement 5-15 clients représentant 60-80% ARR), TechNova doit rapidement diversifier vers le mid-market (entreprises 50-500M€ CA) pour réduire la dépendance client, accélérer la vélocité commerciale (cycles de vente 4-6 mois vs. 12-18 mois grands comptes) et construire un moteur de croissance récurrent. Cible : signer 30-40 nouveaux logos mid-market sous 18 mois, contribuant 25-35% de l'ARR incrémental.",
+      "title": "Industrialiser Module Prédictif IA : 30% → 50% CA",
+      "description": "Accélérer hyper-croissance Module Prédictif (actuellement 30% CA, +60% YoY) pour atteindre 50% CA T4 2027. Capitaliser sur IA propriétaire brevetée et NRR 115% pour cross-sell base installée (grands comptes + mid-market). Développer templates sectoriels pharma/retail pour réduire cycles déploiement à 30j POC.",
       "initiatives": [
-        "Segmenter rigoureusement le marché européen par verticale (logistique 3PL/4PL, finance trade & commodity, retail distribution) et géographie (priorité DACH + Benelux où réglementations ESG/CSRD créent budgets dédiés), construire ICPs (Ideal Customer Profiles) précis pour chaque segment avec scoring quantitatif",
-        "Recruter 3-4 Account Executives mid-market dédiés (profils 3-5 ans xp SaaS B2B, quota 400-600k€ ARR annuel chacun) + 1 Sales Enablement Manager pour construire playbooks, automatiser prospection, gérer stack martech (Salesforce + Outreach/Salesloft + Gong)",
-        "Lancer programme de partenariats OEM/channel avec 2-3 acteurs complémentaires stratégiques : (1) intégrateurs ERP mid-market (ex: partenaires SAP Business One, Microsoft Dynamics) pour co-vendre module optimisation logistique en bundle, (2) cabinets conseil supply chain (ex: Argon & Co, Alix Partners) pour prescription projets transformation, (3) éditeurs TMS/WMS mid-market pour intégration technique native",
-        "Développer machine marketing digital scalable : ABM (Account-Based Marketing) ciblé sur 200-300 comptes prioritaires, content marketing SEO verticalisé (études de cas sectorielles, ROI calculators, webinaires), nurturing automatisé, participation salons verticaux (Transport Logistic Munich, SupplyChainEvent Paris)",
-        "Créer offre d'entrée 'land' mid-market simplifiée : module unique use-case critique (ex: 'Optimisation tournées last-mile' pour logistique, 'Prévision flux trade finance' pour finance) à 30-50k€ ACV avec time-to-value <60 jours, servant de tête de pont pour upsell modules additionnels (stratégie 'land & expand' classique)"
+        "Doubler allocation budget R&D Module Prédictif (passer de 30% à 50% budget innovation) - Recruter 5-8 FTE ingénieurs IA + 1 VP Product dédié",
+        "Développer templates sectoriels verticaux (pharma cold-chain, retail fresh-food, aerospace) - Réduire POC de 90j à 30j",
+        "Intégrer module décarbonation Supply Chain (optimisation CO2 scope 3, reporting CSRD) pour monétiser compliance Green Deal",
+        "Lancer campagne cross-sell agressive base Core installée (offre bundle -20% si achat Module avant T1 2027) - Potentiel +5-8M€ ARR",
+        "Partenariat co-développement avec 2 anchor clients grands comptes (GSK/Unilever type) pour valider use-cases verticaux"
       ],
       "quick_wins": [
-        "Identifier dans le pipe actuel 5-10 opportunités mid-market en stagnation (>6 mois sans avancée) et organiser 'deal blitz' intensif sur 3 semaines : implication CEO/CTO sur demos, offre commerciale agressive (15-20% discount + POC gratuit limité 30 jours), closing forcé avec objectif convertir 40-50% (soit 2-3 deals immédiats générant 150-250k€ ARR)",
-        "Nouer partenariat tactique express (signature <6 semaines) avec 1 intégrateur mid-market local dominant (ex: Gold Partner SAP en France/Allemagne) : deal simple de co-marketing (webinaire commun, case study partagée, leads referral 10% commission) générant 10-15 leads qualifiés sous 2 mois"
+        "Offre flash clients actuels Core : démo gratuite Module Prédictif 30j + bundle -15% si signature avant T3 2026 - Objectif 3-5 upsells immédiats",
+        "Publier white paper technique 'ROI IA Prédictive Supply Chain' (données anonymisées clients, benchmark vs concurrence) - Crédibilité VP/C-level"
       ],
       "milestones": [
         {
-          "quarter": "Q1 2025",
-          "milestone": "Segmentation marché + ICPs finalisés + 3 AEs mid-market recrutés + Offre 'land' packagée et tarifée + 1er partenariat OEM signé"
+          "quarter": "T3 2026",
+          "milestone": "Recrutement VP Product Module IA + 3 premiers ingénieurs IA. Lancement template pharma cold-chain (POC 30j validé avec 1 client pilote)."
         },
         {
-          "quarter": "Q2 2025",
-          "milestone": "Playbooks commerciaux déployés + Stack martech opérationnel + 8-12 nouveaux logos mid-market signés + Pipeline généré 2M€+ ARR"
+          "quarter": "T4 2026",
+          "milestone": "Template retail fresh-food opérationnel. Module décarbonation CSRD intégré (version beta). 5 upsells cross-sell base Core réalisés."
         },
         {
-          "quarter": "Q3 2025",
-          "milestone": "15-20 logos mid-market cumulés + 2e-3e partenariats OEM actifs + Premiers upsells mid-market réalisés (NRR segment >110%) + Cycles de vente moyens réduits à 5 mois"
+          "quarter": "T1 2027",
+          "milestone": "Module Prédictif = 35% CA (vs 30% T2 2026). Partenariat co-dev avec 1 anchor client pharma/retail signé. POC moyen réduit à 45j."
         },
         {
-          "quarter": "Q4 2025",
-          "milestone": "25-30 logos mid-market + Contribution mid-market à 20-25% ARR total + CAC payback <12 mois segment mid-market + Sales Efficiency (ARR/Sales Headcount) améliorée 30%"
+          "quarter": "T2 2027",
+          "milestone": "40% CA Module Prédictif. Templates sectoriels déployés chez 10 clients. POC standardisé 30j. 50% deals mid-market incluent Module IA."
         },
         {
-          "quarter": "Q1 2026",
-          "milestone": "35-40 logos mid-market cumulés + Partenaires OEM générant 15-20% du pipeline + Premières expansions géographiques DACH/Benelux opérationnelles"
+          "quarter": "T3 2027",
+          "milestone": "45% CA Module Prédictif. NRR global boosté à 125% (vs 115% actuel) grâce expansion Module IA. Validation product-market fit vertical."
         },
         {
-          "quarter": "Q2 2026",
-          "milestone": "Mid-market représente 30-35% ARR total + Churn segment <10% annualisé + Modèle économique mid-market profitable (LTV/CAC >3x) + Réplication playbook sur nouveaux pays lancée"
+          "quarter": "T4 2027",
+          "milestone": "Objectif 50% CA Module Prédictif atteint. Part marché relative segment AI Planning >0.15 (progression vs 0.05 actuel). Statut STAR BCG validé."
         }
       ],
       "resources": [
-        "Budget commercial additionnel 600-900k€ sur 18 mois : salaires AEs + commissions + stack martech (Salesforce, Outreach, Gong, 6sense/Demandbase ABM)",
-        "VP Sales expérimenté scaling mid-market SaaS (recrutement prioritaire Q1 2025, profil ayant déjà fait 5M→25M€ ARR)",
-        "Budget marketing 250-400k€ : events, content, ABM campaigns, webinaires, SEO/SEM",
-        "Ressources legal/partnerships 1 FTE pour structurer accords OEM/channel et gérer relations partenaires",
-        "Consultant GTM externe 3-6 mois (ex-practitioner SaaS B2B) pour accélérer construction playbooks et formation équipes"
+        "5-8 FTE ingénieurs IA spécialisés (PhD maths appliquées, salaires 100-120K€ + equity)",
+        "1 VP Product Module IA (profil ex-o9 Solutions/Anaplan, salaire 120-150K€)",
+        "Budget R&D Module IA doublé : 3-4M€/an (vs 1,5-2M€ actuel)",
+        "Partenariat co-développement anchor client (budget POC gratuit 200-300K€)",
+        "Programme rétention talents IA (stock-options, projets innovation) - Budget 500K€/an"
       ]
     },
     {
-      "title": "Sécuriser et weaponiser le talent IA dans la guerre des compétences",
-      "description": "[Hypothèse] Avec 15-25 personnes R&D core sur 10-50 total, TechNova dispose d'une équipe technique probablement excellente mais sous-dimensionnée et vulnérable face à la guerre des talents IA (turnover tech 15-25%/an, inflation salariale 10-20%/an, concurrence GAFAM/licornes VC-backed). Le double objectif (croissance ARR + nouveau module IA) exige doublement capacité engineering sous 18 mois TOUT EN réduisant drastiquement le risque de départ talents critiques. Cette bataille se gagne par une combinaison de rétention agressive, recrutement international, et architecture organisationnelle résiliente.",
+      "title": "Préparer expansion US post-consolidation EU",
+      "description": "Différer go-to-market US agressif après validation scaling mid-market EU (concentration client <30%, 30-40 logos sécurisés). Recruter VP Sales US T1-T2 2027, signer partenariat Deloitte/Accenture US, cibler 2 anchor clients Fortune 500 logistique/retail T3-T4 2027. Fenêtre 12-18 mois avant fermeture marché (consolidation Blue Yonder/Kinaxis).",
       "initiatives": [
-        "Lancer immédiatement (Q1 2025) programme de rétention talents critiques : (1) equity refresh significatif pour top 10-15 contributeurs techniques (attribution 0,5-1,5% capital chacun, vesting 4 ans avec cliff 1 an), (2) augmentations salariales ciblées 15-25% pour aligner sur marché (benchmark Figures.hr/Ravio), (3) budget formation continue illimité (conférences IA, certifications cloud, side-projects innovation), (4) politique remote-first Europe élargie pour accès à talents non-relocalisables",
-        "Diversifier géographiquement le recrutement engineering : ouvrir hub technique satellite en Europe de l'Est (Pologne/Roumanie/Portugal coûts salariaux 40-60% inférieurs vs. France/Allemagne tout en gardant timezone compatible) avec objectif recruter 8-12 engineers sous 12 mois, réduisant pression salariale et risque concentration géographique",
-        "Structurer l'organisation R&D pour résilience : (1) implémenter système de 'pair programming' et documentation exhaustive (pas de single point of failure humain), (2) créer guildes techniques transverses (ML/data, backend, frontend) réduisant dépendance individuelle, (3) mettre en place rotation interne trimestrielle pour cross-skilling, (4) externaliser tactiquement certaines tâches non-core (infra DevOps via AWS/Azure managed services, data labeling via Scale AI/Labelbox)",
-        "Construire marque employeur tech attractive : (1) publier régulièrement articles techniques blog/Medium sur challenges IA logistique (SEO recrutement), (2) open-sourcer composants non-différenciants (bibliothèques data processing) pour visibility communauté, (3) sponsoriser meetups/conférences IA locales, (4) créer programme ambassadeurs internes (engineers prenant la parole events externes avec prime 2-5k€/intervention)",
-        "Établir partenariats académiques stratégiques : (1) conventions CIFRE avec 2-3 labos recherche IA européens (INRIA, TUM Munich, EPFL) pour co-financer thèses appliquées tout en constituant pipeline recrutement junior, (2) programme stages/apprentissages structuré avec grandes écoles (CentraleSupélec, Polytechnique, EPFL) servant de test-drive mutuel avant embauche"
+        "Recruter VP Sales US expérimenté grands comptes (ex-Blue Yonder/Kinaxis) T1 2027 - Salaire 300-400K$ + equity significative",
+        "Ouvrir bureau NYC/Chicago T2 2027 (équipe locale 4-6 FTE sales/CS) - Budget infrastructure 1,5M€",
+        "Signer partenariat stratégique Deloitte/Accenture US (co-selling, certification consultants) T2 2027 pour accélérer crédibilité marché",
+        "Campagne ABM ultra-ciblée 20-30 prospects Fortune 500 (Walmart, Amazon Logistics, UPS) avec POC gratuits 60j T3-T4 2027",
+        "Lever série B 15-20M€ T3-T4 2027 sur base 2 LOI clients US signées (valorisation 120-150M€ post-money)"
       ],
       "quick_wins": [
-        "Conduire sous 2 semaines entretiens 1-on-1 confidentiels CEO/CTO avec chacun des 10-15 contributeurs techniques clés : écouter frustrations, comprendre aspirations, identifier risques de départ imminents, et négocier individuellement packages de rétention sur-mesure (mix equity/cash/flexibilité) pour sécuriser 18 mois minimum",
-        "Publier immédiatement 3-5 offres d'emploi engineering sur plateformes européennes (Stack Overflow, Honeypot, WeLoveDevs) avec proposition de valeur agressive : 'Résolvez des problèmes IA complexes à impact business direct, remote-first Europe, equity significative, tech stack moderne (Python/TensorFlow/Kubernetes), équipe senior 15 pers., clients Fortune 500' – objectif générer 30-50 candidatures qualifiées sous 4 semaines"
+        "Audit LinkedIn profils décideurs Supply Chain Fortune 500 (VP Supply Chain, CIO) - Cartographie 50 cibles prioritaires sous 2 semaines",
+        "Participation Gartner Supply Chain Symposium US (Orlando, mai 2027) - Networking anchor prospects + veille concurrence"
       ],
       "milestones": [
         {
-          "quarter": "Q1in
+          "quarter": "T3 2026",
+          "milestone": "Veille marché US active (abonnements Gartner/Forrester). Pré-sélection 5 candidats VP Sales US (chasseurs de têtes mandatés)."
+        },
+        {
+          "quarter": "T4 2026",
+          "milestone": "Benchmark concurrence US approfondi (Blue Yonder, Kinaxis, o9 Solutions). Roadmap produit adaptée spécificités marché US (compliance, intégrations ERP locaux)."
+        },
+        {
+          "quarter": "T1 2027",
+          "milestone": "VP Sales US recruté et onboardé. Ouverture discussions partenariat Deloitte/Accenture US. Cartographie finale 30 prospects Fortune 500."
+        },
+        {
+          "quarter": "T2 2027",
+          "milestone": "Bureau NYC opérationnel (4 FTE locaux). Partenariat Deloitte/Accenture US signé. Lancement campagne ABM (LinkedIn Ads, sponsoring évènements sectoriels)."
+        },
+        {
+          "quarter": "T3 2027",
+          "milestone": "10-15 POC gratuits 60j en cours (Fortune 500). Objectif 2 LOI signées avant T4 2027. Préparation roadshow série B investisseurs US."
+        },
+        {
+          "quarter": "T4 2027",
+          "milestone": "2 anchor clients US signés (deals 10-15M$ chacun). Série B 15-20M€ bouclée. Pipeline US 30-40 prospects qualifiés pour 2028."
+        }
+      ],
+      "resources": [
+        "1 VP Sales US (profil ex-Blue Yonder/Kinaxis, salaire 300-400K$ + 1-2% equity)",
+        "4-6 FTE équipe locale US (2 sales, 2 CS, 1 ops, 1 marketing)",
+        "Budget infrastructure US (bureau NYC/Chicago, outils, déplacements) 1,5M€",
+        "Budget campagne ABM US 800K€-1M€ (ads, sponsoring évènements, POC gratuits)",
+        "Série B 15-20M€ (valorisation cible 120-150M€ post-money)"
+      ]
+    },
+    {
+      "title": "Divest Conseil & Optimiser Ops : Focus Produit SaaS",
+      "description": "Sortir activité Conseil Optimisation (5% CA, marges <20%, marché saturé Big 4) pour recentrer ressources sur scaling SaaS. Transférer clients vers partenaires certifiés (commission 10-15%). Redéployer 8-10 consultants internes sur Customer Success pour booster NRR 115%→130% et réduire churn. Libérer 1-1,5M€ cash annuel pour R&D Module IA.",
+      "initiatives": [
+        "Signer partenariat certification avec Deloitte/Accenture EU (commission 10-15% apport affaires) T3 2026 - Transférer portefeuille clients Conseil existants",
+        "Redéployer 8-10 consultants internes sur équipe Customer Success (formation certifications SaaS, processus onboarding clients)",
+        "Automatiser processus ops internes (facturation, reporting, ticketing support) via outils SaaS (Stripe, Salesforce, Zendesk) - Gain 2-3 FTE ops",
+        "Implémenter programme Success Management proactif (QBR trimestrielles, health scores clients, upsell triggers) pour NRR 130% cible",
+        "Réduire coûts infrastructure tech (migration cloud hybride, renégociation contrats AWS/Azure) - Économie 300-500K€/an"
+      ],
+      "quick_wins": [
+        "Renégocier contrats AWS/Azure (volumes croissants = levier pricing) - Économie immédiate 100-150K€/an sous 4 semaines",
+        "Automatiser facturation clients via Stripe Billing (actuellement manuelle Excel) - Gain 0,5 FTE finance + réduction erreurs"
+      ],
+      "milestones": [
+        {
+          "quarter": "T3 2026",
+          "milestone": "Partenariat Deloitte/Accenture signé. Transfert 80% clients Conseil vers partenaires (5 derniers deals en cours finalisés en interne)."
+        },
+        {
+          "quarter": "T4 2026",
+          "milestone": "100% activité Conseil externalisée. 8-10 ex-consultants redéployés CS (formation certifications Gainsight/Totango achevée). NRR objectif 120% T1 2027."
+        },
+        {
+          "quarter": "T1 2027",
+          "milestone": "Programme Success Management actif (QBR 100% clients grands comptes). Health scores automatisés via Gainsight. Churn <5%/an validé."
+        },
+        {
+          "quarter": "T2 2027",
+          "milestone": "NRR boosted à 125% (vs 115% baseline). Ops automatisées (Stripe, Salesforce, Zendesk déployés). Économies ops 500K€ réalisées."
+        },
+        {
+          "quarter": "T3 2027",
+          "milestone": "NRR cible 130% atteint (expansion revenue organique). Équipe CS dimensionnée pour 50+ clients mid-market (ratio 1 CSM pour 8-10 comptes)."
+        },
+        {
+          "quarter": "T4 2027",
+          "milestone": "Bilan divest Conseil : 1-1,5M

@@ -1,0 +1,208 @@
+```json
+{
+  "competitors": [
+    {
+      "name": "Blue Yonder (Panasonic)",
+      "type": "LEADER",
+      "positioning": "Leader historique supply chain + IA. Suite complète end-to-end, forte présence retail/CPG.",
+      "strengths": [
+        "Portefeuille produit le plus large du marché (WMS, TMS, planification, prévision)",
+        "Base installée massive : 3000+ clients dont Walmart, Procter & Gamble",
+        "Investissement IA massif post-rachat Panasonic (2021, $8.5Md)",
+        "Présence globale forte, notamment Amérique du Nord (40% parts de marché estimation)"
+      ],
+      "weaknesses": [
+        "Solution lourde, cycles d'implémentation longs (12-24 mois)",
+        "Coût élevé, hors de portée des ETI (<500M€ CA)",
+        "Complexité technique = courbe d'adoption client difficile",
+        "Innovation ralentie par legacy code et bureaucratie corporate"
+      ],
+      "recent_signals": "Lancement Luminate Platform 2024 (IA générative supply chain). Partenariat Microsoft Azure annoncé T1 2025.",
+      "x_axis": 8.5,
+      "y_axis": 8.0
+    },
+    {
+      "name": "o9 Solutions",
+      "type": "CHALLENGER",
+      "positioning": "Pure-player cloud IA/ML, focus planification intégrée. Croissance agressive vs. legacy vendors.",
+      "strengths": [
+        "Plateforme cloud-native moderne (vs. migrations on-prem des leaders)",
+        "Time-to-value rapide : go-live moyen 4-6 mois vs. 12+ chez Blue Yonder",
+        "Croissance 40%+ depuis 2020, levée $295M série D (2022)",
+        "Clients premium : Google, Walmart, PepsiCo"
+      ],
+      "weaknesses": [
+        "Couverture fonctionnelle moins large que leaders (focus planification > exécution)",
+        "Jeune entreprise (2009) = risque perçu pour grands comptes ultra-conservateurs",
+        "Guerre des prix face à Microsoft/SAP qui bundlent IA dans suites ERP",
+        "Notoriété limitée hors cercle des early adopters"
+      ],
+      "recent_signals": "Annonce partenariat stratégique Google Cloud (T4 2025). Expansion Europe avec hub Paris ouvert T2 2026.",
+      "x_axis": 7.0,
+      "y_axis": 6.5
+    },
+    {
+      "name": "Kinaxis",
+      "type": "LEADER",
+      "positioning": "Spécialiste S&OP concurrent planning. Forte en pharma/aérospatial. Modèle SaaS pur.",
+      "strengths": [
+        "Leader S&OP depuis 20 ans, taux de rétention 97%",
+        "Technologie RapidResponse = scénarios what-if temps réel unique",
+        "Clientèle haut de gamme stable : Unilever, Ford, Johnson & Johnson",
+        "Profitabilité élevée : EBITDA margin ~25%"
+      ],
+      "weaknesses": [
+        "Positionnement premium = prix prohibitif pour mid-market",
+        "Innovation IA tardive vs. nouveaux entrants (rattrapage depuis 2023)",
+        "Concentration géographique Amérique du Nord (65% revenus)",
+        "Croissance ralentie : +12% en 2024 vs. +40% chez challengers"
+      ],
+      "recent_signals": "Acquisition Rubikloud (IA retail, $55M, 2020). Lancement Kinaxis Maestro (IA générative) T3 2025.",
+      "x_axis": 8.0,
+      "y_axis": 7.5
+    },
+    {
+      "name": "Coupa (SAP)",
+      "type": "CHALLENGER",
+      "positioning": "Leader BSM (procurement/supply chain bundlé). Force de frappe SAP post-acquisition $8Md (2022).",
+      "strengths": [
+        "Distribution SAP = accès instantané à base installée ERP (180k+ clients)",
+        "Suite intégrée procurement-to-pay + supply chain visibility",
+        "IA prédictive dépenses/risques fournisseurs avancée",
+        "Effet de réseau : Coupa Network = 10M+ fournisseurs connectés"
+      ],
+      "weaknesses": [
+        "Bundling SAP = cannibalisation perçue par clients multi-ERP",
+        "Culture produit affaiblie post-acquisition (exode talents clés 2023-24)",
+        "Positionnement flou : procurement ou supply chain ?",
+        "Complexité d'intégration si stack non-SAP"
+      ],
+      "recent_signals": "Intégration SAP Business Network finalisée T1 2026. Clients communs migrés vers plateforme unifiée.",
+      "x_axis": 7.5,
+      "y_axis": 6.0
+    },
+    {
+      "name": "Altana AI",
+      "type": "DISRUPTOR",
+      "positioning": "Startup IA pure-player supply chain mapping. Focus traçabilité/ESG. Série B $100M (2023).",
+      "strengths": [
+        "Technologie unique : graph neural networks pour cartographier supply chains opaques",
+        "Momentum fort : adoption rapide secteur pharma/électronique (compliance CSRD EU)",
+        "Endorsement institutions : partenariat US Dept of Commerce annoncé 2024",
+        "Équipe fondateurs ex-Palantir/Google Brain"
+      ],
+      "weaknesses": [
+        "Use case étroit : traçabilité/risque fournisseurs, pas d'optimisation opérationnelle",
+        "Startup early-stage = incertitude viabilité long terme",
+        "Concurrence directe de modules traçabilité des leaders (Blue Yonder Compliance)",
+        "Prix élevé pour scope limité"
+      ],
+      "recent_signals": "Levée série B $100M menée Andreessen Horowitz (T2 2023). Client reference Nike publiée T4 2025.",
+      "x_axis": 3.0,
+      "y_axis": 4.0
+    },
+    {
+      "name": "Project44",
+      "type": "CHALLENGER",
+      "positioning": "Leader visibility temps réel transport. API-first, intégration 1400+ transporteurs.",
+      "strengths": [
+        "Meilleure couverture transporteurs du marché (1400+ vs. 200-300 concurrents)",
+        "Time-to-value ultra-rapide : APIs déployables en jours",
+        "Croissance 50%+ (2020-2024), licorne valorisée $2.7Md",
+        "Focus laser sur exécution transport = meilleur produit de niche"
+      ],
+      "weaknesses": [
+        "Scope étroit : visibility pure, pas de planification/optimisation",
+        "Dépendance transporteurs tiers = risque data quality",
+        "Monétisation difficile : pression prix des 3PLs",
+        "Concurrence Oracle/SAP qui intègrent visibility dans TMS legacy"
+      ],
+      "recent_signals": "Partenariat stratégique FedEx annoncé T1 2026. Expansion Asie-Pacifique (hub Singapour).",
+      "x_axis": 5.5,
+      "y_axis": 5.0
+    },
+    {
+      "name": "Llamasoft (Coupa/SAP)",
+      "type": "LEADER",
+      "positioning": "Leader historique supply chain design/network optimization. Acquis Coupa 2020.",
+      "strengths": [
+        "Gold standard modélisation réseau supply chain depuis 25 ans",
+        "Clientèle ultra-premium : 80% du Fortune 100",
+        "Technologie simulation what-if la plus mature du marché",
+        "Distribution SAP post-double acquisition"
+      ],
+      "weaknesses": [
+        "Intégration chaotique Coupa puis SAP = roadmap produit floue",
+        "Interface vieillissante vs. UX moderne des challengers",
+        "Complexité = consultants obligatoires (coût total élevé)",
+        "Innovation IA lente, rattrapage vs. o9/Blue Yonder"
+      ],
+      "recent_signals": "Rebranding 'SAP Supply Chain Design' effectif T2 2025. Clients legacy migrés vers stack unifié.",
+      "x_axis": 8.0,
+      "y_axis": 6.5
+    },
+    {
+      "name": "Neurala (edge AI)",
+      "type": "DISRUPTOR",
+      "positioning": "Startup edge AI pour inspection visuelle automatisée (qualité/inventaire). Série B $33M.",
+      "strengths": [
+        "Différenciation technique : IA entraînable sur device (edge) sans cloud",
+        "Use case clair : inspection qualité automatisée entrepôts/usines",
+        "Déploiement rapide : POC en 2-4 semaines",
+        "Clients reference : BMW, USPS"
+      ],
+      "weaknesses": [
+        "Scope ultra-niche = adressable market limité",
+        "Concurrence vision systems traditionnels (Cognex, Keyence) + modules IA des leaders",
+        "Difficulté scaling commercial : longue éducation marché",
+        "Startup pré-profitabilité = risque acquisition/shutdown"
+      ],
+      "recent_signals": "Partenariat Zebra Technologies annoncé T3 2025 (intégration hardware scanners).",
+      "x_axis": 2.5,
+      "y_axis": 3.0
+    }
+  ],
+  "axes": {
+    "x_label": "Largeur de couverture fonctionnelle (1=niche, 10=suite complète)",
+    "y_label": "Sophistication IA / Innovation (1=legacy, 10=cutting-edge)"
+  },
+  "differentiation_angles": [
+    "Verticalisation sectorielle profonde (ex: devenir THE référence logistique pharma/cold chain avec IA prédictive température/compliance). Les leaders sont horizontaux, TechNova peut dominer 1-2 verticals avec ROI prouvé supérieur.",
+    "Time-to-ROI garanti <6 mois via méthodologie packagée + IA pré-entraînée sectorielle. Attaquer la frustration cycles longs des leaders (12-24 mois) avec approche 'land fast, expand faster' type o9 mais ciblée ETI.",
+    "Modèle hybride IA propriétaire + edge deployment pour clients sensibles data souveraineté (pharma, défense). Combinaison puissance cloud TechNova + option edge type Neurala = différenciateur réglementaire EU/US."
+  ],
+  "positioning_recommendation": "TechNova doit occuper le 'sweet spot' CHALLENGER PREMIUM entre leaders trop lourds (Blue Yonder, Kinaxis) et disruptors trop étroits (Altana, Neurala). Positionnement cible : 'L'alternative agile aux suites enterprise pour ETI/grands comptes exigeants'. Tactique : (1) Verticaliser sur 2 secteurs max (ex: pharma/life sciences + automotive) avec modules pré-paramétrés réduisant go-live à 3-5 mois vs. 12+ concurrence. (2) Packager ROI garanti contractuel (<6 mois breakeven) comme arme commerciale vs. cycles longs. (3) Construire réseau partenaires intégrateurs régionaux EU pour couvrir fragmentation géographique que leaders US négligent. (4) Accélérer Module IA Prédictif vers GA avec 3-5 cas d'usage verticaux documentés (vs. promesses vagues concurrence). Éviter : guerre frontale prix vs. Project44/Coupa (bundling SAP imbattable), et tentation d'élargir scope avant domination niche (piège o9 early days). Fenêtre critique T2 2026-T4 2027 : signer 8-12 logos hors 3 clients historiques pour prouver scalabilité et désrisquer concentration avant expansion US aggressive 2028.",
+  "subject_position": {
+    "x_axis": 6.0,
+    "y_axis": 7.0,
+    "summary": "TechNova se positionne en CHALLENGER PREMIUM : couverture fonctionnelle moyenne-haute (optimisation flux + prédictif IA = 6/10, entre niche type Project44 et suite complète Blue Yonder) avec sophistication IA forte (7/10) grâce à techno propriétaire brevetée et équipe R&D PhD. Position actuelle = quadrant 'Challenger Innovant' mais sous-exploitée : notoriété faible vs. potentiel technique, risque de rester invisible entre géants et disruptors bruyants. Levier immédiat = convertir avance IA (NRR 115%, précision supérieure) en leadership perçu via thought leadership sectoriel et cas clients quantifiés (ROI, time-to-value). Gap critique vs. ambition doublement ARR 3 ans : absence total brand equity US et cycles vente 6-12 mois incompatibles avec vélocité requise."
+  },
+  "comparison": [
+    {
+      "competitor": "Blue Yonder",
+      "our_advantages": [
+        "Time-to-value 3-5x plus rapide (3-5 mois vs. 12-24 mois) = argument décisif ETI pressées",
+        "Agilité produit : roadmap IA accélérée vs. bureaucratie Panasonic",
+        "Pricing accessible mid-market (fourchette 10-50M€ CA) vs. Blue Yonder réservé Fortune 500"
+      ],
+      "our_gaps": [
+        "Couverture fonctionnelle partielle (pas de WMS/TMS natifs) vs. suite end-to-end Blue Yonder",
+        "Base installée 100x inférieure = références clients limitées pour RFPs grands comptes",
+        "Écosystème partenaires quasi-inexistant vs. réseau global Blue Yonder (SAP, Microsoft, SI majeurs)"
+      ],
+      "verdict": "TechNova bat Blue Yonder sur vélocité et ROI court terme pour ETI/mid-market, mais perd systématiquement appels d'offres grands comptes exigeant suite complète + références massives."
+    },
+    {
+      "competitor": "o9 Solutions",
+      "our_advantages": [
+        "Technologie IA propriétaire brevetée (différenciation IP) vs. o9 basé sur algos standards ML",
+        "Taux rétention net 115% (supérieur estimation o9 ~110%) = preuve product-market fit",
+        "Focus sectoriel (logistique/supply chain pure) vs. o9 élargi retail/CPG = expertise perçue supérieure"
+      ],
+      "our_gaps": [
+        "Fundraising 0 vs. o9 série D $295M = guerre commerciale/marketing intenable",
+        "Notoriété marché quasi-nulle vs. o9 認知 croissante (Google, Walmart references)",
+        "Couverture géographique limitée EU vs. o9 global (Americas, EMEA, APAC)",
+        "Pas de plateforme cloud-native déclarée vs. architecture moderne o9 = risque perçu legacy tech"
+      ],
+      "verdict": "Combat le plus serré : o9 est le concurrent miroir en mieux financé. TechNova doit jo

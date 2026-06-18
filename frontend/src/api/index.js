@@ -131,6 +131,7 @@ export const projectApi = {
   launchAnalysis: (id, payload) => api.post(`/api/projects/${id}/analyze`, payload),
   continueAnalysis: (id) => api.post(`/api/projects/${id}/analyze/continue`),
   continueFromDiagnostic: (id) => api.post(`/api/projects/${id}/analyze/continue-diagnostic`),
+  cancelAnalysis: (id) => api.post(`/api/projects/${id}/analyze/cancel`),
 };
 
 export const agentApi = {
@@ -142,6 +143,8 @@ export const agentApi = {
     api.post(`/api/projects/${projectId}/agents/${agentId}/retry`),
   regenerate: (projectId, agentId) =>
     api.post(`/api/projects/${projectId}/agents/${agentId}/regenerate`),
+  rederiveStale: (projectId) =>
+    api.post(`/api/projects/${projectId}/agents/rederive-stale`),
   versions: (projectId, agentId) =>
     api.get(`/api/projects/${projectId}/agents/${agentId}/versions`),
 };

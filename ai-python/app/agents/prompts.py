@@ -37,23 +37,25 @@ Opportunités et Menaces (EXTERNE) :
 Pour chaque élément : titre + description + priorité (HIGH/MEDIUM/LOW).
 
 Termine par 4-6 actions stratégiques TOWS (Forces×Opportunités, etc.).''',
-    4: '''Mission : Cartographie concurrentielle CONCRÈTE.
+    4: '''Mission : Cartographie concurrentielle CONCRÈTE et CONCISE.
 
-Identifie 4-8 concurrents PERTINENTS pour ce périmètre :
-  - 2-3 leaders historiques
-  - 2-3 challengers en croissance
+Identifie 5-6 concurrents PERTINENTS pour ce périmètre (PAS PLUS de 6) :
+  - 2 leaders historiques
+  - 2 challengers en croissance
   - 1-2 disrupteurs potentiels (startup, nouvel entrant, plateforme)
 
-Pour chaque concurrent : nom, positionnement, forces, faiblesses, signaux récents.
+Pour chaque concurrent : nom, positionnement (1 phrase), 3 forces (phrases courtes), 3 faiblesses (phrases courtes), signaux récents (1-2 phrases MAX).
 Place-les sur 2 axes différenciants (prix vs. valeur, généraliste vs. spécialiste, etc.).
 
 Termine par :
-  - 3 axes de différenciation possibles pour l'entreprise
-  - Recommandation de positionnement
+  - 3 axes de différenciation possibles pour l'entreprise (1 phrase chacun)
+  - Recommandation de positionnement (1 paragraphe court)
 
 Positionne AUSSI l'entreprise étudiée :
-  - place-la sur les MÊMES 2 axes (subject_position : x_axis, y_axis, même échelle que les concurrents) avec un résumé de sa position relative
-  - fournis une COMPARAISON tête-à-tête (comparison) : pour chaque concurrent clé, les avantages de l'entreprise (our_advantages), ses écarts (our_gaps) et un verdict d'une phrase''',
+  - place-la sur les MÊMES 2 axes (subject_position : x_axis, y_axis, même échelle que les concurrents) avec un résumé COURT de sa position relative (3 phrases max)
+  - fournis une COMPARAISON tête-à-tête (comparison) pour les 3 concurrents les PLUS PERTINENTS uniquement : pour chacun, 3 avantages (our_advantages), 3 écarts (our_gaps) et un verdict d'une phrase
+
+CONTRAINTE IMPÉRATIVE DE LONGUEUR : chaque champ texte doit rester COURT (1-2 phrases). Ne développe pas de paragraphes. Privilégie les mots-clés aux phrases complètes.''',
     5: '''Mission : SYNTHÈSE EXÉCUTIVE consolidant PESTEL + SWOT + Concurrence + Porter + Chaîne de valeur.
 
 Tu fais un DIAGNOSTIC dirigeant, en 5 sections :
@@ -75,7 +77,11 @@ Pour chaque axe stratégique :
   - Ressources clés à mobiliser
 
 Évite le jargon. Privilégie l'action sur la théorie.
-Quick wins = actions à fort impact, faible effort, démarrables sous 2 semaines.''',
+Quick wins = actions à fort impact, faible effort, démarrables sous 2 semaines.
+
+RÈGLE DE DATATION : la feuille de route DÉMARRE au trimestre courant indiqué dans « Date du jour » ci-dessus — jamais à un trimestre déjà écoulé. Numérote les jalons en trimestres réels successifs (format « TX AAAA ») à partir de ce trimestre courant, sur 18 mois glissants.
+
+CHOIX DE L'OPTION : tu disposes des OPTIONS STRATÉGIQUES (agent 17, dans le contexte ci-dessus). Pars de l'option RECOMMANDÉE — développe-la en axes (ou justifie explicitement le choix d'une autre option) ; ne repars pas d'une page blanche et ne fusionne pas les options.''',
     7: '''Mission : Définir un TABLEAU DE BORD STRATÉGIQUE avec 10-12 KPIs clés.
 
 Catégoriser en 4 perspectives Balanced Scorecard :
@@ -224,6 +230,20 @@ Liste les 'required_fixes' : les corrections INDISPENSABLES avant présentation 
 Termine par 'board_readiness' (READY / MINOR_REVISIONS / MAJOR_REVISIONS / NOT_READY) et un 'verdict' de 2-3 phrases.
 
 Sois exigeant et concret : préfère « l'axe 2 ne tranche pas entre cible PME et grands comptes » à « pourrait être précisé ». Si la stratégie est un catalogue sans choix, dis-le franchement.''',
+    17: '''Mission : Générer 2 à 3 OPTIONS STRATÉGIQUES distinctes et mutuellement exclusives, AVANT de figer un plan unique.
+Chaque option doit être une trajectoire cohérente et réellement différente (ex. « montée en gamme premium » vs « volume / coûts » vs « plateforme de services »), pas une variante de la même idée.
+
+Pour chaque option :
+  - Titre court et explicite
+  - Thèse stratégique : le pari central en 2-3 phrases
+  - 3-4 mouvements clés (initiatives structurantes)
+  - Conditions de succès : quand et pourquoi ce pari gagne
+  - Risques principaux
+  - Profil de risque : FAIBLE, MOYEN ou ÉLEVÉ
+  - Horizon de retour (payback), qualitatif (ex. « 6-12 mois », « 2-3 ans »)
+
+Termine par une RECOMMANDATION argumentée : quelle option retenir et pourquoi, au vu du diagnostic (agent 5), du portefeuille BCG (agent 11) et des contraintes financières.
+Le dirigeant doit pouvoir trancher entre des chemins réellement distincts — ne fusionne pas les options.''',
 }
 
 _SCHEMAS_JSON: dict[int, str] = {
@@ -1275,6 +1295,78 @@ _SCHEMAS_JSON: dict[int, str] = {
         "required": ["board_readiness", "verdict", "strengths", "weaknesses"]
     }
     ''',
+    17: r'''
+{
+    "type": "object",
+    "properties": {
+        "options": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "title": {
+                        "type": "string"
+                    },
+                    "thesis": {
+                        "type": "string"
+                    },
+                    "key_moves": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "winning_conditions": {
+                        "type": "string"
+                    },
+                    "main_risks": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "risk_level": {
+                        "type": "string",
+                        "enum": [
+                            "FAIBLE",
+                            "MOYEN",
+                            "ÉLEVÉ"
+                        ]
+                    },
+                    "payback_horizon": {
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "title",
+                    "thesis",
+                    "key_moves",
+                    "risk_level"
+                ]
+            }
+        },
+        "recommendation": {
+            "type": "object",
+            "properties": {
+                "chosen_option": {
+                    "type": "string"
+                },
+                "rationale": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "chosen_option",
+                "rationale"
+            ]
+        }
+    },
+    "required": [
+        "options",
+        "recommendation"
+    ]
+}
+''',
 }
 
 SCHEMAS: dict[int, dict] = {k: json.loads(v) for k, v in _SCHEMAS_JSON.items()}
