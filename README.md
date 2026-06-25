@@ -59,15 +59,49 @@ All `/internal/*` calls are guarded by a shared `INTERNAL_TOKEN`.
 
 ---
 
-## 🚀 Quickstart (Docker)
+## 🚀 Quickstart (Docker via Makefile)
+
+The easiest way to run the application is using the provided `Makefile`.
 
 ```bash
-cp .env.example .env
-# Fill the 3 REQUIRED values in .env:
-#   ANTHROPIC_API_KEY, JWT_SECRET (openssl rand -hex 32), INTERNAL_TOKEN (openssl rand -hex 32)
+# 1) Initialize the .env file (automatically generates JWT_SECRET and INTERNAL_TOKEN)
+make init
 
+# 2) Edit the generated .env file and set your ANTHROPIC_API_KEY:
+#    ANTHROPIC_API_KEY=your-anthropic-key
+
+# 3) Build and start all services in the background
+make up
+```
+
+### Docker Compose Commands
+
+If you do not have `make` installed:
+
+```bash
+# 1) Copy environment template
+cp .env.example .env
+
+# 2) Generate JWT_SECRET and INTERNAL_TOKEN keys (at least 32 characters)
+#    and fill in your ANTHROPIC_API_KEY in the .env file.
+
+# 3) Build and spin up the containers
 docker compose up -d --build
 ```
+
+### Useful Management Commands
+
+You can use the following commands to manage your containers:
+
+| Command | Action |
+| --- | --- |
+| `make logs` | View combined service logs |
+| `make status` | Check status of all containers |
+| `make restart` | Restart all services |
+| `make seed-admin EMAIL=... PASSWORD=...` | Create/promote an admin user |
+| `make down` | Stop and remove containers |
+| `make clean` | Stop containers, remove volumes and unused images |
+
 
 Then open **http://localhost** → Register → create a project → onboarding → launch the analysis and watch the 12 agents run live → export.
 

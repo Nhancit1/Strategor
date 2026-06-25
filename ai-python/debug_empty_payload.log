@@ -1,3 +1,0 @@
-TOOL NAME: submit_axes_strategiques_roadmap
-RESPONSE CONTENT:
-[ToolUseBlock(id='toolu_01LgkyfVDbM42DmsCZruutHb', caller=DirectCaller(type='direct'), input={}, name='submit_axes_strategiques_roadmap', type='tool_use')]

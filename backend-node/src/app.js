@@ -24,8 +24,8 @@ export function createApp() {
   // Correct client IP behind the nginx reverse proxy (for rate limits, logs).
   app.set('trust proxy', 1);
 
-  // Security headers.
-  app.use(helmet());
+  // Security headers (CSP disabled to allow eval/inline scripts in frontend).
+  app.use(helmet({ contentSecurityPolicy: false }));
   app.use(cors({ origin: config.cors.origins, credentials: true }));
   app.use(express.json({ limit: '5mb' }));
   // Strip `$` / `.` operators from inputs (NoSQL-injection prevention).

@@ -21,7 +21,7 @@ export function useAgentWebSocket(projectId, onEvent) {
 
     const token = useAuthStore.getState().accessToken;
     const socket = io(WS_URL, {
-      path: '/app2/socket.io',
+      path: '/socket.io',
       transports: ['websocket', 'polling'],
       auth: { token },
     });
