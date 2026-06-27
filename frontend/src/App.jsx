@@ -56,6 +56,32 @@ export default function App() {
     }
   }, [user?.lang, i18n]);
 
+  // Deterrent against casual inspection (right-click, F12, view-source, save) — same as CIH.
+  // NOTE: this is UX friction only, NOT real security; it does not stop a determined attacker.
+  useEffect(() => {
+    const noContext = (e) => e.preventDefault();
+    const noKeys = (e) => {
+      const k = (e.key || '').toLowerCase();
+      const ctrl = e.ctrlKey || e.metaKey;
+      if (
+        e.key === 'F12' ||
+        (ctrl && k === 'u') ||
+        (ctrl && k === 's') ||
+        (ctrl && k === 'p') ||
+        (ctrl && e.shiftKey && (k === 'i' || k === 'j' || k === 'c'))
+      ) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+    };
+    document.addEventListener('contextmenu', noContext);
+    document.addEventListener('keydown', noKeys);
+    return () => {
+      document.removeEventListener('contextmenu', noContext);
+      document.removeEventListener('keydown', noKeys);
+    };
+  }, []);
+
   return (
     <Routes>
       {/* Public + minimal-layout authed (forced change-password) */}

@@ -1,5 +1,6 @@
 import { Router } from 'express';
-import { asyncHandler } from '../middleware/error.js';
+import mongoose from 'mongoose';
+import { asyncHandler, ApiError } from '../middleware/error.js';
 import { requireInternal } from '../middleware/internalAuth.js';
 import { config } from '../config/env.js';
 import { Project } from '../models/Project.js';
@@ -11,26 +12,51 @@ import { broadcastAgentEvent } from '../socket/index.js';
 const router = Router();
 router.use(requireInternal);
 
+// ── Input guards (defence-in-depth even though the route is internal-token gated) ──
+const VALID_STATUS = new Set(['PENDING', 'RUNNING', 'DONE', 'ERROR', 'SKIPPED']);
+
+// Reject anything that isn't a real Mongo ObjectId (avoids CastErrors + injection of objects).
+const requireObjectId = (id, label) => {
+  if (!mongoose.isValidObjectId(id)) throw new ApiError(400, `Invalid ${label}`);
+  return id;
+};
+
+// Coerce to a non-negative finite number, capped to a sane maximum (blocks cost/token inflation).
+const safeNum = (v, max) => {
+  const n = Number(v);
+  if (!Number.isFinite(n) || n < 0) return 0;
+  return max != null && n > max ? max : n;
+};
+
 // Python pushes one event per agent state transition.
 // body: { agentId, agentName, status, progress, message, doneCount,
 //         output?, modelUsed?, tokensInput?, tokensOutput?, costEstimateCents? }
 router.post('/projects/:projectId/agent-events', asyncHandler(async (req, res) => {
   const { projectId } = req.params;
+  requireObjectId(projectId, 'projectId');
   const b = req.body || {};
+
+  const agentId = Number(agentId);
+  if (!Number.isInteger(agentId) || agentId < 1 || agentId > 100) {
+    throw new ApiError(400, 'Invalid agentId');
+  }
+  if (b.status !== undefined && !VALID_STATUS.has(b.status)) {
+    throw new ApiError(400, 'Invalid status');
+  }
 
   const update = {
     agentName: b.agentName,
     status: b.status,
-    progressPercent: b.progress ?? 0,
+    progressPercent: safeNum(b.progress, 100),
   };
   if (b.status === 'RUNNING') update.startedAt = new Date();
   if (b.output !== undefined) update.output = b.output;
   if (b.language !== undefined) update.lang = b.language;
   if (b.modelUsed !== undefined) update.modelUsed = b.modelUsed;
-  if (b.tokensInput !== undefined) update.tokensInput = b.tokensInput;
-  if (b.tokensOutput !== undefined) update.tokensOutput = b.tokensOutput;
-  if (b.costEstimateCents !== undefined) update.costEstimateCents = b.costEstimateCents;
-  if (b.groundingCostCents !== undefined) update.groundingCostCents = b.groundingCostCents;
+  if (b.tokensInput !== undefined) update.tokensInput = safeNum(b.tokensInput, 1e8);
+  if (b.tokensOutput !== undefined) update.tokensOutput = safeNum(b.tokensOutput, 1e8);
+  if (b.costEstimateCents !== undefined) update.costEstimateCents = safeNum(b.costEstimateCents, 100000);
+  if (b.groundingCostCents !== undefined) update.groundingCostCents = safeNum(b.groundingCostCents, 100000);
   if (b.sources !== undefined) update.sources = b.sources;
   if (b.errorMessage !== undefined) update.errorMessage = b.errorMessage;
   if (b.status === 'DONE' || b.status === 'ERROR') update.completedAt = new Date();
@@ -39,10 +65,10 @@ router.post('/projects/:projectId/agent-events', asyncHandler(async (req, res) =
   // output and its headline cost. A failed attempt must not overwrite these.
   if (b.status === 'DONE') {
     if (b.modelUsed !== undefined) update.modelUsed = b.modelUsed;
-    if (b.tokensInput !== undefined) update.tokensInput = b.tokensInput;
-    if (b.tokensOutput !== undefined) update.tokensOutput = b.tokensOutput;
-    if (b.costEstimateCents !== undefined) update.costEstimateCents = b.costEstimateCents;
-    if (b.groundingCostCents !== undefined) update.groundingCostCents = b.groundingCostCents;
+    if (b.tokensInput !== undefined) update.tokensInput = safeNum(b.tokensInput, 1e8);
+    if (b.tokensOutput !== undefined) update.tokensOutput = safeNum(b.tokensOutput, 1e8);
+    if (b.costEstimateCents !== undefined) update.costEstimateCents = safeNum(b.costEstimateCents, 100000);
+    if (b.groundingCostCents !== undefined) update.groundingCostCents = safeNum(b.groundingCostCents, 100000);
   }
 
   // ACTUAL consumption: every billed call is real spend and must be SUMMED (not delta-ed),
@@ -50,9 +76,9 @@ router.post('/projects/:projectId/agent-events', asyncHandler(async (req, res) =
   // billed-but-failed attempts all count. (DONE carries cost; ERROR carries it too when the
   // call was billed before failing.)
   const billed = b.status === 'DONE' || b.status === 'ERROR';
-  const runCost = billed ? (b.costEstimateCents ?? 0) : 0;
-  const runGrounding = billed ? (b.groundingCostCents ?? 0) : 0;
-  const runTokens = billed ? ((b.tokensInput ?? 0) + (b.tokensOutput ?? 0)) : 0;
+  const runCost = billed ? safeNum(b.costEstimateCents, 100000) : 0;
+  const runGrounding = billed ? safeNum(b.groundingCostCents, 100000) : 0;
+  const runTokens = billed ? safeNum(b.tokensInput, 1e8) + safeNum(b.tokensOutput, 1e8) : 0;
 
   const inc = {};
   if (runCost) inc.costConsumedCents = runCost;
@@ -60,10 +86,10 @@ router.post('/projects/:projectId/agent-events', asyncHandler(async (req, res) =
   if (runTokens) inc.tokensConsumed = runTokens;
 
   await AgentExecution.findOneAndUpdate(
-    { project: projectId, agentId: b.agentId },
+    { project: projectId, agentId: agentId },
     {
       $set: update,
-      $setOnInsert: { project: projectId, agentId: b.agentId },
+      $setOnInsert: { project: projectId, agentId: agentId },
       ...(Object.keys(inc).length ? { $inc: inc } : {}),
     },
     { upsert: true, new: true, setDefaultsOnInsert: true }
@@ -90,7 +116,7 @@ router.post('/projects/:projectId/agent-events', asyncHandler(async (req, res) =
   // Relay to subscribed clients (same shape the React app already parses).
   broadcastAgentEvent(projectId, {
     projectId,
-    agentId: b.agentId,
+    agentId: agentId,
     agentName: b.agentName,
     status: b.status,
     progress: b.progress ?? 0,
@@ -104,6 +130,7 @@ router.post('/projects/:projectId/agent-events', asyncHandler(async (req, res) =
 
 // Python signals the whole pipeline finished -> flip project to VALIDATING.
 router.post('/projects/:projectId/analysis-complete', asyncHandler(async (req, res) => {
+  requireObjectId(req.params.projectId, 'projectId');
   const b = req.body || {};
   let status;
   if (b.failed) status = 'FAILED';
@@ -117,6 +144,7 @@ router.post('/projects/:projectId/analysis-complete', asyncHandler(async (req, r
 // Python pushes the deterministic numeric-integrity report (cross-agent consistency).
 // body: { report: { status, summary, checks, semantic } }
 router.post('/projects/:projectId/consistency-report', asyncHandler(async (req, res) => {
+  requireObjectId(req.params.projectId, 'projectId');
   const report = req.body?.report ?? null;
   await Project.findByIdAndUpdate(req.params.projectId, { $set: { consistencyReport: report } });
   res.status(204).end();
@@ -125,6 +153,7 @@ router.post('/projects/:projectId/consistency-report', asyncHandler(async (req, 
 // Python returns parsed document text.
 // body: { parsedContent, status: 'DONE'|'ERROR', parseError? }
 router.post('/documents/:documentId/parsed', asyncHandler(async (req, res) => {
+  requireObjectId(req.params.documentId, 'documentId');
   const b = req.body || {};
   await ProjectDocument.findByIdAndUpdate(req.params.documentId, {
     $set: {

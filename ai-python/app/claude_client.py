@@ -10,6 +10,8 @@ Anthropic client.
 """
 import json
 import re
+import os
+import tempfile
 import logging
 from enum import Enum
 from dataclasses import dataclass, field
@@ -406,8 +408,15 @@ async def generate_structured(
             except Exception:
                 pass
         if payload is None:
-            with open(f"debug_resp_{agent_name}.log", "w") as f:
-                f.write(text)
+            # Write debug output to a SAFE filename inside the system temp dir.
+            # agent_name is sanitized so it can never escape the directory (path traversal).
+            try:
+                safe_name = re.sub(r"[^A-Za-z0-9_-]+", "_", str(agent_name))[:50] or "agent"
+                dbg_path = os.path.join(tempfile.gettempdir(), f"debug_resp_{safe_name}.log")
+                with open(dbg_path, "w", encoding="utf-8") as f:
+                    f.write(text)
+            except Exception:
+                pass  # debug logging must never break the request
             raise _gen_error(f"Claude n'a pas renvoyé un JSON valide pour l'agent {agent_name}. Erreur: {parse_err}")
 
     if not payload:

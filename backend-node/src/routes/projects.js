@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import { z } from 'zod';
 import { asyncHandler, ApiError } from '../middleware/error.js';
 import { requireAuth } from '../middleware/auth.js';
 import { loadOwnedProject } from '../utils/ownership.js';
@@ -68,13 +69,20 @@ router.get('/:id', requireAuth, asyncHandler(async (req, res) => {
   res.json(projectDto(project));
 }));
 
+const patchProjectSchema = z.object({
+  name: z.string().max(200).optional(),
+  analysisMode: z.enum(['quick', 'standard', 'comprehensive']).optional(),
+});
+
 router.patch('/:id', requireAuth, asyncHandler(async (req, res) => {
   const project = await loadOwnedProject(req.params.id, req.user.id);
-  if (req.body?.name) {
-    project.name = req.body.name.trim() || 'Projet sans nom';
+  const parsed = patchProjectSchema.safeParse(req.body || {});
+  if (!parsed.success) throw new ApiError(400, 'Données de projet invalides');
+  if (parsed.data.name) {
+    project.name = parsed.data.name.trim() || 'Projet sans nom';
   }
-  if (req.body?.analysisMode) {
-    project.analysisMode = req.body.analysisMode;
+  if (parsed.data.analysisMode) {
+    project.analysisMode = parsed.data.analysisMode;
   }
   await project.save();
   res.json(projectDto(project));

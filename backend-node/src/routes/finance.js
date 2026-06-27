@@ -1,5 +1,6 @@
 import { Router } from 'express';
-import { asyncHandler } from '../middleware/error.js';
+import { z } from 'zod';
+import { asyncHandler, ApiError } from '../middleware/error.js';
 import { requireAuth } from '../middleware/auth.js';
 import { loadOwnedProject } from '../utils/ownership.js';
 import { FinanceLite } from '../models/FinanceLite.js';
@@ -30,9 +31,17 @@ router.get('/finance', asyncHandler(async (req, res) => {
   res.json(finance.toJSON());
 }));
 
+// FinanceLite.data is a free-form metric map; bound the keys/values/size instead of
+// storing the raw request body (no oversized payloads, no nested operator injection).
+const financeDataSchema = z
+  .record(z.string().max(64), z.union([z.number(), z.string().max(2000), z.boolean(), z.null()]))
+  .refine((o) => Object.keys(o).length <= 200, 'too many fields');
+
 router.put('/finance', asyncHandler(async (req, res) => {
   await loadOwnedProject(req.params.projectId, req.user.id);
-  const data = req.body;
+  const parsed = financeDataSchema.safeParse(req.body || {});
+  if (!parsed.success) throw new ApiError(400, 'Données financières invalides');
+  const data = parsed.data;
   const finance = await FinanceLite.findOneAndUpdate(
     { project: req.params.projectId },
     { $set: { data, completenessScore: completeness(data) } },
@@ -43,7 +52,11 @@ router.put('/finance', asyncHandler(async (req, res) => {
 
 router.get('/finance/benchmark', asyncHandler(async (req, res) => {
   await loadOwnedProject(req.params.projectId, req.user.id);
-  const { sector, companySize, geography = 'FR', metric } = req.query;
+  // Force scalars so a crafted query (?sector[$ne]=…) can't inject a Mongo operator object.
+  const sector = String(req.query.sector || '');
+  const metric = String(req.query.metric || '');
+  const geography = String(req.query.geography || 'FR');
+  const companySize = req.query.companySize ? String(req.query.companySize) : undefined;
 
   // Try the most specific match, then fall back to sector+metric (any size).
   const filter = { sector, metricKey: metric, geography };

@@ -74,12 +74,12 @@ if (Buffer.byteLength(config.jwt.secret, 'utf8') < 32) {
   throw new Error('JWT_SECRET must be at least 256 bits (32 chars).');
 }
 
-// Refuse to boot in production with shipped/default secrets.
-if (config.nodeEnv === 'production') {
-  if (config.jwt.secret.startsWith('CHANGEME')) {
-    throw new Error('Refuse to start in production with a default JWT_SECRET. Set a strong JWT_SECRET.');
-  }
-  if (config.aiService.internalToken === 'dev-internal-token-change-me') {
-    throw new Error('Refuse to start in production with the default INTERNAL_TOKEN. Set a strong INTERNAL_TOKEN.');
-  }
+// Refuse to boot with shipped/default secrets — in EVERY environment, not just production.
+// A default secret is a publicly-known secret: it lets anyone forge admin JWTs or call the
+// internal Node<->Python door. Fail fast rather than run with an open door.
+if (config.jwt.secret.startsWith('CHANGEME')) {
+  throw new Error('Refuse to start with a default JWT_SECRET. Set a strong JWT_SECRET in .env (e.g. `openssl rand -hex 32`).');
+}
+if (config.aiService.internalToken === 'dev-internal-token-change-me') {
+  throw new Error('Refuse to start with the default INTERNAL_TOKEN. Set a strong INTERNAL_TOKEN in .env (e.g. `openssl rand -hex 32`).');
 }

@@ -14,11 +14,15 @@ companion deterministic validator (numeric_integrity.py) catches whatever still 
 from __future__ import annotations
 from typing import Any, Optional
 
+from .sanitize import clean_field
+
 
 def _clean(v: Any) -> Optional[str]:
     if v is None:
         return None
-    s = str(v).strip()
+    # Canonical facts are user-controlled and presented to the model as "truth":
+    # neutralize any embedded prompt-injection before they become authoritative.
+    s = clean_field(v).strip()
     return s or None
 
 
@@ -44,22 +48,22 @@ def _canonical_facts(profile: Optional[dict], finance: Optional[dict]) -> list[s
             pname = _clean(item.get("name")) or "(segment sans nom)"
             bits = []
             if item.get("revenueShare") is not None:
-                bits.append(f"part CA {item['revenueShare']}%")
+                bits.append(f"part CA {clean_field(str(item['revenueShare']))}%")
                 try:
                     total += float(item["revenueShare"]); seen = True
                 except (TypeError, ValueError):
                     pass
             if item.get("growth") is not None:
-                bits.append(f"croissance {item['growth']}%")
+                bits.append(f"croissance {clean_field(str(item['growth']))}%")
             if item.get("marketShare") is not None:
-                bits.append(f"part de marché relative {item['marketShare']}")
+                bits.append(f"part de marché relative {clean_field(str(item['marketShare']))}")
             facts.append(f"Segment « {pname} » : " + (", ".join(bits) if bits else "pas de chiffres"))
         if seen:
             facts.append(f"Somme des parts de CA du portefeuille fournies = {round(total)}% "
                          "(toute décomposition que tu produis doit rester cohérente avec ce total)")
 
     if isinstance(finance, dict) and finance:
-        fin_bits = [f"{k} = {v}" for k, v in finance.items()
+        fin_bits = [f"{clean_field(str(k))} = {clean_field(str(v))}" for k, v in finance.items()
                     if isinstance(v, (str, int, float)) and _clean(v)]
         if fin_bits:
             facts.append("Indicateurs financiers fournis : " + " ; ".join(fin_bits))

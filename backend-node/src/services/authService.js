@@ -4,6 +4,7 @@ import { generateAccessToken, generateRefreshToken, verifyToken } from '../utils
 import { hashPassword, verifyPassword, sha256, DUMMY_PASSWORD_HASH } from '../utils/hash.js';
 import { config } from '../config/env.js';
 import { ApiError } from '../middleware/error.js';
+import { audit } from './auditService.js';
 
 function userDto(u) {
   return {
@@ -41,8 +42,10 @@ export async function login(body, req) {
   const hash = user && !user.deletedAt ? user.passwordHash : DUMMY_PASSWORD_HASH;
   const ok = await verifyPassword(body.password, hash);
   if (!user || user.deletedAt || !ok) {
+    audit({ action: 'LOGIN_FAILED', email: body.email, status: 'FAILURE', req, detail: 'Identifiants invalides' });
     throw new ApiError(400, 'Identifiants invalides');
   }
+  audit({ action: 'LOGIN_SUCCESS', email: user.email, user: user._id, status: 'SUCCESS', req });
   return issueTokens(user, req);
 }
 
@@ -66,12 +69,13 @@ export async function refresh(refreshToken, req) {
   return issueTokens(session.user, req);
 }
 
-export async function logout(refreshToken) {
+export async function logout(refreshToken, req) {
   if (!refreshToken) return;
   await Session.updateOne(
     { refreshTokenHash: sha256(refreshToken), revokedAt: null },
     { $set: { revokedAt: new Date() } }
   );
+  audit({ action: 'LOGOUT', status: 'SUCCESS', req });
 }
 
 export async function changePassword(userId, { currentPassword, newPassword }, req) {
@@ -83,6 +87,7 @@ export async function changePassword(userId, { currentPassword, newPassword }, r
   user.passwordHash = await hashPassword(newPassword);
   user.mustChangePassword = false;
   await user.save();
+  audit({ action: 'PASSWORD_CHANGED', email: user.email, user: user._id, status: 'SUCCESS', req });
   // Re-issue tokens so the cleared mustChangePassword flag takes effect now.
   return issueTokens(user, req);
 }

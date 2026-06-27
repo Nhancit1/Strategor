@@ -100,7 +100,7 @@ export async function downloadViewAsHtml(node, filename, title = 'Strategor') {
     .find((l) => /fonts\.googleapis\.com/.test(l.href)) || {}).href || '';
   const fontBlock = fontCss
     ? `<style>${fontCss}</style>`
-    : (googleLink ? `<link rel="stylesheet" href="${googleLink}" />` : '');
+    : (googleLink ? `<link rel="stylesheet" href="${escapeHtml(googleLink)}" />` : '');
 
   const date = new Date().toLocaleDateString('fr-FR', { year: 'numeric', month: 'long', day: 'numeric' });
 
@@ -109,6 +109,8 @@ export async function downloadViewAsHtml(node, filename, title = 'Strategor') {
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
+<!-- Lock down the exported file: no scripts can run, only inline styles, data: images and Google fonts. -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src data:; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src data: https://fonts.gstatic.com; base-uri 'none'" />
 <title>${escapeHtml(title)}</title>
 ${fontBlock}
 <style>${appCss}</style>

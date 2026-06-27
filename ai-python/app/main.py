@@ -8,6 +8,7 @@ Endpoints (all called by the Node backend, guarded by the internal token):
   GET  /health             -> healthcheck
 """
 import io
+import hmac
 import logging
 import asyncio
 
@@ -23,7 +24,19 @@ from . import callbacks
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s — %(message)s")
 log = logging.getLogger("strategor.ai")
 
-app = FastAPI(title="Strategor AI Service", version="2.0.0")
+app = FastAPI(
+    title="Strategor AI Service",
+    version="2.0.0",
+    # Hide the API schema by default (internal service). Enable only via AI_DOCS_ENABLED=true.
+    docs_url="/docs" if settings.docs_enabled else None,
+    redoc_url="/redoc" if settings.docs_enabled else None,
+    openapi_url="/openapi.json" if settings.docs_enabled else None,
+)
+
+# Optional Host header allow-list (defence against Host-header attacks / direct access).
+if settings.allowed_hosts:
+    from starlette.middleware.trustedhost import TrustedHostMiddleware
+    app.add_middleware(TrustedHostMiddleware, allowed_hosts=settings.allowed_hosts)
 
 _MIME = {
     "pdf": "application/pdf",
@@ -34,7 +47,8 @@ _MIME = {
 
 
 def _check_internal(token: str | None):
-    if token != settings.internal_token:
+    # Constant-time comparison: avoids leaking the token byte-by-byte via response timing.
+    if not token or not hmac.compare_digest(token, settings.internal_token):
         raise HTTPException(status_code=401, detail="Internal auth failed")
 
 

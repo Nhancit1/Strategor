@@ -46,7 +46,12 @@ router.put('/:agentId/output', asyncHandler(async (req, res) => {
   await loadOwnedProject(req.params.projectId, req.user.id);
   const agentId = Number(req.params.agentId);
   const exec = await getExec(req.params.projectId, agentId);
-  exec.editedOutput = req.body;
+  // editedOutput is an agent's structured JSON: accept only an object/array, and cap its
+  // size so an oversized payload can't bloat the document or downstream exports/prompts.
+  const body = req.body;
+  if (body === null || typeof body !== 'object') throw new ApiError(400, 'Sortie invalide');
+  if (JSON.stringify(body).length > 500_000) throw new ApiError(413, 'Sortie trop volumineuse');
+  exec.editedOutput = body;
   exec.validatedAt = new Date();
   exec.stale = false; // this module was just (re)validated by hand
   await exec.save();

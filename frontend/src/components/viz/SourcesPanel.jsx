@@ -1,5 +1,9 @@
 import { ExternalLink, BookOpen } from 'lucide-react';
 
+// Sources come from the AI's web research and are untrusted: only allow real web links.
+// A `javascript:`/`data:` URL here would run on click and could steal the session.
+const safeHref = (u) => (typeof u === 'string' && /^https?:\/\//i.test(u.trim()) ? u.trim() : null);
+
 /** Web-research sources attached to a grounded agent's output (agents 2, 4, 5, 9, 11). */
 export default function SourcesPanel({ sources }) {
   if (!Array.isArray(sources) || sources.length === 0) return null;
@@ -11,7 +15,7 @@ export default function SourcesPanel({ sources }) {
       <ul className="space-y-1.5">
         {sources.map((s, i) => {
           const title = (s && (s.title || s.url)) || 'Source';
-          const url = s && s.url;
+          const url = safeHref(s && s.url);
           return (
             <li key={i} className="text-sm">
               {url ? (

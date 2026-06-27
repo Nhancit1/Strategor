@@ -18,6 +18,16 @@ class Settings:
     node_url: str = os.getenv("NODE_URL", "http://localhost:4000")
     internal_token: str = os.getenv("INTERNAL_TOKEN", "dev-internal-token-change-me")
 
+    # Only files under this root may be read by the parser (same shared volume as Node's
+    # UPLOAD_PATH). Anything outside is refused -> blocks path traversal / arbitrary file read.
+    storage_root: str = os.getenv("UPLOAD_PATH", "/tmp/strategor-uploads")
+
+    # API docs (/docs, /redoc, /openapi.json) are DISABLED by default — this is an internal
+    # service, the schema should not be public. Set AI_DOCS_ENABLED=true only for local dev.
+    docs_enabled: bool = os.getenv("AI_DOCS_ENABLED", "false").lower() == "true"
+    # Optional Host allow-list (comma-separated). Empty = no restriction.
+    allowed_hosts: list[str] = [h.strip() for h in os.getenv("AI_ALLOWED_HOSTS", "").split(",") if h.strip()]
+
     # Concurrency: max agents running in parallel within a level
     max_parallel_agents: int = int(os.getenv("MAX_PARALLEL_AGENTS", "5"))
 
@@ -45,6 +55,14 @@ class Settings:
 
 
 settings = Settings()
+
+# Refuse to boot with the default internal token — it is publicly known and would leave the
+# Node<->Python internal door open. Fail fast; require a real INTERNAL_TOKEN from .env.
+if settings.internal_token == "dev-internal-token-change-me":
+    raise RuntimeError(
+        "Refuse to start with the default INTERNAL_TOKEN. "
+        "Set a strong INTERNAL_TOKEN in .env (e.g. `openssl rand -hex 32`)."
+    )
 
 # Marker inserted by build_system_prompt at the cache boundary; the client splits the
 # system prompt here into a cached prefix + a per-agent suffix. Never shown to the model.

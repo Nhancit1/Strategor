@@ -28,7 +28,7 @@ router.post('/refresh', asyncHandler(async (req, res) => {
 }));
 
 router.post('/logout', asyncHandler(async (req, res) => {
-  await authService.logout(req.body?.refreshToken);
+  await authService.logout(req.body?.refreshToken, req);
   res.status(204).end();
 }));
 

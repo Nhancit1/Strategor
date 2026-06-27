@@ -13,6 +13,7 @@ from datetime import datetime
 from typing import Any, Optional
 from ..deepseek_client import ModelTier
 from .factsheet import build_factsheet
+from .sanitize import neutralize, clean_field, wrap_untrusted, MAX_DEP_CHARS
 from ..config import CACHE_SENTINEL
 
 
@@ -46,15 +47,16 @@ DOCUMENTS_KEY = -1  # sentinel: deps[-1] = parsed user documents text
 
 
 def _null_safe(s: Optional[str], is_en: bool = False) -> str:
+    # Profile fields are user-controlled -> neutralize before inlining into the prompt.
     if is_en:
-        return s if (s and str(s).strip()) else "(not specified)"
-    return s if (s and str(s).strip()) else "(non renseigné)"
+        return clean_field(s) if (s and str(s).strip()) else "(not specified)"
+    return clean_field(s) if (s and str(s).strip()) else "(non renseigné)"
 
 
 def _join_list(lst: Optional[list], is_en: bool = False) -> str:
     if is_en:
-        return ", ".join(lst) if lst else "(not specified)"
-    return ", ".join(lst) if lst else "(non renseigné)"
+        return ", ".join(clean_field(x) for x in lst) if lst else "(not specified)"
+    return ", ".join(clean_field(x) for x in lst) if lst else "(non renseigné)"
 
 
 def _format_portfolio(portfolio: Optional[list], is_en: bool = False) -> str:
@@ -65,7 +67,7 @@ def _format_portfolio(portfolio: Optional[list], is_en: bool = False) -> str:
         for p in portfolio:
             if not isinstance(p, dict):
                 continue
-            name = (p.get("name") or "").strip() or "(no name)"
+            name = clean_field((p.get("name") or "").strip()) or "(no name)"
             parts = []
             if p.get("revenueShare") is not None:
                 parts.append(f"revenue share {p['revenueShare']}%")
@@ -83,7 +85,7 @@ def _format_portfolio(portfolio: Optional[list], is_en: bool = False) -> str:
         for p in portfolio:
             if not isinstance(p, dict):
                 continue
-            name = (p.get("name") or "").strip() or "(sans nom)"
+            name = clean_field((p.get("name") or "").strip()) or "(sans nom)"
             parts = []
             if p.get("revenueShare") is not None:
                 parts.append(f"part CA {p['revenueShare']}%")
@@ -179,8 +181,8 @@ class Agent:
             return ("Données financières : non renseignées "
                     "(s'appuyer sur des estimations sectorielles).\n\n")
         if is_en:
-            return f"Available financial data:\n{finance}\n\n"
-        return f"Données financières disponibles :\n{finance}\n\n"
+            return f"Available financial data:\n{neutralize(str(finance))}\n\n"
+        return f"Données financières disponibles :\n{neutralize(str(finance))}\n\n"
 
     def documents_context(self, deps: Optional[dict], is_en: bool = False) -> str:
         if not deps:
@@ -188,11 +190,9 @@ class Agent:
         docs = deps.get(DOCUMENTS_KEY)
         if not docs:
             return ""
-        if is_en:
-            return ("User documents (integrate this context into your analysis):\n"
-                    f"{docs}\n\n")
-        return ("Documents fournis par l'utilisateur (à intégrer dans ton analyse) :\n"
-                f"{docs}\n\n")
+        # User-uploaded document text is the prime INDIRECT prompt-injection vector:
+        # wrap it as sealed, data-only content (never trusted as instructions).
+        return wrap_untrusted(docs, "DOCUMENTS UTILISATEUR", "USER DOCUMENTS", is_en) + "\n"
 
     def dependency_context(self, deps: Optional[dict], is_en: bool = False) -> str:
         if not deps:
@@ -200,14 +200,13 @@ class Agent:
         out = self.documents_context(deps, is_en)
         agent_deps = {k: v for k, v in deps.items() if k >= 0}
         if agent_deps:
-            if is_en:
-                out += "Outputs from previous agents (use this context for your synthesis):\n"
-                for aid in sorted(agent_deps):
-                    out += f"Agent {aid}: {agent_deps[aid]}\n\n"
-            else:
-                out += "Sorties des agents précédents (à utiliser pour ta synthèse) :\n"
-                for aid in sorted(agent_deps):
-                    out += f"Agent {aid} : {agent_deps[aid]}\n\n"
+            # Previous agents' outputs can carry a propagated injection from a poisoned
+            # document, so they are wrapped as data-only too (used for synthesis, not obeyed).
+            body = "".join(f"Agent {aid}: {agent_deps[aid]}\n\n" for aid in sorted(agent_deps))
+            out += wrap_untrusted(
+                body, "SORTIES DES AGENTS PRECEDENTS", "PREVIOUS AGENT OUTPUTS",
+                is_en, max_chars=MAX_DEP_CHARS,
+            )
         return out
 
     def build_system_prompt(

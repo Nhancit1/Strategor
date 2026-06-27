@@ -2,5 +2,6 @@ node_modules/
 __pycache__/
 *.pyc
 .env
+.claude/
 dist/
 debug_agent_*.log
