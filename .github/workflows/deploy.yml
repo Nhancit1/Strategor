@@ -1,30 +1,73 @@
 name: CD Deploy
 
-# Deploys the full stack to the VPS via Docker Compose.
-# Triggered manually, or automatically after the CI + Security workflows succeed on main.
+# Deploys the full stack to the right VPS via Docker Compose, based on the branch:
+#   dev       -> environment "dev"        (Server A, non-prod)
+#   pre-prod  -> environment "preprod"    (Server A, non-prod)
+#   main      -> environment "production" (Server B, requires manual approval)
 #
-# Required repository secrets:
+# Triggered manually, or automatically after the CI + Security workflows succeed.
+#
+# Per-environment secrets (configured under Settings -> Environments):
 #   VPS_HOST          - server IP / hostname
 #   VPS_USER          - SSH user
 #   SSH_PRIVATE_KEY   - private key authorised on the VPS
-#   DEPLOY_PATH       - absolute path of the project on the VPS (e.g. /opt/strategor)
+#   DEPLOY_PATH       - absolute path of the project on the VPS (e.g. /opt/strategor-dev)
+#   COMPOSE_PROJECT   - (optional) docker compose project name, isolates stacks sharing a server
+#   HEALTH_URL        - (optional) health endpoint to poll (defaults to localhost checks)
 
 on:
   workflow_dispatch:
   workflow_run:
     workflows: ["CI Backend", "CI Frontend", "CI AI Python", "Security"]
     types: [completed]
-    branches: [main]
+    branches: [main, pre-prod, dev]
 
 permissions:
   contents: read
 
 jobs:
-  deploy:
-    name: Deploy (Docker Compose)
+  # Map the triggering branch to a GitHub environment. Kept separate so the
+  # environment protection (manual approval on production) gates the deploy job.
+  resolve:
+    name: Resolve target environment
     runs-on: ubuntu-latest
     # Manual run, or only when the triggering workflow actually succeeded.
     if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
+    outputs:
+      environment: ${{ steps.map.outputs.environment }}
+      branch: ${{ steps.map.outputs.branch }}
+    steps:
+      - id: map
+        run: |
+          set -euo pipefail
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            BR="${{ github.ref_name }}"
+          else
+            BR="${{ github.event.workflow_run.head_branch }}"
+          fi
+
+          case "$BR" in
+            main)     ENV=production ;;
+            pre-prod) ENV=preprod ;;
+            dev)      ENV=dev ;;
+            *) echo "::error::Branch '$BR' is not deployable"; exit 1 ;;
+          esac
+
+          echo "Branch '$BR' -> environment '$ENV'"
+          echo "branch=$BR" >> "$GITHUB_OUTPUT"
+          echo "environment=$ENV" >> "$GITHUB_OUTPUT"
+
+  deploy:
+    name: Deploy (${{ needs.resolve.outputs.environment }})
+    needs: resolve
+    runs-on: ubuntu-latest
+    # Selecting the environment activates its secrets AND any required-reviewer
+    # protection rule (production waits for manual approval here).
+    environment: ${{ needs.resolve.outputs.environment }}
+    env:
+      DEPLOY_BRANCH: ${{ needs.resolve.outputs.branch }}
+      COMPOSE_PROJECT: ${{ secrets.COMPOSE_PROJECT }}
+      HEALTH_URL: ${{ secrets.HEALTH_URL }}
     steps:
       - name: Deploy over SSH
         uses: appleboy/ssh-action@v1.0.3
@@ -33,26 +76,33 @@ jobs:
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           command_timeout: 15m
+          envs: DEPLOY_BRANCH,COMPOSE_PROJECT,HEALTH_URL
           script: |
             set -euo pipefail
             cd "${{ secrets.DEPLOY_PATH }}"
 
-            echo "==> Pulling latest main"
-            git fetch origin main
-            git reset --hard origin/main
+            # Use an explicit project name when provided, so two stacks can
+            # share one server (e.g. dev + pre-prod) without colliding.
+            COMPOSE="docker compose ${COMPOSE_PROJECT:+-p $COMPOSE_PROJECT}"
+
+            echo "==> Pulling latest $DEPLOY_BRANCH"
+            git fetch origin "$DEPLOY_BRANCH"
+            git reset --hard "origin/$DEPLOY_BRANCH"
 
             echo "==> Building images"
-            docker compose build
+            $COMPOSE build
 
             echo "==> Starting stack (zero-ish downtime per service)"
-            docker compose up -d --remove-orphans
+            $COMPOSE up -d --remove-orphans
 
             echo "==> Waiting for backend health"
             ok=0
             for i in $(seq 1 12); do
               sleep 5
-              if curl -fsS http://localhost/api/health >/dev/null 2>&1 \
-                 || curl -fsS http://localhost:4000/health >/dev/null 2>&1; then
+              if [ -n "$HEALTH_URL" ]; then
+                curl -fsS "$HEALTH_URL" >/dev/null 2>&1 && { ok=1; echo "Backend healthy (attempt $i)"; break; }
+              elif curl -fsS http://localhost/api/health >/dev/null 2>&1 \
+                   || curl -fsS http://localhost:4000/health >/dev/null 2>&1; then
                 ok=1; echo "Backend healthy (attempt $i)"; break
               fi
               echo "Health check $i/12 ..."
@@ -60,10 +110,10 @@ jobs:
 
             if [ "$ok" -ne 1 ]; then
               echo "::error::Backend did not become healthy — recent logs:"
-              docker compose logs --tail=80 backend-node || true
+              $COMPOSE logs --tail=80 backend-node || true
               exit 1
             fi
 
             echo "==> Pruning old images"
             docker image prune -f || true
-            echo "Deploy complete: $(git log --oneline -1)"
+            echo "Deploy complete ($DEPLOY_BRANCH): $(git log --oneline -1)"

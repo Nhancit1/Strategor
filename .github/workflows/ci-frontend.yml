@@ -3,11 +3,11 @@ name: CI Frontend
 # Runs only when the React/Vite frontend changes.
 on:
   push:
-    branches: [main]
+    branches: [main, pre-prod, dev]
     paths:
       - "frontend/**"
   pull_request:
-    branches: [main]
+    branches: [main, pre-prod, dev]
     paths:
       - "frontend/**"
   workflow_dispatch:
