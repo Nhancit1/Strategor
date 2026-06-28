@@ -1,9 +1,8 @@
 services:
   mongo:
     image: mongo:7
-    container_name: strategor-mongo
-    ports:
-      - "127.0.0.1:27018:27017"
+    # No host port published: the backend reaches mongo over the internal
+    # compose network. Avoids port clashes when several stacks share a server.
     volumes:
       - mongo_data:/data/db
     restart: unless-stopped
@@ -12,7 +11,6 @@ services:
     build:
       context: ./backend-node
       dockerfile: Dockerfile
-    container_name: strategor-backend
     env_file:
       - .env
     environment:
@@ -21,6 +19,10 @@ services:
       - SELF_URL=http://backend-node:4000
       - PORT=4000
       - NODE_ENV=production
+    # Exposed on localhost only; the system nginx reverse-proxies /api and
+    # /socket.io to this port. Set BACKEND_PORT per environment in .env.
+    ports:
+      - "127.0.0.1:${BACKEND_PORT:-4000}:4000"
     volumes:
       - uploads_volume:/tmp/strategor-uploads
     depends_on:
@@ -31,7 +33,6 @@ services:
     build:
       context: ./ai-python
       dockerfile: Dockerfile
-    container_name: strategor-ai
     env_file:
       - .env
     environment:
@@ -46,20 +47,11 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
-    container_name: strategor-frontend
-    depends_on:
-      - backend-node
-    restart: unless-stopped
-
-  nginx:
-    image: nginx:1.27-alpine
-    container_name: strategor-nginx
+    # Exposed on localhost only; the system nginx reverse-proxies / (the SPA)
+    # to this port. Set FRONTEND_PORT per environment in .env.
     ports:
-      - "80:80"
-    volumes:
-      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - "127.0.0.1:${FRONTEND_PORT:-8080}:80"
     depends_on:
-      - frontend
       - backend-node
     restart: unless-stopped
 
