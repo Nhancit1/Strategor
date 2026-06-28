@@ -36,7 +36,7 @@ router.post('/projects/:projectId/agent-events', asyncHandler(async (req, res) =
   requireObjectId(projectId, 'projectId');
   const b = req.body || {};
 
-  const agentId = Number(agentId);
+  const agentId = Number(b.agentId);
   if (!Number.isInteger(agentId) || agentId < 1 || agentId > 100) {
     throw new ApiError(400, 'Invalid agentId');
   }
