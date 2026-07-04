@@ -1,11 +1,11 @@
-"""Exporter factory — port of ExporterFactory."""
-from . import docx_exporter, pdf_exporter, pptx_exporter, xlsx_exporter
+"""Exporter factory. Formats: pdf, docx, html (pptx/xlsx retired —
+they were rarely useful and doubled the surface to keep coherent)."""
+from . import docx_exporter, pdf_exporter, html_exporter
 
 _EXPORTERS = {
     "docx": docx_exporter.export,
     "pdf": pdf_exporter.export,
-    "pptx": pptx_exporter.export,
-    "xlsx": xlsx_exporter.export,
+    "html": html_exporter.export,
 }
 
 

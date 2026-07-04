@@ -4,7 +4,7 @@ Strategor AI/export microservice (FastAPI).
 Endpoints (all called by the Node backend, guarded by the internal token):
   POST /analyze            -> kick off the 12-agent pipeline (background)
   POST /parse              -> extract text from an uploaded document (background)
-  POST /export/{format}    -> render docx|pdf|pptx|xlsx, return the file bytes
+  POST /export/{format}    -> render pdf|docx|html, return the file bytes
   GET  /health             -> healthcheck
 """
 import io
@@ -41,8 +41,7 @@ if settings.allowed_hosts:
 _MIME = {
     "pdf": "application/pdf",
     "docx": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-    "pptx": "application/vnd.openxmlformats-officedocument.presentationml.presentation",
-    "xlsx": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    "html": "text/html; charset=utf-8",
 }
 
 

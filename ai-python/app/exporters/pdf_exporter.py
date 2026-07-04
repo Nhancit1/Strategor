@@ -1,84 +1,19 @@
 """
-PDF export — branded HTML template, then rendered. Engine selectable via
-PDF_ENGINE: 'weasyprint' (default, pure python) or 'chromium' (headless
-subprocess). Now renders an executive summary, readable structured sections
-(not raw JSON), all DONE agents, and a Sources section. Cost is never included.
+PDF export — renders the SAME branded HTML document as the .html export
+(html_exporter.build_document), so PDF and HTML never diverge and PDF text is
+selectable by construction. Engine selectable via PDF_ENGINE: 'weasyprint'
+(default, pure python) or 'chromium' (headless subprocess).
 """
-import html
 import os
 import subprocess
 import tempfile
 import uuid
-from .common import (today, done, flatten_output, executive_summary, collect_sources,
-                     translate, ORANGE, ORANGE_DARK, INK, INK3, PAPER, PAPER2)
+from .html_exporter import build_document
 from ..config import settings
-
-_CSS = f"""
-  body{{font-family:'Helvetica',sans-serif;margin:40px;color:#{INK};line-height:1.6}}
-  h1{{color:#{ORANGE};font-size:28px;margin-bottom:8px}}
-  h2{{color:#{ORANGE_DARK};font-size:20px;margin-top:24px;border-bottom:2px solid #F07830;padding-bottom:4px}}
-  h3{{color:#{INK};font-size:14px;margin:12px 0 4px}}
-  p{{margin:4px 0;font-size:13px}}
-  ul{{margin:4px 0 8px 18px}}
-  li{{margin:2px 0;font-size:13px}}
-  .meta{{color:#{INK3};font-size:13px;margin-bottom:24px}}
-  .agent{{margin:16px 0;padding:12px;background:#{PAPER};border-radius:8px}}
-  .summary{{margin:16px 0;padding:14px;background:#{PAPER2};border-left:4px solid #{ORANGE};border-radius:6px}}
-  .footer{{margin-top:40px;color:#{INK3};font-size:11px;text-align:center}}
-"""
-
-
-def _render_block(parts, heading, lines):
-    parts.append(f"<h3>{html.escape(heading)}</h3>")
-    if len(lines) == 1 and not lines[0].startswith("• "):
-        parts.append(f"<p>{html.escape(lines[0])}</p>")
-    else:
-        parts.append("<ul>")
-        for ln in lines:
-            parts.append(f"<li>{html.escape(ln.lstrip('• '))}</li>")
-        parts.append("</ul>")
-
-
-def _build_html(project, executions, lang: str = "fr") -> str:
-    html_lang = "en" if str(lang).lower().startswith("en") else "fr"
-    parts = [
-        f'<!DOCTYPE html><html lang="{html_lang}"><head><meta charset="UTF-8">',
-        f"<style>{_CSS}</style></head><body>",
-        f"<h1>Stratégie — {html.escape(project.name)}</h1>",
-        f'<div class="meta">{translate("date", lang)} {today()} — Strategor</div>',
-    ]
-
-    summary = executive_summary(executions)
-    if summary:
-        parts.append('<div class="summary">')
-        parts.append(f"<h2 style='margin-top:0;border:0'>{translate('executive_summary', lang)}</h2>")
-        parts.append(f"<p>{html.escape(summary)}</p>")
-        parts.append("</div>")
-
-    for e in done(executions):
-        parts.append('<div class="agent">')
-        parts.append(f"<h2>{translate('heading_agent', lang)} {e.agentId} — {html.escape(e.agentName or '')}</h2>")
-        blocks = flatten_output(e.output)
-        if not blocks:
-            parts.append(f"<p><em>{translate('no_data', lang)}</em></p>")
-        for heading, lines in blocks:
-            _render_block(parts, heading, lines)
-        parts.append("</div>")
-
-    sources = collect_sources(executions)
-    if sources:
-        parts.append(f'<div class="agent"><h2>{translate("sources", lang)}</h2><ul>')
-        for s in sources:
-            parts.append(f"<li>{html.escape(s)}</li>")
-        parts.append("</ul></div>")
-
-    parts.append(f'<div class="footer">{translate("generated_on", lang)} {today()}</div>')
-    parts.append("</body></html>")
-    return "".join(parts)
 
 
 def export(project, executions, lang: str = "fr") -> bytes:
-    doc_html = _build_html(project, executions, lang)
+    doc_html = build_document(project, executions, lang)
     if settings.pdf_engine == "chromium":
         return _render_chromium(doc_html)
     return _render_weasyprint(doc_html)
