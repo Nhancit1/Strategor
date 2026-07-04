@@ -28,6 +28,7 @@ const agentExecutionSchema = new mongoose.Schema(
     completedAt: { type: Date, default: null },
     validatedAt: { type: Date, default: null },
     errorMessage: { type: String, default: null },
+    statusMessage: { type: String, default: null }, // last human-readable status (e.g. skip reason)
     retryCount: { type: Number, default: 0 },
     stale: { type: Boolean, default: false }, // an upstream edit invalidated this dependent
     // Cumulative ACTUAL consumption across all runs (regenerations + billed-but-failed

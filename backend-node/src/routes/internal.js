@@ -52,13 +52,9 @@ router.post('/projects/:projectId/agent-events', asyncHandler(async (req, res) =
   if (b.status === 'RUNNING') update.startedAt = new Date();
   if (b.output !== undefined) update.output = b.output;
   if (b.language !== undefined) update.lang = b.language;
-  if (b.modelUsed !== undefined) update.modelUsed = b.modelUsed;
-  if (b.tokensInput !== undefined) update.tokensInput = safeNum(b.tokensInput, 1e8);
-  if (b.tokensOutput !== undefined) update.tokensOutput = safeNum(b.tokensOutput, 1e8);
-  if (b.costEstimateCents !== undefined) update.costEstimateCents = safeNum(b.costEstimateCents, 100000);
-  if (b.groundingCostCents !== undefined) update.groundingCostCents = safeNum(b.groundingCostCents, 100000);
   if (b.sources !== undefined) update.sources = b.sources;
   if (b.errorMessage !== undefined) update.errorMessage = b.errorMessage;
+  if (b.message !== undefined) update.statusMessage = b.message; // human-readable reason (e.g. why SKIPPED)
   if (b.status === 'DONE' || b.status === 'ERROR') update.completedAt = new Date();
 
   // "Latest deliverable" snapshot — only a SUCCESSFUL run defines the agent's current
