@@ -9,9 +9,10 @@ Dependencies are passed as a dict {agentId: payload}. The sentinel key -1 holds
 the user-documents text (same convention as the Java orchestrator).
 """
 from __future__ import annotations
+import json
 from datetime import datetime
 from typing import Any, Optional
-from ..deepseek_client import ModelTier
+from ..model_tiers import ModelTier
 from .factsheet import build_factsheet
 from .sanitize import neutralize, clean_field, wrap_untrusted, MAX_DEP_CHARS
 from ..config import CACHE_SENTINEL
@@ -43,7 +44,52 @@ def _date_context(is_en: bool = False) -> str:
     )
 
 
+def _rigor_rules(is_en: bool = False) -> str:
+    """Shared analysis-rigor contract, identical for every agent of a run (lives in the
+    cached prompt prefix). The market-figures rule is now conditional on web data being
+    present: the old wording ordered ALL agents to source figures from "the web research
+    above", including the 10 agents that receive none — a contradiction that pushed the
+    model to either refuse figures or fake compliance."""
+    if is_en:
+        return (
+            "\n\n=== Rigorous Analysis Rules (MUST be respected in your entire response) ===\n"
+            "- Explicitly distinguish verified FACTS, HYPOTHESES, and INFERENCES; "
+            "prefix any assumption with '[Hypothesis]'.\n"
+            "- NEVER provide a precise figure or statistic that you cannot back up: "
+            "give a qualitative range instead, or explicitly mark it as a hypothesis.\n"
+            "- When an assertion is supported by web research sources, "
+            "cite them in parentheses (source name, and URL if available).\n"
+            "- Any MARKET figure (market size, growth rate, market share) must be backed by "
+            "web-research data when such data is provided in this prompt; otherwise mark it "
+            "'[Hypothesis]' or give a qualitative range. NEVER invent a source or a date "
+            "(e.g. a fabricated 'IDC 2023') — an unverifiable citation is worse than none.\n"
+        )
+    return (
+        "\n\n=== Règles de rigueur (à respecter dans TOUTE ta réponse) ===\n"
+        "- Distingue explicitement les FAITS vérifiés, les HYPOTHÈSES et les INFÉRENCES ; "
+        "préfixe toute supposition par « [Hypothèse] ».\n"
+        "- Ne donne JAMAIS un chiffre ou une statistique précis que tu ne peux pas étayer : "
+        "donne plutôt une fourchette qualitative, ou marque-le explicitement comme hypothèse.\n"
+        "- Quand une affirmation s'appuie sur une source issue de la recherche web, "
+        "cite-la entre parenthèses (nom de la source, et URL si disponible).\n"
+        "- Tout chiffre de MARCHÉ (taille, croissance, part de marché) doit être étayé par les "
+        "données de recherche web lorsqu'elles sont fournies dans ce prompt ; sinon, marque-le "
+        "« [Hypothèse] » ou donne une fourchette qualitative. N'invente JAMAIS une source "
+        "ni une date (ex. un « IDC 2023 » fabriqué) — une citation invérifiable est pire que pas de citation.\n"
+    )
+
+
 DOCUMENTS_KEY = -1  # sentinel: deps[-1] = parsed user documents text
+
+
+def _compact(obj) -> str:
+    """Token-lean serialization: compact JSON (no spaces, real quotes) instead of the
+    Python dict repr str(obj) — same information, ~20-30% fewer tokens, and no
+    single-quote/None/True artifacts for the model to mimic back."""
+    try:
+        return json.dumps(obj, ensure_ascii=False, separators=(",", ":"))
+    except (TypeError, ValueError):
+        return str(obj)
 
 
 def _null_safe(s: Optional[str], is_en: bool = False) -> str:
@@ -181,8 +227,8 @@ class Agent:
             return ("Données financières : non renseignées "
                     "(s'appuyer sur des estimations sectorielles).\n\n")
         if is_en:
-            return f"Available financial data:\n{neutralize(str(finance))}\n\n"
-        return f"Données financières disponibles :\n{neutralize(str(finance))}\n\n"
+            return f"Available financial data:\n{neutralize(_compact(finance))}\n\n"
+        return f"Données financières disponibles :\n{neutralize(_compact(finance))}\n\n"
 
     def documents_context(self, deps: Optional[dict], is_en: bool = False) -> str:
         if not deps:
@@ -202,7 +248,7 @@ class Agent:
         if agent_deps:
             # Previous agents' outputs can carry a propagated injection from a poisoned
             # document, so they are wrapped as data-only too (used for synthesis, not obeyed).
-            body = "".join(f"Agent {aid}: {agent_deps[aid]}\n\n" for aid in sorted(agent_deps))
+            body = "".join(f"Agent {aid}: {_compact(agent_deps[aid])}\n\n" for aid in sorted(agent_deps))
             out += wrap_untrusted(
                 body, "SORTIES DES AGENTS PRECEDENTS", "PREVIOUS AGENT OUTPUTS",
                 is_en, max_chars=MAX_DEP_CHARS,
@@ -225,8 +271,12 @@ class Agent:
         # Canonical fact-sheet + numeric-discipline contract — shared by EVERY agent
         # so figures stay consistent across the whole analysis (see factsheet.py).
         parts.append(build_factsheet(profile, finance))
-        # Cache breakpoint: everything above (company context + date + fact-sheet) is identical
-        # for every agent in a run, so it is cached and billed once instead of re-sent per agent.
+        # Run-stable shared rules also live in the cached prefix: they are identical for
+        # every agent of a run (language is per-run), so caching them saves ~600 tokens
+        # per agent instead of billing them 17 times.
+        parts.append(_rigor_rules(is_en))
+        # Cache breakpoint: everything above (company context + date + fact-sheet + shared
+        # rules) is identical for every agent in a run, so it is cached and billed once.
         parts.append(CACHE_SENTINEL)
         if self.uses_finance:
             parts.append(self.finance_context(finance, is_en))
@@ -235,19 +285,6 @@ class Agent:
         if self.framework_note:
             parts.append(self.framework_note)
         if is_en:
-            parts.append(
-                "\n\n=== Rigorous Analysis Rules (MUST be respected in your entire response) ===\n"
-                "- Explicitly distinguish verified FACTS, HYPOTHESES, and INFERENCES; "
-                "prefix any assumption with '[Hypothesis]'.\n"
-                "- NEVER provide a precise figure or statistic that you cannot back up: "
-                "give a qualitative range instead, or explicitly mark it as a hypothesis.\n"
-                "- When an assertion is supported by web research sources, "
-                "cite them in parentheses (source name, and URL if available).\n"
-                "- Any MARKET figure (market size, growth rate, market share) MUST come from the "
-                "web-research data provided above. If it is not supported there, mark it "
-                "'[Hypothesis]' or give a qualitative range. NEVER invent a source or a date "
-                "(e.g. a fabricated 'IDC 2023') — an unverifiable citation is worse than none.\n"
-            )
             parts.append("\n\nIMPORTANT: Write your entire response (all field values) in English.\n")
             parts.append(
                 "\n\n=== OUTPUT CONTRACT ===\n"
@@ -256,19 +293,7 @@ class Agent:
                 "Never dump lists as markdown inside a free-text field: use the arrays/objects provided."
             )
         else:
-            parts.append(
-                "\n\n=== Règles de rigueur (à respecter dans TOUTE ta réponse) ===\n"
-                "- Distingue explicitement les FAITS vérifiés, les HYPOTHÈSES et les INFÉRENCES ; "
-                "préfixe toute supposition par « [Hypothèse] ».\n"
-                "- Ne donne JAMAIS un chiffre ou une statistique précis que tu ne peux pas étayer : "
-                "donne plutôt une fourchette qualitative, ou marque-le explicitement comme hypothèse.\n"
-                "- Quand une affirmation s'appuie sur une source issue de la recherche web, "
-                "cite-la entre parenthèses (nom de la source, et URL si disponible).\n"
-                "- Tout chiffre de MARCHÉ (taille, croissance, part de marché) DOIT provenir des "
-                "données de recherche web fournies ci-dessus. S'il n'y figure pas, marque-le "
-                "« [Hypothèse] » ou donne une fourchette qualitative. N'invente JAMAIS une source "
-                "ni une date (ex. un « IDC 2023 » fabriqué) — une citation invérifiable est pire que pas de citation.\n"
-            )
+            pass  # shared rules are in the cached prefix (see _rigor_rules)
             parts.append(
                 "\n\n=== CONTRAT DE SORTIE ===\n"
                 "Remplis chaque champ obligatoire du schéma de l'outil (jamais d'objet vide). Si une "

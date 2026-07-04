@@ -16,7 +16,7 @@ Execution DAG (computed from depends_on by the orchestrator):
 from typing import Optional
 from .base import Agent
 from .prompts import MISSIONS, SCHEMAS, FRAMEWORKS
-from ..deepseek_client import ModelTier
+from ..model_tiers import ModelTier
 
 
 class Agent1Profile(Agent):
@@ -24,6 +24,7 @@ class Agent1Profile(Agent):
     agent_name = "Profil & Contexte"
     category = "PROFILE"
     tier = ModelTier.HAIKU
+    max_output_tokens = 3000
     depends_on = []
     active_in_modes = ["quick", "standard", "comprehensive"]
     uses_finance = True
@@ -36,6 +37,7 @@ class Agent2Pestel(Agent):
     agent_name = "Analyse PESTEL"
     category = "EXTERNAL_ANALYSIS"
     tier = ModelTier.SONNET
+    max_output_tokens = 6000
     depends_on = [1]
     active_in_modes = ["standard", "comprehensive"]
     uses_finance = False
@@ -50,6 +52,7 @@ class Agent3Swot(Agent):
     agent_name = "Analyse SWOT"
     category = "INTERNAL_ANALYSIS"
     tier = ModelTier.SONNET
+    max_output_tokens = 6000
     depends_on = [1]
     active_in_modes = ["quick", "standard", "comprehensive"]
     uses_finance = True
@@ -63,6 +66,7 @@ class Agent4Competition(Agent):
     agent_name = "Intelligence compétitive"
     category = "EXTERNAL_ANALYSIS"
     tier = ModelTier.SONNET
+    max_output_tokens = 6000
     depends_on = [1]
     active_in_modes = ["standard", "comprehensive"]
     uses_finance = False
@@ -76,6 +80,7 @@ class Agent5Diagnostic(Agent):
     agent_name = "Diagnostic consolidé"
     category = "SYNTHESIS"
     tier = ModelTier.OPUS
+    max_output_tokens = 8000
     depends_on = [2, 3, 4, 9, 10]
     active_in_modes = ["standard", "comprehensive"]
     uses_finance = True
@@ -89,6 +94,7 @@ class Agent6Strategy(Agent):
     agent_name = "Axes stratégiques & roadmap"
     category = "STRATEGY"
     tier = ModelTier.SONNET
+    max_output_tokens = 8000
     depends_on = [5, 11, 17]
     active_in_modes = ["standard", "comprehensive"]
     uses_finance = True
@@ -101,6 +107,7 @@ class Agent7Kpis(Agent):
     agent_name = "KPIs & tableau de bord"
     category = "MEASUREMENT"
     tier = ModelTier.SONNET
+    max_output_tokens = 5000
     depends_on = [5, 6]
     active_in_modes = ["standard", "comprehensive"]
     uses_finance = True
@@ -113,6 +120,7 @@ class Agent8Deliverables(Agent):
     agent_name = "Livrables finaux"
     category = "DELIVERABLES"
     tier = ModelTier.SONNET
+    max_output_tokens = 10000
     depends_on = [5, 6, 7, 11, 12, 13, 14]
     active_in_modes = ["standard", "comprehensive"]
     uses_finance = True
@@ -125,6 +133,7 @@ class Agent9Porter(Agent):
     agent_name = "5 Forces de Porter"
     category = "EXTERNAL_ANALYSIS"
     tier = ModelTier.SONNET
+    max_output_tokens = 6000
     depends_on = [1, 4]
     active_in_modes = ["standard", "comprehensive"]
     uses_finance = False
@@ -138,7 +147,8 @@ class Agent10ValueChain(Agent):
     agent_id = 10
     agent_name = "Chaîne de valeur"
     category = "INTERNAL_ANALYSIS"
-    tier = ModelTier.SONNET
+    tier = ModelTier.HAIKU
+    max_output_tokens = 5000
     depends_on = [1]
     active_in_modes = ["standard", "comprehensive"]
     uses_finance = True
@@ -152,6 +162,7 @@ class Agent11Bcg(Agent):
     agent_name = "Matrice BCG"
     category = "STRATEGY"
     tier = ModelTier.SONNET
+    max_output_tokens = 4000
     depends_on = [5]
     active_in_modes = ["standard", "comprehensive"]
     uses_finance = False
@@ -175,7 +186,8 @@ class Agent12Change(Agent):
     agent_id = 12
     agent_name = "Conduite du changement"
     category = "CHANGE"
-    tier = ModelTier.SONNET
+    tier = ModelTier.HAIKU
+    max_output_tokens = 5000
     depends_on = [6]
     active_in_modes = ["standard", "comprehensive"]
     uses_finance = False
@@ -189,6 +201,7 @@ class Agent13RiskRegister(Agent):
     agent_name = "Registre de risques"
     category = "RISK"
     tier = ModelTier.SONNET
+    max_output_tokens = 5000
     depends_on = [5, 6]
     active_in_modes = ["standard", "comprehensive"]
     uses_finance = True
@@ -200,6 +213,7 @@ class Agent14Finance(Agent):
     agent_name = "Analyse financière & scénarios"
     category = "FINANCE"
     tier = ModelTier.SONNET
+    max_output_tokens = 6000
     depends_on = [5, 6]
     active_in_modes = ["standard", "comprehensive"]
     uses_finance = True
@@ -211,6 +225,7 @@ class Agent15Consistency(Agent):
     agent_name = "Contrôle de cohérence"
     category = "REVIEW"
     tier = ModelTier.SONNET
+    max_output_tokens = 6000
     depends_on = [5, 6, 7, 8, 11, 12, 13, 14]
     active_in_modes = ["standard", "comprehensive"]
     uses_finance = False
@@ -226,6 +241,7 @@ class Agent16PartnerReview(Agent):
     agent_name = "Revue stratégique"
     category = "REVIEW"
     tier = ModelTier.OPUS
+    max_output_tokens = 8000
     depends_on = [5, 6, 7, 8, 11, 12, 13, 14]
     active_in_modes = ["standard", "comprehensive"]
     uses_finance = True
@@ -241,6 +257,7 @@ class Agent17StrategicOptions(Agent):
     agent_name = "Options stratégiques"
     category = "STRATEGY"
     tier = ModelTier.OPUS
+    max_output_tokens = 8000
     depends_on = [5, 11]
     active_in_modes = ["standard", "comprehensive"]
     uses_finance = True

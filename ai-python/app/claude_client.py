@@ -13,19 +13,14 @@ import re
 import os
 import tempfile
 import logging
-from enum import Enum
 from dataclasses import dataclass, field
 from typing import Any
 from anthropic import AsyncAnthropic
 from .config import settings, CACHE_SENTINEL
+from .model_tiers import ModelTier
 
 log = logging.getLogger("strategor.claude")
 
-
-class ModelTier(str, Enum):
-    HAIKU = "HAIKU"
-    SONNET = "SONNET"
-    OPUS = "OPUS"
 # cents per million tokens (input, output). Rates verified 2026-05:
 # Haiku 4.5 $1/$5, Sonnet 4.6 $3/$15, Opus 4.7 $5/$25.
 _COST = {
