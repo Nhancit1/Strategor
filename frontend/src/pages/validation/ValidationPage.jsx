@@ -96,11 +96,18 @@ export default function ValidationPage() {
     setEditedOutput(newOutput);
   }, []);
 
-  const handleSaveAndValidate = async () => {
+  // Materiality gate: before saving an edit, ask whether it changes the substance
+  // (propagate staleness downstream) or only the wording (no propagation, no cost).
+  const [askMateriality, setAskMateriality] = useState(false);
+  const handleSaveAndValidate = () => {
     if (!editedOutput) return;
+    setAskMateriality(true);
+  };
+  const confirmSave = async (propagate) => {
+    setAskMateriality(false);
     setSaving(true);
     try {
-      await agentApi.updateOutput(id, tabConfig.agentId, editedOutput);
+      await agentApi.updateOutput(id, tabConfig.agentId, editedOutput, { propagate });
       await fetchAgents(id);
       setEditing(false);
       setEditedOutput(null);
@@ -187,6 +194,36 @@ export default function ValidationPage() {
 
   return (
     <div className="container-wide py-8">
+      {askMateriality && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-ink/50 p-4"
+          onClick={() => setAskMateriality(false)}
+        >
+          <div className="w-full max-w-md rounded-2xl bg-white p-5 shadow-2xl" onClick={(e) => e.stopPropagation()}>
+            <h3 className="font-title text-lg font-bold mb-1">Nature de votre modification ?</h3>
+            <p className="text-ink3 text-sm mb-4">
+              Cela détermine si les modules qui dépendent de celui-ci doivent être régénérés.
+            </p>
+            <button
+              onClick={() => confirmSave(false)}
+              className="w-full text-left rounded-xl border-2 border-paper3 p-3 mb-2 hover:border-ink3 transition-colors"
+            >
+              <div className="font-title text-sm font-bold">Correction de forme</div>
+              <div className="text-xs text-ink3">Style, orthographe, reformulation — aucun module n'est invalidé.</div>
+            </button>
+            <button
+              onClick={() => confirmSave(true)}
+              className="w-full text-left rounded-xl border-2 border-orange bg-orange/5 p-3 hover:bg-orange/10 transition-colors"
+            >
+              <div className="font-title text-sm font-bold text-orangeDark">Modification de fond</div>
+              <div className="text-xs text-ink3">
+                Change une conclusion, un chiffre ou une hypothèse — les modules dépendants seront
+                marqués à régénérer (re-dérivation ciblée proposée en bandeau).
+              </div>
+            </button>
+          </div>
+        </div>
+      )}
       <div className="mb-6 flex items-center justify-between">
         <div>
           <h1 className="font-title text-3xl font-bold mb-1">{t('validation.title')}</h1>

@@ -57,13 +57,19 @@ router.put('/:agentId/output', asyncHandler(async (req, res) => {
   exec.stale = false; // this module was just (re)validated by hand
   await exec.save();
 
-  // Propagate: editing an upstream module makes its downstream dependents stale.
-  const dependents = transitiveDependents(agentId);
-  if (dependents.length) {
-    await AgentExecution.updateMany(
-      { project: req.params.projectId, agentId: { $in: dependents }, status: 'DONE' },
-      { $set: { stale: true } }
-    );
+  // Materiality gate: a cosmetic edit (style/typo) must not invalidate the whole
+  // downstream chain. The client passes ?propagate=false for "correction de forme";
+  // default remains true (substantive edit) so existing behavior is unchanged.
+  const propagate = req.query.propagate !== 'false';
+  if (propagate) {
+    // Propagate: editing an upstream module makes its downstream dependents stale.
+    const dependents = transitiveDependents(agentId);
+    if (dependents.length) {
+      await AgentExecution.updateMany(
+        { project: req.params.projectId, agentId: { $in: dependents }, status: 'DONE' },
+        { $set: { stale: true } }
+      );
+    }
   }
   res.json(exec.toJSON());
 }));

@@ -137,8 +137,8 @@ export const projectApi = {
 export const agentApi = {
   list: (projectId) => api.get(`/api/projects/${projectId}/agents`),
   get: (projectId, agentId) => api.get(`/api/projects/${projectId}/agents/${agentId}`),
-  updateOutput: (projectId, agentId, output) =>
-    api.put(`/api/projects/${projectId}/agents/${agentId}/output`, output),
+  updateOutput: (projectId, agentId, output, { propagate = true } = {}) =>
+    api.put(`/api/projects/${projectId}/agents/${agentId}/output?propagate=${propagate}`, output),
   retry: (projectId, agentId) =>
     api.post(`/api/projects/${projectId}/agents/${agentId}/retry`),
   regenerate: (projectId, agentId) =>
