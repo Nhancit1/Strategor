@@ -49,6 +49,25 @@ export default function AgentsPage() {
       setRelaunchingAll(false);
     }
   };
+  const hasInterrupted = useMemo(
+    () => agents.some((a) => a.status === 'ERROR' || a.status === 'SKIPPED'),
+    [agents]
+  );
+  const [resuming, setResuming] = useState(false);
+  const handleResume = async () => {
+    if (resuming) return;
+    setResuming(true);
+    try {
+      await agentApi.resume(id);
+      fetchAgents(id);
+      fetchProject(id);
+    } catch (err) {
+      console.error('Resume failed:', err);
+    } finally {
+      setResuming(false);
+    }
+  };
+
   const [cancelling, setCancelling] = useState(false);
   const handleCancelAnalysis = useCallback(async () => {
     if (cancelling) return;
@@ -104,6 +123,17 @@ export default function AgentsPage() {
             >
               <XCircle size={14} />
               {cancelling ? 'Arrêt...' : "Arrêter l'analyse"}
+            </button>
+          )}
+          {hasInterrupted && current?.status !== 'ANALYZING' && (
+            <button
+              onClick={handleResume}
+              disabled={resuming}
+              className="btn-secondary text-sm flex items-center gap-1.5"
+              title="Reprendre l'analyse : ré-exécute uniquement les agents en erreur ou non exécutés, sans refaire ceux déjà terminés"
+            >
+              <RefreshCw size={14} className={resuming ? 'animate-spin' : ''} />
+              {resuming ? 'Reprise...' : "Reprendre l'analyse"}
             </button>
           )}
           <button

@@ -108,6 +108,49 @@ router.post('/rederive-stale', analyzeLimiter, asyncHandler(async (req, res) => 
   res.status(202).json({ rederived: staleIds });
 }));
 
+// Resume an interrupted analysis: one agent failure aborts the run and marks every
+// downstream agent SKIPPED, but retrying that single agent left the SKIPPED ones
+// unreachable (rederive-stale only picks stale ones). This route re-runs every
+// ERROR/SKIPPED agent as a subset, in topological order, seeding all DONE outputs.
+router.post('/resume', analyzeLimiter, asyncHandler(async (req, res) => {
+  const project = await loadOwnedProject(req.params.projectId, req.user.id);
+  const pending = await AgentExecution.find({
+    project: project._id, status: { $in: ['ERROR', 'SKIPPED'] },
+  });
+  const resumeIds = pending.map((e) => e.agentId);
+  if (!resumeIds.length) return res.status(200).json({ resumed: [] });
+
+  const user = await User.findById(req.user.id).select('lang');
+  const lang = user?.lang || 'fr';
+  const profile = await OnboardingProfile.findOne({ project: project._id });
+  const finance = await FinanceLite.findOne({ project: project._id });
+
+  const doneExecs = await AgentExecution.find({ project: project._id, status: 'DONE' });
+  const seedOutputs = {};
+  for (const e of doneExecs) seedOutputs[e.agentId] = e.editedOutput ?? e.output;
+
+  await AgentExecution.updateMany(
+    { project: project._id, agentId: { $in: resumeIds } },
+    { $set: { status: 'PENDING', errorMessage: null, statusMessage: null } }
+  );
+  project.status = 'ANALYZING';
+  await project.save();
+
+  startAnalysis({
+    projectId: project.id.toString(),
+    mode: project.analysisMode || 'standard',
+    language: lang,
+    phase: 'subset',
+    targetAgentIds: resumeIds,
+    seedOutputs,
+    profile: profile ? profile.toJSON() : null,
+    financeLite: finance ? finance.toJSON() : null,
+    documentsContext: (await buildDocumentsContext(project._id)) || null,
+  }).catch((err) => console.error('[resume] Python handoff failed:', err.message));
+
+  res.status(202).json({ resumed: resumeIds });
+}));
+
 async function relaunch(req, res) {
   const project = await loadOwnedProject(req.params.projectId, req.user.id);
   const agentId = Number(req.params.agentId);

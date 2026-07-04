@@ -145,6 +145,8 @@ export const agentApi = {
     api.post(`/api/projects/${projectId}/agents/${agentId}/regenerate`),
   rederiveStale: (projectId) =>
     api.post(`/api/projects/${projectId}/agents/rederive-stale`),
+  resume: (projectId) =>
+    api.post(`/api/projects/${projectId}/agents/resume`),
   versions: (projectId, agentId) =>
     api.get(`/api/projects/${projectId}/agents/${agentId}/versions`),
 };
