@@ -178,7 +178,7 @@ export default function CompetitiveMap({ output, editing, onOutputChange }) {
       <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5">
         <h3 className="font-semibold text-base text-slate-800 mb-1">Competitive Landscape</h3>
         <p className="text-xs text-slate-400 mb-4">Positioning of key players on 2 strategic axes</p>
-        <ReactECharts option={option} style={{ height: 440 }} notMerge lazyUpdate />
+        <ReactECharts option={option} opts={{ renderer: 'svg' }} style={{ height: 440 }} notMerge lazyUpdate />
       </div>
 
       {/* ── Your positioning summary ──────────── */}
