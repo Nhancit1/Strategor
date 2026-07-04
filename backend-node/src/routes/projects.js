@@ -8,9 +8,9 @@ import { Project } from '../models/Project.js';
 import { User } from '../models/User.js';
 import { OnboardingProfile } from '../models/OnboardingProfile.js';
 import { FinanceLite } from '../models/FinanceLite.js';
-import { ProjectDocument } from '../models/ProjectDocument.js';
 import { AgentExecution } from '../models/AgentExecution.js';
 import { startAnalysis, cancelAnalysis } from '../services/pythonClient.js';
+import { buildDocumentsContext } from '../utils/documentsContext.js';
 
 const router = Router();
 
@@ -31,21 +31,6 @@ const ONBOARDING_FIELDS = [
   'activityPrecise', 'positioning', 'valueScope', 'strengths', 'weaknesses', 'portfolio',
 ];
 
-// Assemble parsed-document context (sentinel for the AI), capped at 8000 chars.
-async function buildDocumentsContext(projectId) {
-  const docs = await ProjectDocument.find({ project: projectId }).sort({ uploadedAt: -1 });
-  let ctx = '';
-  const MAX = 8000;
-  for (const doc of docs) {
-    if (doc.parseStatus !== 'DONE' || !doc.parsedContent) continue;
-    if (ctx.length >= MAX) break;
-    const remaining = MAX - ctx.length;
-    let content = doc.parsedContent;
-    if (content.length > remaining) content = content.slice(0, remaining) + '\n[…tronqué]';
-    ctx += `─── ${doc.filename} (${doc.docType}) ───\n${content}\n\n`;
-  }
-  return ctx;
-}
 
 router.get('/', requireAuth, asyncHandler(async (req, res) => {
   const projects = await Project.find({ user: req.user.id, deletedAt: null }).sort({ createdAt: -1 });

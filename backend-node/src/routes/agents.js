@@ -10,6 +10,7 @@ import { User } from '../models/User.js';
 import { startAnalysis } from '../services/pythonClient.js';
 import { translateExecutionIfNeeded } from '../services/translator.js';
 import { transitiveDependents } from '../utils/agentGraph.js';
+import { buildDocumentsContext } from '../utils/documentsContext.js';
 
 // mergeParams so :projectId from the parent mount is available.
 const router = Router({ mergeParams: true });
@@ -101,7 +102,7 @@ router.post('/rederive-stale', analyzeLimiter, asyncHandler(async (req, res) => 
     seedOutputs,
     profile: profile ? profile.toJSON() : null,
     financeLite: finance ? finance.toJSON() : null,
-    documentsContext: null,
+    documentsContext: (await buildDocumentsContext(project._id)) || null,
   }).catch((err) => console.error('[rederive-stale] Python handoff failed:', err.message));
 
   res.status(202).json({ rederived: staleIds });
@@ -115,6 +116,17 @@ async function relaunch(req, res) {
   exec.retryCount += 1;
   exec.errorMessage = null;
   await exec.save();
+
+  // A regeneration can change this agent's conclusions at least as much as a manual
+  // edit — mark its transitive dependents stale so the validation page proposes a
+  // targeted re-derivation instead of silently keeping outputs based on the old version.
+  const dependents = transitiveDependents(agentId);
+  if (dependents.length) {
+    await AgentExecution.updateMany(
+      { project: project._id, agentId: { $in: dependents }, status: 'DONE' },
+      { $set: { stale: true } }
+    );
+  }
 
   const user = await User.findById(req.user.id).select('lang');
   const lang = user?.lang || 'fr';
@@ -143,7 +155,7 @@ async function relaunch(req, res) {
     seedOutputs,
     profile: profile ? profile.toJSON() : null,
     financeLite: finance ? finance.toJSON() : null,
-    documentsContext: null,
+    documentsContext: (await buildDocumentsContext(project._id)) || null,
   }).catch((err) => console.error('[retry] Python handoff failed:', err.message));
 
   res.status(202).end();
