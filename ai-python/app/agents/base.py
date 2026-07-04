@@ -250,12 +250,10 @@ class Agent:
             )
             parts.append("\n\nIMPORTANT: Write your entire response (all field values) in English.\n")
             parts.append(
-                "\n\n=== CRITICAL RULE (JSON GENERATION) ===\n"
-                "You are an automated agent. You MUST imperatively use the provided tool structure to format your response.\n"
-                "1. Use EXACTLY the English keys defined in the schema (e.g., 'strategic_axes', 'initiatives', etc.). Do not translate keys.\n"
-                "2. Even if you lack data, you MUST NOT under any circumstances return an empty object {}.\n"
-                "3. Invent relevant default values (e.g., 'To define', 'Axis 1') to satisfy the JSON schema if necessary, but guarantee that the final structure perfectly respects the expected schema and contains all required keys.\n"
-                "4. NEVER place your main responses (such as axes or lists) in markdown format within a free-text field. You must use the arrays and JSON objects designed for this purpose."
+                "\n\n=== OUTPUT CONTRACT ===\n"
+                "Fill every required field of the tool schema (never an empty object). If data is "
+                "missing, provide a relevant default (e.g. 'To define') rather than omitting the key. "
+                "Never dump lists as markdown inside a free-text field: use the arrays/objects provided."
             )
         else:
             parts.append(
@@ -272,12 +270,11 @@ class Agent:
                 "ni une date (ex. un « IDC 2023 » fabriqué) — une citation invérifiable est pire que pas de citation.\n"
             )
             parts.append(
-                "\n\n=== RÈGLE CRITIQUE (GÉNÉRATION JSON) ===\n"
-                "Tu es un agent automatisé. Tu DOIS IMPÉRATIVEMENT utiliser l'outil fourni pour structurer ta réponse.\n"
-                "1. Utilise EXACTEMENT les clés en anglais définies dans le schéma de l'outil (ex: 'strategic_axes', 'initiatives', etc.). Ne traduis pas les clés JSON en français.\n"
-                "2. Même si tu manques de données, tu NE DOIS SOUS AUCUN PRÉTEXTE renvoyer un objet vide {}.\n"
-                "3. Invente des valeurs par défaut pertinentes (ex: 'À définir', 'Axe 1') pour satisfaire le schéma JSON si nécessaire, mais garantis que la structure finale respecte parfaitement le schéma attendu et contienne toutes les clés obligatoires.\n"
-                "4. NE PLACE JAMAIS tes réponses principales (comme les axes ou les listes) au format markdown dans un champ texte libre. Tu dois impérativement utiliser les tableaux et objets JSON prévus à cet effet."
+                "\n\n=== CONTRAT DE SORTIE ===\n"
+                "Remplis chaque champ obligatoire du schéma de l'outil (jamais d'objet vide). Si une "
+                "donnée manque, fournis une valeur par défaut pertinente (ex. « À définir ») plutôt que "
+                "d'omettre la clé. Ne mets jamais de listes en markdown dans un champ texte libre : "
+                "utilise les tableaux/objets prévus."
             )
         if correction_notes:
             parts.append(

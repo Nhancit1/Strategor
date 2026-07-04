@@ -311,24 +311,26 @@ async def generate_structured(
     _ascii = _raw.encode("ascii", "ignore").decode("ascii")  # drop accents
     tool_name = "submit_" + re.sub(r"[^a-z0-9]+", "_", _ascii).strip("_")[:100]
 
-    # Append schema instruction to the prompt
+    # Forced tool_use replaces the old "reply with a ```json block" contract: the schema
+    # now travels in the tools param (not duplicated in the prompt), and the model's output
+    # is structurally constrained — no markdown fences to strip, far fewer parse failures.
     is_en = language.lower().startswith("en")
     if is_en:
         system_prompt += (
-            "\n\nYou MUST reply ONLY by generating a valid JSON code block (enclosed in ```json and ```). "
-            "The JSON must STRICTELY adhere to the following schema:\n"
-            f"{output_schema}\n"
-            "ABSOLUTE RULE: BE EXTREMELY CONCISE. Summarize your thoughts in short phrases or bullet points. "
-            "Your JSON might get truncated if you generate too much text, which will cause the system to fail. Write only the essentials!"
+            "\n\nSubmit your complete analysis via the provided tool. "
+            "ABSOLUTE RULE: BE EXTREMELY CONCISE. Short phrases and keywords over prose; write only the essentials."
         )
     else:
         system_prompt += (
-            "\n\nTu DOIS répondre UNIQUEMENT en générant un bloc de code JSON valide (entouré de ```json et ```). "
-            "Le JSON doit STRICTEMENT respecter le schéma suivant :\n"
-            f"{output_schema}\n"
-            "RÈGLE ABSOLUE : SOIS EXTRÊMEMENT CONCIS. Résume tes idées en phrases courtes ou mots-clés. "
-            "Ton JSON risque d'être coupé si tu génères trop de texte, ce qui fera échouer le système. Rédige l'essentiel uniquement !"
+            "\n\nSoumets ton analyse complète via l'outil fourni. "
+            "RÈGLE ABSOLUE : SOIS EXTRÊMEMENT CONCIS. Phrases courtes et mots-clés plutôt que de la prose ; rédige l'essentiel uniquement."
         )
+    submit_tool = {
+        "name": tool_name,
+        "description": ("Submit the structured result of the analysis."
+                        if is_en else "Soumettre le résultat structuré de l'analyse."),
+        "input_schema": output_schema,
+    }
 
     # Prompt caching: split at the sentinel into a cached shared prefix + a per-agent suffix.
     if settings.prompt_cache_enabled and CACHE_SENTINEL in system_prompt:
@@ -342,10 +344,11 @@ async def generate_structured(
 
     resp = await _client.messages.create(
         model=model,
-        max_tokens=max_tokens,            # honor each agent's configured output cap (was hardcoded 8192)
+        max_tokens=max_tokens,            # honor each agent's configured output cap
         system=system_param,
         messages=[{"role": "user", "content": user_prompt}],
-        extra_headers={"anthropic-beta": "max-tokens-3-5-sonnet-2024-07-15"}
+        tools=[submit_tool],
+        tool_choice={"type": "tool", "name": tool_name},
     )
 
     # Usage + bill-accurate cost (incl. prompt-cache tokens), computed up front so a
@@ -373,51 +376,54 @@ async def generate_structured(
     if was_truncated:
         log.warning("agent=%s output TRUNCATED (hit max_tokens=%d). Will attempt JSON repair.", agent_name, max_tokens)
 
-    # Extract JSON from the markdown response
+    # Primary path: the forced tool_use block carries the structured payload directly.
+    payload = None
     text = ""
     for block in resp.content:
-        if getattr(block, "type", None) == "text":
+        btype = getattr(block, "type", None)
+        if btype == "tool_use" and getattr(block, "name", "") == tool_name:
+            payload = block.input
+        elif btype == "text":
             text += block.text
 
-    # Find the JSON block using regex
-    match = re.search(r'```(?:json)?\s*([\s\S]*?)\s*```', text)
-    if match:
-        json_str = match.group(1)
+    if isinstance(payload, dict) and payload:
+        pass  # structured payload extracted — skip the legacy text-parsing path
     else:
-        # Fallback if no markdown block is used (common when truncated — no closing ```)
-        json_str = text.strip()
-        # Find first { and last }
-        start = json_str.find('{')
-        end = json_str.rfind('}')
-        if start != -1 and end != -1:
-            json_str = json_str[start:end+1]
-
-    payload = None
-    try:
-        payload = json.loads(json_str)
-    except Exception as parse_err:
-        # Attempt to repair the JSON by closing unclosed brackets/braces at
-        # the last structurally-valid point.  This handles both explicit
-        # max_tokens truncation AND models that simply produce malformed JSON.
-        log.info("agent=%s JSON parse failed (truncated=%s), attempting repair…", agent_name, was_truncated)
-        repaired = _repair_truncated_json(text)
-        if repaired:
-            try:
-                payload = json.loads(repaired)
-                log.info("agent=%s JSON repair succeeded (partial data recovered).", agent_name)
-            except Exception:
-                pass
-        if payload is None:
-            # Write debug output to a SAFE filename inside the system temp dir.
-            # agent_name is sanitized so it can never escape the directory (path traversal).
-            try:
-                safe_name = re.sub(r"[^A-Za-z0-9_-]+", "_", str(agent_name))[:50] or "agent"
-                dbg_path = os.path.join(tempfile.gettempdir(), f"debug_resp_{safe_name}.log")
-                with open(dbg_path, "w", encoding="utf-8") as f:
-                    f.write(text)
-            except Exception:
-                pass  # debug logging must never break the request
-            raise _gen_error(f"Claude n'a pas renvoyé un JSON valide pour l'agent {agent_name}. Erreur: {parse_err}")
+        # Fallback (e.g. max_tokens truncation cut the tool block): legacy extraction + repair.
+        match = re.search(r'```(?:json)?\s*([\s\S]*?)\s*```', text)
+        if match:
+            json_str = match.group(1)
+        else:
+            json_str = text.strip()
+            start = json_str.find('{')
+            end = json_str.rfind('}')
+            if start != -1 and end != -1:
+                json_str = json_str[start:end + 1]
+        payload = None
+        try:
+            payload = json.loads(json_str)
+        except Exception as parse_err:
+            # Attempt to repair the JSON by closing unclosed brackets/braces at
+            # the last structurally-valid point (max_tokens truncation of the tool block).
+            log.info("agent=%s JSON parse failed (truncated=%s), attempting repair…", agent_name, was_truncated)
+            repaired = _repair_truncated_json(text)
+            if repaired:
+                try:
+                    payload = json.loads(repaired)
+                    log.info("agent=%s JSON repair succeeded (partial data recovered).", agent_name)
+                except Exception:
+                    pass
+            if payload is None:
+                # Write debug output to a SAFE filename inside the system temp dir.
+                # agent_name is sanitized so it can never escape the directory (path traversal).
+                try:
+                    safe_name = re.sub(r"[^A-Za-z0-9_-]+", "_", str(agent_name))[:50] or "agent"
+                    dbg_path = os.path.join(tempfile.gettempdir(), f"debug_resp_{safe_name}.log")
+                    with open(dbg_path, "w", encoding="utf-8") as f:
+                        f.write(text)
+                except Exception:
+                    pass  # debug logging must never break the request
+                raise _gen_error(f"Claude n'a pas renvoyé un JSON valide pour l'agent {agent_name}. Erreur: {parse_err}")
 
     if not payload:
         raise _gen_error(f"Claude a renvoyé un objet vide {{}} pour l'agent {agent_name}. Rejet de la réponse.")
