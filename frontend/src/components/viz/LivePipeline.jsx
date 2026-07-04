@@ -130,7 +130,9 @@ function PipelineNode({ n, a, hovered, setHovered, lit, onRegenerate, onOpenVali
         stroke={col.stroke}
         strokeWidth="1.5"
         strokeDasharray={status === 'SKIPPED' ? '5 4' : '0'}
-      />
+      >
+        {status === 'SKIPPED' && a?.statusMessage && <title>{a.statusMessage}</title>}
+      </rect>
       <text x={n.x + 10} y={n.y + 18} fontFamily="DM Sans, sans-serif" fontSize="11" fill={col.sub}>#{n.id}</text>
       <text x={n.x + 10} y={n.y + 33} fontFamily="Comfortaa, sans-serif" fontSize="12" fontWeight="700" fill={col.text}>
         {SHORT[n.id] || `Agent ${n.id}`}

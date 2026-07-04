@@ -312,7 +312,13 @@ export default function ValidationPage() {
         ) : !currentAgent ? (
           <p className="text-ink3">Cet agent n'a pas été exécuté pour ce projet (mode ou conditions non remplis).</p>
         ) : currentAgent.status === 'SKIPPED' ? (
-          <p className="text-ink3">Cet agent n'est pas applicable à votre profil.</p>
+          <div className="text-ink3">
+            <p>{currentAgent.statusMessage || "Cet agent n'est pas applicable à votre profil."}</p>
+            <button onClick={handleRegenerate} disabled={regenerating} className="btn-secondary text-sm mt-4 flex items-center gap-1.5">
+              <RefreshCw size={14} className={regenerating ? 'animate-spin' : ''} />
+              Réévaluer et régénérer
+            </button>
+          </div>
         ) : currentAgent.status !== 'DONE' ? (
           <div className="text-ink3">
             <p>Statut : <strong>{currentAgent.status}</strong>. {currentAgent.errorMessage}</p>

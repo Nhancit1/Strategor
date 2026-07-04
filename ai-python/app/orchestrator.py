@@ -193,15 +193,16 @@ async def _run_one_agent(req: AnalyzeRequest, agent: Agent,
         except Exception as ex:
             log.warning("Dependency check failed for agent %d, dep %d: %s", agent.agent_id, dep_id, ex)
 
-    # Conditional skip (e.g. BCG for micro companies)
-    if agent.is_conditional(profile):
-        log.info("project=%s agent=%d skipped (conditional)", project_id, agent.agent_id)
+    # Conditional skip (e.g. BCG without a usable portfolio) — reason surfaced verbatim.
+    reason = agent.skip_reason(profile)
+    if reason is not None:
+        log.info("project=%s agent=%d skipped (conditional): %s", project_id, agent.agent_id, reason)
         await callbacks.post_agent_event(project_id, {
             "agentId": agent.agent_id,
             "agentName": agent.agent_name,
             "status": "SKIPPED",
             "progress": 100,
-            "message": "Agent skippé (non applicable)",
+            "message": reason,
             "doneCount": counter["done"],
         })
         return

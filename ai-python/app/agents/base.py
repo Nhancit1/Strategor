@@ -159,8 +159,14 @@ class Agent:
     framework_note: str = ""  # canonical framework definition (set on framework agents)
 
     # ── conditional skip (only Agent 11 overrides) ──
+    def skip_reason(self, profile: Optional[dict]) -> Optional[str]:
+        """Human-readable reason this agent should be skipped for this profile,
+        or None to run. Surfaced verbatim to the user (pipeline + module tab) so a
+        blank output is always explained."""
+        return None
+
     def is_conditional(self, profile: Optional[dict]) -> bool:
-        return False
+        return self.skip_reason(profile) is not None
 
     # ── prompt fragments (ported verbatim from AbstractAgent) ──
     def preamble(self, profile: Optional[dict], is_en: bool = False) -> str:

@@ -171,15 +171,29 @@ class Agent11Bcg(Agent):
     output_schema = SCHEMAS[11]
     framework_note = FRAMEWORKS[11]
 
-    # BCG is skipped for micro / very-early companies (mono-offer common).
-    def is_conditional(self, profile: Optional[dict]) -> bool:
+    # Data-driven skip: the BCG needs a real multi-line portfolio with figures.
+    # The old team-size/stage proxy silently skipped companies that DID have the
+    # data (an 8-person company with 3 product lines deserves a BCG) and gave the
+    # user no explanation. Now the rule checks the data itself and says why.
+    def skip_reason(self, profile: Optional[dict]) -> Optional[str]:
         if not profile:
-            return False
-        if profile.get("teamSize") == "1-10":
-            return True
-        if profile.get("stage") in ("idea", "early"):
-            return True
-        return False
+            return None
+        portfolio = profile.get("portfolio") or []
+        usable = [
+            p for p in portfolio
+            if isinstance(p, dict) and (p.get("name") or "").strip()
+            and any(p.get(k) is not None for k in ("revenueShare", "growth", "marketShare"))
+        ]
+        if len(usable) >= 2:
+            return None  # enough data: run the BCG regardless of company size
+        if profile.get("stage") in ("idea", "early") and not usable:
+            return ("Matrice BCG non applicable : entreprise en amorçage sans portefeuille "
+                    "multi-lignes. Renseignez ≥ 2 lignes produits chiffrées dans le cadrage "
+                    "pour l'activer.")
+        return ("Matrice BCG ignorée : le portefeuille produits du cadrage contient "
+                f"{len(usable)} ligne(s) chiffrée(s) alors qu'il en faut au moins 2 "
+                "(nom + part de CA, croissance ou part de marché). Complétez le "
+                "portefeuille puis régénérez ce module.")
 
 
 class Agent12Change(Agent):
