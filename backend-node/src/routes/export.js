@@ -13,11 +13,10 @@ router.use(requireAuth);
 const MIME = {
   pdf: 'application/pdf',
   docx: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-  pptx: 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
-  xlsx: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  html: 'text/html; charset=utf-8',
 };
 
-// POST /api/projects/:projectId/export/:format  (pdf|docx|pptx|xlsx)
+// POST /api/projects/:projectId/export/:format  (pdf|docx|html)
 // Node gathers data from Mongo, Python renders the file, Node streams it back.
 router.post('/:format', asyncHandler(async (req, res) => {
   const format = req.params.format.toLowerCase();
