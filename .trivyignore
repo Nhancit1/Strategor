@@ -1,0 +1,14 @@
+# Trivy ignore list (read by `trivy fs` at the repo root).
+#
+# DS-0002 (HIGH): "run containers as a non-root USER".
+# Acknowledged, not yet enforced, because a correct fix is an infra change:
+#   - backend-node AND ai-python share a root-owned named volume
+#     (uploads_volume -> /tmp/strategor-uploads); dropping to non-root breaks
+#     writes on already-provisioned volumes unless UIDs are aligned and the
+#     volume is chown'd.
+#   - the frontend nginx image needs root to bind :80; going non-root means
+#     migrating to port 8080 across the Dockerfile, docker-compose and the
+#     system reverse proxy (nginx/nginx.conf).
+# Tracked as a dedicated hardening task to be done and redeploy-tested on its own.
+AVD-DS-0002
+DS-0002
