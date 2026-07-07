@@ -1,0 +1,10 @@
+# Known secret findings that live in PAST commits and cannot be un-committed
+# without rewriting history. The leaked INTERNAL_TOKEN has been ROTATED, so the
+# old value is now useless; current files no longer contain it (test scripts read
+# it from $INTERNAL_TOKEN, .env.example holds only a placeholder).
+# Each line is a gitleaks fingerprint: <commit>:<file>:<rule>:<line>
+0aea50f7bb830d7256c128f725b1b88cb7c3db0f:ai-python/test_http.py:generic-api-key:12
+07315089b83a53407926bcd30af9f8621fed8c32:ai-python/.env.example:generic-api-key:2
+07315089b83a53407926bcd30af9f8621fed8c32:ai-python/.env.example:generic-api-key:10
+07315089b83a53407926bcd30af9f8621fed8c32:ai-python/test_callback.py:generic-api-key:6
+07315089b83a53407926bcd30af9f8621fed8c32:backend-node/seed/createAdmin.js:generic-api-key:7

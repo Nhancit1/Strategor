@@ -1,5 +1,6 @@
 import http.client
 import json
+import os
 
 # Read payload
 with open("payload.json", "r") as f:
@@ -9,7 +10,7 @@ with open("payload.json", "r") as f:
 conn = http.client.HTTPConnection("127.0.0.1", 8000, timeout=120)
 headers = {
     "Content-Type": "application/json",
-    "X-Internal-Token": "3986516956408f16ee57293d7cfa920a04e5c0e8693ee24e1c86c5bebabce90d"
+    "X-Internal-Token": os.environ.get("INTERNAL_TOKEN", "")
 }
 
 try:
