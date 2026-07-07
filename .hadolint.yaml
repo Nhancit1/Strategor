@@ -1,0 +1,7 @@
+# Hadolint config (read by hadolint-action at the repo root).
+# DL3008: "pin versions in apt-get install". Impractical for system libraries
+# (libpango, cairo, gdk-pixbuf...) whose versions float with the base image;
+# pinning them breaks reproducibly on every base-image refresh. Ignored on
+# purpose. All other warnings still fail the build (failure-threshold: warning).
+ignored:
+  - DL3008
