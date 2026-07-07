@@ -22,10 +22,15 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0           # full history so leaked-then-removed secrets are caught
-      - name: Gitleaks
-        uses: gitleaks/gitleaks-action@v2
-        env:
-          GITLEAKS_ENABLE_UPLOAD_ARTIFACT: "false"
+      # Use the free open-source gitleaks BINARY (MIT) instead of gitleaks-action@v2,
+      # which now requires a paid GITLEAKS_LICENSE for GitHub organizations.
+      # Same scan (full git history), no license needed.
+      - name: Gitleaks (free CLI)
+        run: |
+          VERSION=8.18.4
+          curl -sSfL "https://github.com/gitleaks/gitleaks/releases/download/v${VERSION}/gitleaks_${VERSION}_linux_x64.tar.gz" -o gitleaks.tar.gz
+          tar -xzf gitleaks.tar.gz gitleaks
+          ./gitleaks detect --source . --redact --exit-code 1 --verbose
 
   dockerfile-lint:
     name: Hadolint (${{ matrix.df }})
