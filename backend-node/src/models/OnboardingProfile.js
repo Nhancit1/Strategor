@@ -7,6 +7,7 @@ const onboardingSchema = new mongoose.Schema(
     companyName: { type: String, default: null },
     userRole: { type: String, default: null },
     sectors: { type: [String], default: undefined },
+    subSectors: { type: [String], default: undefined }, // "Secteur — Sous-secteur" (NACE niveau 2)
     territories: { type: [String], default: undefined },
     marketTypes: { type: [String], default: undefined },
     objectives: { type: [String], default: undefined },

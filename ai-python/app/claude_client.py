@@ -15,6 +15,7 @@ import tempfile
 import logging
 from dataclasses import dataclass, field
 from typing import Any
+import anthropic as anthropic_sdk
 from anthropic import AsyncAnthropic
 from .config import settings, CACHE_SENTINEL
 from .model_tiers import ModelTier
@@ -76,6 +77,39 @@ class StructuredResponse:
 
 
 _client = AsyncAnthropic(api_key=settings.anthropic_api_key)
+
+
+# ── Model preflight ───────────────────────────────────────────────────────────
+# Anthropic retires model IDs over time (e.g. claude-sonnet-4-20250514 retired
+# 2026-06-15); a stale MODEL_* in .env then fails every call with an opaque 404
+# in the middle of the pipeline. verify_model() turns that into ONE actionable,
+# user-visible error at launch. Best-effort by design: only a definitive
+# not_found blocks — network/5xx problems never prevent an analysis attempt.
+_MODEL_STATUS: dict[str, str | None] = {}  # model -> None (ok) | error message
+
+
+async def verify_model(model: str, env_var: str) -> str | None:
+    """Return None if the model ID is live, or an actionable error message if the
+    API definitively reports it unknown/retired. Results are cached per process."""
+    if model in _MODEL_STATUS:
+        return _MODEL_STATUS[model]
+    try:
+        await _client.models.retrieve(model)
+        _MODEL_STATUS[model] = None
+    except anthropic_sdk.NotFoundError:
+        _MODEL_STATUS[model] = (
+            f"Modèle Anthropic « {model} » ({env_var}) inconnu ou retiré. "
+            f"Mettez à jour la variable {env_var} dans le .env (modèles actuels : "
+            f"claude-sonnet-4-6, claude-haiku-4-5) puis recréez le conteneur ai-python."
+        )
+    except anthropic_sdk.AuthenticationError:
+        _MODEL_STATUS[model] = (
+            "Clé ANTHROPIC_API_KEY invalide ou révoquée : vérifiez le .env racine."
+        )
+    except Exception as e:  # network / 5xx / SDK quirk → don't block the run
+        log.warning("model preflight inconclusive for %s (%s): %s", model, env_var, e)
+        return None  # not cached: retry next run
+    return _MODEL_STATUS[model]
 
 
 class GenerationError(RuntimeError):

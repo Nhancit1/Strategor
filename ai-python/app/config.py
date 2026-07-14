@@ -11,8 +11,8 @@ class Settings:
     # Anthropic
     anthropic_api_key: str = os.getenv("ANTHROPIC_API_KEY", "")
     model_haiku: str = os.getenv("MODEL_HAIKU", "claude-haiku-4-5")
-    model_sonnet: str = os.getenv("MODEL_SONNET", "claude-sonnet-4-5")
-    model_opus: str = os.getenv("MODEL_OPUS", "claude-sonnet-4-5")  # Opus deprecated; fallback to Sonnet
+    model_sonnet: str = os.getenv("MODEL_SONNET", "claude-sonnet-4-6")
+    model_opus: str = os.getenv("MODEL_OPUS", "claude-sonnet-4-6")  # Opus deprecated; fallback to Sonnet
 
     # Node backend callbacks
     node_url: str = os.getenv("NODE_URL", "http://localhost:4000")
@@ -39,7 +39,7 @@ class Settings:
     grounding_enabled: bool = os.getenv("GROUNDING_ENABLED", "true").lower() == "true"
     web_search_max_uses: int = int(os.getenv("WEB_SEARCH_MAX_USES", "5"))
     web_search_cost_cents: int = int(os.getenv("WEB_SEARCH_COST_CENTS", "1"))
-    model_research: str = os.getenv("MODEL_RESEARCH", "claude-sonnet-4-5")
+    model_research: str = os.getenv("MODEL_RESEARCH", "claude-sonnet-4-6")
     web_search_tool_type: str = os.getenv("WEB_SEARCH_TOOL_TYPE", "web_search")
 
     # Self-correction loop: regenerate agents implicated by consistency findings, then

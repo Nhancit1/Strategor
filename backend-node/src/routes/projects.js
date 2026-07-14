@@ -25,7 +25,7 @@ const projectDto = (p) => ({
 });
 
 const ONBOARDING_FIELDS = [
-  'companyName', 'userRole', 'sectors', 'territories', 'marketTypes', 'objectives',
+  'companyName', 'userRole', 'sectors', 'subSectors', 'territories', 'marketTypes', 'objectives',
   'stage', 'revenueRange', 'teamSize', 'territoryDetail', 'customerDescription',
   'objectiveDetail', 'startingPoint',
   'activityPrecise', 'positioning', 'valueScope', 'strengths', 'weaknesses', 'portfolio',

@@ -19,6 +19,7 @@ export default function Step8Recap({ profile }) {
         {row('Votre rôle', profile?.userRole)}
         {row('Point de départ', profile?.startingPoint)}
         {row('Secteurs', profile?.sectors?.join(', '))}
+        {row('Sous-secteurs (NACE)', profile?.subSectors?.join(', '))}
         {row('Territoires', profile?.territories?.join(', '))}
         {row('Stade', profile?.stage)}
         {row('CA annuel', profile?.revenueRange)}

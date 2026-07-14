@@ -14,7 +14,8 @@ from typing import Optional
 
 from .agents.base import Agent, DOCUMENTS_KEY
 from .agents.registry import active_for_mode, build_execution_levels
-from .claude_client import generate_structured
+from .claude_client import generate_structured, verify_model, _model_for
+from .model_tiers import ModelTier
 from . import callbacks
 from .models import AnalyzeRequest
 from .numeric_integrity import check_numeric_integrity
@@ -32,6 +33,12 @@ async def run_analysis(req: AnalyzeRequest) -> None:
     """Entry point: runs the full pipeline for one project."""
     project_id = req.projectId
     mode = req.mode or "standard"
+    # Hoisted so the failure handler below can never hit an undefined name,
+    # even when the exception occurs before the pipeline state is built.
+    levels: list = []
+    outputs: dict[int, object] = {}
+    counter = {"done": 0}
+    failed_ids: set[int] = set()
     try:
         agents = active_for_mode(mode)
         levels = build_execution_levels(agents)
@@ -70,7 +77,6 @@ async def run_analysis(req: AnalyzeRequest) -> None:
         log.info("Orchestration project=%s mode=%s phase=%s levels=%d",
                  project_id, mode, req.phase, len(levels))
 
-        outputs: dict[int, object] = {}
         if req.documentsContext:
             outputs[DOCUMENTS_KEY] = req.documentsContext  # available to all agents
         # Seed precomputed outputs (e.g. the reviewed Agent 1 output for phase "full").
@@ -81,9 +87,35 @@ async def run_analysis(req: AnalyzeRequest) -> None:
                 except (TypeError, ValueError):
                     log.warning("ignoring seedOutputs key %r", k)
 
-        counter = {"done": 0}
         sem = asyncio.Semaphore(settings.max_parallel_agents)
-        failed_ids = set()
+
+        # ── Model preflight ── validate every distinct model this run will call
+        # BEFORE the first billed request. A retired/typo'd MODEL_* in .env then
+        # produces one clear, user-visible error instead of an opaque mid-run 404.
+        run_agents = [a for lvl in levels for a in lvl]
+        tier_env = {ModelTier.HAIKU: "MODEL_HAIKU", ModelTier.SONNET: "MODEL_SONNET",
+                    ModelTier.OPUS: "MODEL_OPUS"}
+        to_check: dict[str, str] = {}
+        for a in run_agents:
+            to_check.setdefault(_model_for(a.tier), tier_env[a.tier])
+        if settings.grounding_enabled and any(a.uses_web_search for a in run_agents):
+            to_check.setdefault(settings.model_research, "MODEL_RESEARCH")
+        for model, env_var in to_check.items():
+            problem = await verify_model(model, env_var)
+            if problem:
+                first = run_agents[0]
+                log.error("project=%s preflight failed: %s", project_id, problem)
+                await callbacks.post_agent_event(project_id, {
+                    "agentId": first.agent_id,
+                    "agentName": first.agent_name,
+                    "status": "ERROR",
+                    "progress": 0,
+                    "message": f"Erreur de configuration : {problem}",
+                    "doneCount": 0,
+                    "errorMessage": problem,
+                })
+                await callbacks.post_analysis_complete(project_id, failed=True, phase=req.phase)
+                return
 
         for idx, level in enumerate(levels):
             log.info("project=%s level=%d : %d agent(s) in parallel",
@@ -129,9 +161,15 @@ async def run_analysis(req: AnalyzeRequest) -> None:
         log.exception("Orchestration failed project=%s: %s", project_id, e)
         is_cancelled = isinstance(e, asyncio.CancelledError)
         message = "Annulé par l'utilisateur" if is_cancelled else "Non exécuté (analyse interrompue suite à une erreur)"
-        # Mark all unrun agents in subsequent levels as SKIPPED
+        # Mark all unrun agents in subsequent levels as SKIPPED — but NEVER the
+        # agent(s) that actually FAILED: they already carry an honest ERROR event
+        # with the root-cause message. Overwriting them with the generic skip text
+        # masked the real error in the UI ("Non exécuté (analyse interrompue…)" on
+        # the very agent that broke), leaving nothing actionable on screen.
         for lvl in levels:
             for agent in lvl:
+                if agent.agent_id in failed_ids:
+                    continue  # keeps its honest ERROR + errorMessage
                 if agent.agent_id not in outputs:
                     try:
                         await callbacks.post_agent_event(project_id, {
