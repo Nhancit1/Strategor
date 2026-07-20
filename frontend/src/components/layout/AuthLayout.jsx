@@ -1,5 +1,6 @@
 import { Outlet } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import logo from '../../logo.jpeg';
 
 export default function AuthLayout() {
   const { t } = useTranslation();
@@ -9,7 +10,7 @@ export default function AuthLayout() {
       <div className="flex-1 flex items-center justify-center px-6 py-12 bg-paper">
         <div className="w-full max-w-md">
           <div className="mb-10">
-            <h1 className="font-title text-3xl font-bold text-orange">Stratège IA</h1>
+            <img src={logo} alt="Stratège IA" className="h-32 w-auto" />
           </div>
           <Outlet />
         </div>

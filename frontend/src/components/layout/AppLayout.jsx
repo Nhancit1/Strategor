@@ -4,6 +4,7 @@ import { useAuthStore } from '../../store/authStore';
 import { useProjectStore } from '../../store/projectStore';
 import { LogOut, Settings, LayoutDashboard, ShieldCheck, Globe, BookOpen } from 'lucide-react';
 import { userApi } from '../../api';
+import logo from '../../logo.jpeg';
 
 export default function AppLayout() {
   const { t } = useTranslation();
@@ -24,8 +25,8 @@ export default function AppLayout() {
       <header className="bg-white border-b border-paper3 sticky top-0 z-30">
         <div className="container-wide flex items-center justify-between h-16">
           <div className="flex items-center gap-4">
-            <Link to="/dashboard" className="font-title text-xl font-bold text-orange">
-              {t('nav.title', 'Stratège IA')}
+            <Link to="/dashboard" className="flex items-center">
+              <img src={logo} alt={t('nav.title', 'Stratège IA')} className="h-14 w-auto" />
             </Link>
           </div>
 
