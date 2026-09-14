@@ -5,7 +5,8 @@ name: CD Deploy
 #   pre-prod  -> environment "preprod"    (Server A, non-prod)
 #   main      -> environment "production" (Server B, requires manual approval)
 #
-# Triggered manually, or automatically after the CI + Security workflows succeed.
+# Triggered manually, or automatically once ALL the CI + Security runs of a pushed
+# commit have succeeded (one deploy per commit, see the "gate" step).
 #
 # Per-environment secrets (configured under Settings -> Environments):
 #   VPS_HOST          - server IP / hostname
@@ -24,6 +25,7 @@ on:
 
 permissions:
   contents: read
+  actions: read # the gate below lists the CI/Security runs of the commit
 
 jobs:
   # Map the triggering branch to a GitHub environment. Kept separate so the
@@ -31,11 +33,15 @@ jobs:
   resolve:
     name: Resolve target environment
     runs-on: ubuntu-latest
-    # Manual run, or only when the triggering workflow actually succeeded.
-    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
+    # Manual run, or a successful run triggered by a push (pull requests never deploy).
+    if: >-
+      ${{ github.event_name == 'workflow_dispatch' ||
+          (github.event.workflow_run.conclusion == 'success' &&
+           github.event.workflow_run.event == 'push') }}
     outputs:
       environment: ${{ steps.map.outputs.environment }}
       branch: ${{ steps.map.outputs.branch }}
+      deploy: ${{ steps.gate.outputs.deploy }}
     steps:
       - id: map
         run: |
@@ -57,10 +63,59 @@ jobs:
           echo "branch=$BR" >> "$GITHUB_OUTPUT"
           echo "environment=$ENV" >> "$GITHUB_OUTPUT"
 
+      # One push fires up to 4 workflow_run events (one per CI/Security workflow), which
+      # used to start 4 concurrent deploys of the same commit. Deploy only when EVERY
+      # CI/Security run of this commit has finished green: earlier events skip, and the
+      # last run to finish deploys. Path-filtered CIs that did not run are not awaited.
+      - id: gate
+        name: Wait for all CI/Security runs of this commit
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          SHA: ${{ github.event.workflow_run.head_sha }}
+          BRANCH: ${{ steps.map.outputs.branch }}
+        run: |
+          set -euo pipefail
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "Manual run: deploying without waiting for CI."
+            echo "deploy=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          runs=$(gh api "repos/$REPO/actions/runs?head_sha=$SHA&event=push&branch=$BRANCH&per_page=100" \
+            --jq '[.workflow_runs[]
+                   | select(.name == "CI Backend" or .name == "CI Frontend"
+                            or .name == "CI AI Python" or .name == "Security")
+                   | {name, status, conclusion}]')
+          echo "CI/Security runs for $SHA:"
+          echo "$runs" | jq -r '.[] | "  - \(.name): \(.status) / \(.conclusion // "-")"'
+
+          pending=$(echo "$runs" | jq '[.[] | select(.status != "completed")] | length')
+          failed=$(echo "$runs" | jq '[.[] | select(.status == "completed"
+                                        and .conclusion != "success"
+                                        and .conclusion != "skipped")] | length')
+
+          if [ "$failed" -gt 0 ]; then
+            echo "::warning::Not deploying $SHA: at least one CI/Security run did not succeed."
+            echo "deploy=false" >> "$GITHUB_OUTPUT"
+          elif [ "$pending" -gt 0 ]; then
+            echo "::notice::$pending CI/Security run(s) still running for $SHA; the last one to finish will deploy."
+            echo "deploy=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "All CI/Security runs succeeded: deploying."
+            echo "deploy=true" >> "$GITHUB_OUTPUT"
+          fi
+
   deploy:
     name: Deploy (${{ needs.resolve.outputs.environment }})
     needs: resolve
+    if: ${{ needs.resolve.outputs.deploy == 'true' }}
     runs-on: ubuntu-latest
+    # Never run two deploys of the same environment at once (they share one checkout
+    # and one compose project on the VPS). Queue instead of cancelling a half-done deploy.
+    concurrency:
+      group: deploy-${{ needs.resolve.outputs.environment }}
+      cancel-in-progress: false
     # Selecting the environment activates its secrets AND any required-reviewer
     # protection rule (production waits for manual approval here).
     environment: ${{ needs.resolve.outputs.environment }}
