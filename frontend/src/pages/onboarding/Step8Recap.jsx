@@ -20,7 +20,8 @@ export default function Step8Recap({ profile }) {
         {row('Point de départ', profile?.startingPoint)}
         {row('Secteurs', profile?.sectors?.join(', '))}
         {row('Sous-secteurs (NACE)', profile?.subSectors?.join(', '))}
-        {row('Territoires', profile?.territories?.join(', '))}
+        {row('Territoires', profile?.territories?.map((t) => (t === 'Local' ? 'Maroc' : t)).join(', '))}
+        {row('Précisions territoriales', profile?.territoryDetail)}
         {row('Stade', profile?.stage)}
         {row('CA annuel', profile?.revenueRange)}
         {row('Effectif', profile?.teamSize)}

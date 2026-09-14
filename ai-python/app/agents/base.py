@@ -105,6 +105,21 @@ def _join_list(lst: Optional[list], is_en: bool = False) -> str:
     return ", ".join(clean_field(x) for x in lst) if lst else "(non renseigné)"
 
 
+# The onboarding "Local" territory means Morocco. The button was renamed "Maroc", but
+# profiles saved before the rename still hold "Local" -> normalize both for the model.
+_TERRITORY_ALIASES = {"local": ("Maroc", "Morocco"), "maroc": ("Maroc", "Morocco")}
+
+
+def _join_territories(lst: Optional[list], is_en: bool = False) -> str:
+    if not lst:
+        return _join_list(lst, is_en)
+    names = []
+    for t in lst:
+        alias = _TERRITORY_ALIASES.get(str(t).strip().lower())
+        names.append(alias[1 if is_en else 0] if alias else t)
+    return _join_list(names, is_en)
+
+
 def _format_portfolio(portfolio: Optional[list], is_en: bool = False) -> str:
     if is_en:
         if not portfolio:
@@ -180,7 +195,8 @@ class Agent:
                 f"- Name: {_null_safe(profile.get('companyName'), True)}\n"
                 f"- Sectors: {_join_list(profile.get('sectors'), True)}\n"
                 f"- Sub-sectors (NACE): {_join_list(profile.get('subSectors'), True)}\n"
-                f"- Territories: {_join_list(profile.get('territories'), True)}\n"
+                f"- Territories: {_join_territories(profile.get('territories'), True)}\n"
+                f"- Territory details: {_null_safe(profile.get('territoryDetail'), True)}\n"
                 f"- Stage: {_null_safe(profile.get('stage'), True)}\n"
                 f"- Annual revenue: {_null_safe(profile.get('revenueRange'), True)}\n"
                 f"- Team size: {_null_safe(profile.get('teamSize'), True)}\n"
@@ -208,7 +224,8 @@ class Agent:
                 f"- Nom : {_null_safe(profile.get('companyName'))}\n"
                 f"- Secteurs : {_join_list(profile.get('sectors'))}\n"
                 f"- Sous-secteurs (NACE) : {_join_list(profile.get('subSectors'))}\n"
-                f"- Territoires : {_join_list(profile.get('territories'))}\n"
+                f"- Territoires : {_join_territories(profile.get('territories'))}\n"
+                f"- Précisions territoriales : {_null_safe(profile.get('territoryDetail'))}\n"
                 f"- Stade : {_null_safe(profile.get('stage'))}\n"
                 f"- CA annuel : {_null_safe(profile.get('revenueRange'))}\n"
                 f"- Effectif : {_null_safe(profile.get('teamSize'))}\n"

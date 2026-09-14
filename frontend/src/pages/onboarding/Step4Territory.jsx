@@ -1,7 +1,8 @@
-const TERRITORIES = ['FR', 'EU', 'Monde', 'Local'];
+const TERRITORIES = ['FR', 'EU', 'Monde', 'Maroc'];
 
 export default function Step4Territory({ profile, onPatch }) {
-  const selected = profile?.territories || [];
+  // "Local" was renamed "Maroc": older profiles still store "Local".
+  const selected = (profile?.territories || []).map((t) => (t === 'Local' ? 'Maroc' : t));
   const toggle = (t) => {
     const next = selected.includes(t) ? selected.filter((x) => x !== t) : [...selected, t];
     onPatch({ territories: next });
@@ -32,7 +33,7 @@ export default function Step4Territory({ profile, onPatch }) {
           className="form-textarea"
           defaultValue={profile?.territoryDetail || ''}
           onChange={(e) => onPatch({ territoryDetail: e.target.value })}
-          placeholder="ex: principalement Île-de-France et Rhône-Alpes, début d'export Allemagne"
+          placeholder="ex: principalement Casablanca et Tanger, début d'export vers l'Afrique de l'Ouest"
         />
       </div>
     </div>
