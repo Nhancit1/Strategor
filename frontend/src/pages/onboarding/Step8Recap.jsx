@@ -1,3 +1,5 @@
+import { CURRENCIES, currencyOf, currencySymbol } from '../../utils/currency';
+
 export default function Step8Recap({ profile }) {
   const row = (label, value) => (
     <div className="flex justify-between py-2 border-b border-paper2 last:border-0">
@@ -23,7 +25,8 @@ export default function Step8Recap({ profile }) {
         {row('Territoires', profile?.territories?.map((t) => (t === 'Local' ? 'Maroc' : t)).join(', '))}
         {row('Précisions territoriales', profile?.territoryDetail)}
         {row('Stade', profile?.stage)}
-        {row('CA annuel', profile?.revenueRange)}
+        {row('Devise', CURRENCIES.find((c) => c.code === currencyOf(profile))?.label)}
+        {row('CA annuel', profile?.revenueRange && `${profile.revenueRange} ${currencySymbol(currencyOf(profile))}`)}
         {row('Effectif', profile?.teamSize)}
         {row('Marchés', profile?.marketTypes?.join(', '))}
         {row('Profil client', profile?.customerDescription)}

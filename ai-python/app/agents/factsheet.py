@@ -15,6 +15,7 @@ from __future__ import annotations
 from typing import Any, Optional
 
 from .sanitize import clean_field
+from ..currency import currency_code, currency_label, million_unit
 
 
 def _clean(v: Any) -> Optional[str]:
@@ -32,8 +33,9 @@ def _canonical_facts(profile: Optional[dict], finance: Optional[dict]) -> list[s
 
     if (name := _clean(p.get("companyName"))):
         facts.append(f"Entreprise : {name}")
+    facts.append(f"Devise du projet : {currency_label(p)} — tous les montants sont en {currency_code(p)}")
     if (rev := _clean(p.get("revenueRange"))):
-        facts.append(f"CA annuel (FOURCHETTE, non précise) : {rev}")
+        facts.append(f"CA annuel (FOURCHETTE, non précise) : {rev} {currency_code(p)}")
     if (team := _clean(p.get("teamSize"))):
         facts.append(f"Effectif (FOURCHETTE/approx.) : {team}")
     if (cust := _clean(p.get("customerDescription"))):
@@ -71,24 +73,28 @@ def _canonical_facts(profile: Optional[dict], finance: Optional[dict]) -> list[s
     return facts
 
 
-_RULES = (
-    "Tu DOIS respecter ces règles de cohérence numérique, sans exception :\n"
-    "1. N'utilise QUE les faits canoniques ci-dessus pour les données de référence "
-    "(CA, effectif, marges, nombre de clients, parts de portefeuille). Ne les contredis "
-    "jamais, ni d'une section à l'autre, ni d'un agent à l'autre.\n"
-    "2. Le CA et l'effectif sont des FOURCHETTES : ne présente JAMAIS une borne de "
-    "fourchette (ex. « 10-50M€ ») comme un objectif chiffré ou un réalisé précis.\n"
-    "3. Toute valeur dérivée (croissance %, objectif, ratio) doit être arithmétiquement "
-    "EXACTE : un objectif « +X% » à partir d'une base B vaut B × (1 + X/100). Vérifie ton "
-    "calcul AVANT de l'écrire (ex. +30% de 10M€ = 13M€, et non 11,7M€).\n"
-    "4. Toute décomposition en parts (% du CA, parts de portefeuille, mix d'activités) doit "
-    "totaliser ~100%.\n"
-    "5. Matrice BCG — définition stricte (Henderson/BCG) : la part de marché RELATIVE = ta "
-    "part de marché ÷ part du plus gros concurrent (PAS ta part de ta propre base installée). "
-    "RMS ≥ 1,0 ⇒ moitié « part forte » (Star/Vache à lait) ; RMS < 1,0 ⇒ « part faible » "
-    "(Dilemme/Poids mort). Croissance élevée ⇒ haut ; faible ⇒ bas. Le quadrant DOIT être "
-    "cohérent avec ces deux coordonnées."
-)
+def _rules(unit: str, code: str) -> str:
+    return (
+        "Tu DOIS respecter ces règles de cohérence numérique, sans exception :\n"
+        "1. N'utilise QUE les faits canoniques ci-dessus pour les données de référence "
+        "(CA, effectif, marges, nombre de clients, parts de portefeuille). Ne les contredis "
+        "jamais, ni d'une section à l'autre, ni d'un agent à l'autre.\n"
+        "2. Le CA et l'effectif sont des FOURCHETTES : ne présente JAMAIS une borne de "
+        f"fourchette (ex. « 10-50{unit} ») comme un objectif chiffré ou un réalisé précis.\n"
+        "3. Toute valeur dérivée (croissance %, objectif, ratio) doit être arithmétiquement "
+        "EXACTE : un objectif « +X% » à partir d'une base B vaut B × (1 + X/100). Vérifie ton "
+        f"calcul AVANT de l'écrire (ex. +30% de 10{unit} = 13{unit}, et non 11,7{unit}).\n"
+        "4. Toute décomposition en parts (% du CA, parts de portefeuille, mix d'activités) doit "
+        "totaliser ~100%.\n"
+        "5. Matrice BCG — définition stricte (Henderson/BCG) : la part de marché RELATIVE = ta "
+        "part de marché ÷ part du plus gros concurrent (PAS ta part de ta propre base installée). "
+        "RMS ≥ 1,0 ⇒ moitié « part forte » (Star/Vache à lait) ; RMS < 1,0 ⇒ « part faible » "
+        "(Dilemme/Poids mort). Croissance élevée ⇒ haut ; faible ⇒ bas. Le quadrant DOIT être "
+        "cohérent avec ces deux coordonnées.\n"
+        "6. DEVISE : tous les montants (CA, investissements, gains, budgets, objectifs) "
+        f"sont exprimés en {code}. Ne convertis jamais vers une autre devise et n'écris "
+        "jamais de montant dans une devise différente de celle du projet."
+    )
 
 
 def build_factsheet(profile: Optional[dict], finance: Optional[dict]) -> str:
@@ -99,4 +105,5 @@ def build_factsheet(profile: Optional[dict], finance: Optional[dict]) -> str:
     else:
         block = ("=== FAITS CANONIQUES ===\n- Aucune donnée chiffrée fiable fournie : reste "
                  "prudent et qualitatif.\n\n")
-    return block + "=== RÈGLES DE COHÉRENCE NUMÉRIQUE ===\n" + _RULES + "\n\n"
+    rules = _rules(million_unit(profile), currency_code(profile))
+    return block + "=== RÈGLES DE COHÉRENCE NUMÉRIQUE ===\n" + rules + "\n\n"

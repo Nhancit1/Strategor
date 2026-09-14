@@ -35,24 +35,41 @@ export default function OnboardingPage() {
   const [saving, setSaving] = useState(false);
   const [savedAt, setSavedAt] = useState(null);
   const debounceRef = useRef(null);
+  const pendingRef = useRef({});
 
   useEffect(() => {
     fetchOnboarding(id);
   }, [id, fetchOnboarding]);
 
-  // Autosave debounced
+  const applyLocally = (patch) =>
+    useProjectStore.setState((s) => ({ onboarding: { ...s.onboarding, ...patch } }));
+
+  // Autosave debounced. The change is shown immediately (optimistic) and patches made
+  // within the debounce window are merged, so a quick second click no longer drops the first.
   const handlePatch = useCallback((patch) => {
+    pendingRef.current = { ...pendingRef.current, ...patch };
+    applyLocally(patch);
+    setSaving(true);
     if (debounceRef.current) clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(async () => {
-      setSaving(true);
+      const toSave = pendingRef.current;
+      pendingRef.current = {};
       try {
-        await updateOnboarding(id, patch);
+        await updateOnboarding(id, toSave);
         setSavedAt(new Date());
+      } catch {
+        // Save failed: resync with the server rather than show unsaved values.
+        await fetchOnboarding(id).catch(() => {});
       } finally {
-        setSaving(false);
+        if (Object.keys(pendingRef.current).length) {
+          // Edits made while this save was in flight must survive the server response.
+          applyLocally(pendingRef.current);
+        } else {
+          setSaving(false);
+        }
       }
     }, 800);
-  }, [id, updateOnboarding]);
+  }, [id, updateOnboarding, fetchOnboarding]);
 
   const handleLaunch = async () => {
     await launchAnalysis(id, { phase: 'all' });
@@ -97,6 +114,7 @@ export default function OnboardingPage() {
           <StepComponent
             profile={onboarding}
             onPatch={handlePatch}
+            saving={saving}
           />
         )}
       </div>

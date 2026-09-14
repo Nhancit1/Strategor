@@ -57,7 +57,9 @@ def _to_float(num: str) -> Optional[float]:
         return None
 
 
-_MEUR_RE = re.compile(r"(\d+(?:[.,]\d+)?)\s*M€", re.IGNORECASE)
+# Amounts in millions, in any project currency: 10M€, 10 M$, 10M MAD, 10 MDH, 10M USD...
+_MILLIONS_RE = re.compile(
+    r"(\d+(?:[.,]\d+)?)\s*(M€|M\$|M\s?(?:MAD|DH|EUR|USD)\b)", re.IGNORECASE)
 _PCT_RE = re.compile(r"(?<![\d.,\-–])([+-]?\d+(?:[.,]\d+)?)\s*%")
 _CLIENTS_RE = re.compile(r"\b(\d{1,4})\s+clients?\b", re.IGNORECASE)
 _HEADCOUNT_RE = re.compile(r"\b(\d{1,5})\s+(?:collaborateur|salari|personne|ETP|employ)", re.IGNORECASE)
@@ -72,8 +74,15 @@ _Q_FORMS = (
 )
 
 
-def _meur(s: str) -> list[float]:
-    return [v for v in (_to_float(m.group(1)) for m in _MEUR_RE.finditer(s)) if v is not None]
+def _millions(s: str) -> list[tuple[float, str]]:
+    """(value, unit) pairs; the unit is normalised ("10 M MAD" -> "M MAD", "MDH" -> "M DH")."""
+    out = []
+    for m in _MILLIONS_RE.finditer(s):
+        v = _to_float(m.group(1))
+        if v is not None:
+            unit = re.sub(r"^M\s?", "M ", m.group(2).upper()).replace("M €", "M€").replace("M $", "M$")
+            out.append((v, unit))
+    return out
 
 
 def _pcts(s: str) -> list[float]:
@@ -143,11 +152,11 @@ def _check_growth_math(outputs: dict, checks: list) -> None:
         for path, s in _walk_strings(payload):
             if _RANGE_RE.search(s):
                 continue
-            amounts, pcts = _meur(s), _pcts(s)
+            amounts, pcts = _millions(s), _pcts(s)
             if len(amounts) != 2 or len(pcts) != 1:
                 continue
-            base, target, pct = amounts[0], amounts[1], pcts[0]
-            if base <= 0:
+            (base, unit), (target, target_unit), pct = amounts[0], amounts[1], pcts[0]
+            if base <= 0 or unit != target_unit:  # two currencies: not a growth statement
                 continue
             expected = base * (1 + pct / 100.0)
             if abs(expected - target) / max(abs(target), 1e-9) > 0.05:
@@ -155,7 +164,7 @@ def _check_growth_math(outputs: dict, checks: list) -> None:
                 checks.append({
                     "id": "growth_math_inconsistent", "severity": "warning",
                     "title": "Calcul de croissance incohérent (à vérifier)",
-                    "detail": (f"« …{s.strip()[:140]}… » : {base:g}M€ → {target:g}M€ "
+                    "detail": (f"« …{s.strip()[:140]}… » : {base:g}{unit} → {target:g}{unit} "
                                f"correspond à {implied:+g}%, pas {pct:+g}%."),
                     "agents": [aid], "values": {"base": base, "target": target,
                                                 "stated_pct": pct, "implied_pct": implied},

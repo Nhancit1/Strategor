@@ -4,9 +4,11 @@ import { useTranslation } from 'react-i18next';
 import { ArrowLeft, ArrowRight, Sparkles, TrendingUp, Info, HelpCircle } from 'lucide-react';
 import { financeApi, projectApi } from '../../api';
 import DocumentUploader from '../../components/documents/DocumentUploader';
+import { currencyOf, currencySymbol } from '../../utils/currency';
 
+// unit 'CURRENCY' is replaced by the project's currency symbol at render time.
 const CORE_INDICATORS = [
-  { key: 'revenue', label: 'Chiffre d\'affaires annuel', help: 'Hors taxes, dernier exercice clos', unit: '€', type: 'number' },
+  { key: 'revenue', label: 'Chiffre d\'affaires annuel', help: 'Hors taxes, dernier exercice clos', unit: 'CURRENCY', type: 'number' },
   { key: 'revenue_growth', label: 'Croissance du CA (3 ans)', help: 'Tendance moyenne annuelle', type: 'select',
     options: [
       { value: 'strong', label: '↗ Forte (> 15 %)' },
@@ -19,7 +21,7 @@ const CORE_INDICATORS = [
   { key: 'ebitda_margin_percent', label: 'Marge EBITDA', help: 'EBITDA / CA', unit: '%', type: 'number' },
   { key: 'team_size', label: 'Effectif équivalent temps plein', help: 'Salariés + dirigeants — ETP', unit: 'ETP', type: 'number' },
   { key: 'customer_count', label: 'Nombre de clients actifs', help: 'Avec ≥ 1 achat sur 12 mois', unit: 'clients', type: 'number' },
-  { key: 'average_deal_size', label: 'Ticket moyen / projet', help: 'Valeur médiane d\'un chantier/contrat', unit: '€', type: 'number' },
+  { key: 'average_deal_size', label: 'Ticket moyen / projet', help: 'Valeur médiane d\'un chantier/contrat', unit: 'CURRENCY', type: 'number' },
 ];
 
 const BONUS_INDICATORS = [
@@ -37,6 +39,7 @@ export default function FinanceLitePage() {
   const [data, setData] = useState({});
   const [completeness, setCompleteness] = useState(0);
   const [project, setProject] = useState(null);
+  const [currency, setCurrency] = useState(currencyOf(null));
   const [savingState, setSavingState] = useState('idle'); // idle | saving | saved
   const [error, setError] = useState(null);
 
@@ -45,12 +48,14 @@ export default function FinanceLitePage() {
     let cancelled = false;
     (async () => {
       try {
-        const [finRes, projRes] = await Promise.all([
+        const [finRes, projRes, onbRes] = await Promise.all([
           financeApi.get(id).catch(() => ({ data: null })),
           projectApi.get(id),
+          projectApi.getOnboarding(id).catch(() => ({ data: null })),
         ]);
         if (cancelled) return;
         setProject(projRes.data);
+        setCurrency(currencyOf(onbRes.data));
         if (finRes.data?.data) setData(finRes.data.data);
         if (finRes.data?.completenessScore != null) setCompleteness(finRes.data.completenessScore);
       } catch (e) {
@@ -161,6 +166,7 @@ export default function FinanceLitePage() {
             value={data[ind.key]}
             onChange={(v) => setVal(ind.key, v)}
             onDontKnow={() => setDontKnow(ind.key)}
+            currency={currency}
           />
         ))}
       </div>
@@ -178,6 +184,7 @@ export default function FinanceLitePage() {
             value={data[ind.key]}
             onChange={(v) => setVal(ind.key, v)}
             onDontKnow={() => setDontKnow(ind.key)}
+            currency={currency}
             bonus
           />
         ))}
@@ -233,7 +240,7 @@ export default function FinanceLitePage() {
   );
 }
 
-function IndicatorCard({ indicator, value, onChange, onDontKnow, bonus }) {
+function IndicatorCard({ indicator, value, onChange, onDontKnow, bonus, currency }) {
   const filled = value !== undefined && value !== null && value !== '';
   const isBenchmark = value === '__benchmark__';
 
@@ -273,7 +280,11 @@ function IndicatorCard({ indicator, value, onChange, onDontKnow, bonus }) {
             placeholder={isBenchmark ? 'Benchmark sectoriel utilisé' : 'Saisir ou…'}
             disabled={isBenchmark}
           />
-          {indicator.unit && <span className="text-sm font-semibold">{indicator.unit}</span>}
+          {indicator.unit && (
+            <span className="text-sm font-semibold">
+              {indicator.unit === 'CURRENCY' ? currencySymbol(currency) : indicator.unit}
+            </span>
+          )}
         </div>
       )}
 

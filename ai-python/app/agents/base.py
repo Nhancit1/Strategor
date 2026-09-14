@@ -16,6 +16,7 @@ from ..model_tiers import ModelTier
 from .factsheet import build_factsheet
 from .sanitize import neutralize, clean_field, wrap_untrusted, MAX_DEP_CHARS
 from ..config import CACHE_SENTINEL
+from ..currency import currency_code, currency_label
 
 
 def _date_context(is_en: bool = False) -> str:
@@ -198,7 +199,9 @@ class Agent:
                 f"- Territories: {_join_territories(profile.get('territories'), True)}\n"
                 f"- Territory details: {_null_safe(profile.get('territoryDetail'), True)}\n"
                 f"- Stage: {_null_safe(profile.get('stage'), True)}\n"
-                f"- Annual revenue: {_null_safe(profile.get('revenueRange'), True)}\n"
+                f"- Currency: {currency_label(profile, True)} — express EVERY amount in "
+                f"{currency_code(profile)}, never in another currency\n"
+                f"- Annual revenue ({currency_code(profile)}): {_null_safe(profile.get('revenueRange'), True)}\n"
                 f"- Team size: {_null_safe(profile.get('teamSize'), True)}\n"
                 f"- Target markets: {_join_list(profile.get('marketTypes'), True)}\n"
                 f"- Customers: {_null_safe(profile.get('customerDescription'), True)}\n"
@@ -227,7 +230,9 @@ class Agent:
                 f"- Territoires : {_join_territories(profile.get('territories'))}\n"
                 f"- Précisions territoriales : {_null_safe(profile.get('territoryDetail'))}\n"
                 f"- Stade : {_null_safe(profile.get('stage'))}\n"
-                f"- CA annuel : {_null_safe(profile.get('revenueRange'))}\n"
+                f"- Devise : {currency_label(profile)} — exprime TOUS les montants en "
+                f"{currency_code(profile)}, jamais dans une autre devise\n"
+                f"- CA annuel ({currency_code(profile)}) : {_null_safe(profile.get('revenueRange'))}\n"
                 f"- Effectif : {_null_safe(profile.get('teamSize'))}\n"
                 f"- Marchés cibles : {_join_list(profile.get('marketTypes'))}\n"
                 f"- Clients : {_null_safe(profile.get('customerDescription'))}\n"

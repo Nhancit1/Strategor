@@ -26,7 +26,7 @@ const projectDto = (p) => ({
 
 const ONBOARDING_FIELDS = [
   'companyName', 'userRole', 'sectors', 'subSectors', 'territories', 'marketTypes', 'objectives',
-  'stage', 'revenueRange', 'teamSize', 'territoryDetail', 'customerDescription',
+  'stage', 'revenueRange', 'currency', 'teamSize', 'territoryDetail', 'customerDescription',
   'objectiveDetail', 'startingPoint',
   'activityPrecise', 'positioning', 'valueScope', 'strengths', 'weaknesses', 'portfolio',
 ];
@@ -45,7 +45,7 @@ router.post('/', requireAuth, asyncHandler(async (req, res) => {
     currentStep: 1,
     analysisMode: 'comprehensive', // single mode: full 12-agent analysis
   });
-  await OnboardingProfile.create({ project: project._id });
+  await OnboardingProfile.create({ project: project._id, currency: 'MAD' });
   res.json(projectDto(project));
 }));
 

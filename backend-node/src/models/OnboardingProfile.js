@@ -13,6 +13,8 @@ const onboardingSchema = new mongoose.Schema(
     objectives: { type: [String], default: undefined },
     stage: { type: String, default: null },
     revenueRange: { type: String, default: null },
+    // Project-wide currency. null = profile saved before the field existed -> treated as EUR.
+    currency: { type: String, enum: ['MAD', 'EUR', 'USD'], default: null },
     teamSize: { type: String, default: null },
     territoryDetail: { type: String, default: null },
     customerDescription: { type: String, default: null },
